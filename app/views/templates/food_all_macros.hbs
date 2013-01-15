@@ -3,9 +3,9 @@
 </header>
 
 <div class="list macros">
-    {{#keys macros}}
+    {{#keys this this}}
         <div class="list-item macro center-text" data-key="{{key}}">
-            <a href="/food/{{key}}" class="btn btn-large btn-secondary btn-macro">{{val.display}}</a>
+            <a href="/food/{{key}}" class="btn btn-large btn-secondary btn-macro">{{val}}</a>
         </div>
     {{/keys}}
 </div>

@@ -1,6 +1,5 @@
 app = require 'application'
 View = require './view'
-BeastMacros = require 'models/beast'
 
 
 class NavView extends View
@@ -10,10 +9,7 @@ class NavView extends View
         'click a': 'routeEvent'
         'click #clear_list': 'clear'
 
-    initialize: =>
-        @on('routed', @updateActiveTab)
-
-    updateActiveTab: =>
+    afterRender: =>
         @$('.nav li').removeClass('active')
         @$("##{@activeView}_nav").addClass('active')
 

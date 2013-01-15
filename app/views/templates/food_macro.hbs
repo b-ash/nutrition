@@ -5,12 +5,18 @@
     </div>
 </header>
 
+{{#if macroOverrideDisplay}}
+<div class="macro-replacement">
+    <span>Equals 1 {{macroOverrideDisplay}}</span>
+</div>
+{{/if}}
+
 <div class="list foods">
-    {{#each foods}}
+    {{#keys foods this}}
         <div class="list-item food">
-            <a class="btn btn-secondary btn-large btn-food dont-route">{{display}}</a>
+            <a href="/food/{{ctx.macro}}/{{key}}" class="btn btn-secondary btn-large btn-food">{{val.display}}</a>
         </div>
-    {{/each}}
+    {{/keys}}
 </div>
 
 {{#unless foods}}

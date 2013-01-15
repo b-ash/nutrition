@@ -1,5 +1,5 @@
 View = require './view'
-Foods = require 'models/foods'
+BeastFoods = require 'models/foods/beast_foods'
 
 
 class FoodMacroView extends View
@@ -10,7 +10,7 @@ class FoodMacroView extends View
         'click a': 'routeEvent'
 
     initialize: =>
-        @model = new Foods(@options.macro)
+        @model = new BeastFoods(@options.macro)
 
     getRenderData: =>
         @model.toJSON()

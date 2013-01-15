@@ -3,7 +3,7 @@
 </header>
 
 <div class="list macros">
-    {{#keys macros}}
+    {{#keys macros this}}
         <div class="list-item macro" data-key="{{key}}">
             <div class="percentage-bar relative">
                 <div class="percentage-complete absolute {{key}}" style="width: {{getPercentageWidth key}}%;">

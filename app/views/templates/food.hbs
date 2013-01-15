@@ -1,0 +1,35 @@
+<header>
+    <div class="clearfix">
+        <h4 class="left without-top-margin">{{display}}</h4>
+        <a href="/food/{{macro}}" class="right">Go back</a>
+    </div>
+</header>
+
+<div class="description">
+    <span>{{description}}</span>
+</div>
+
+<div class="portions">
+    <span>One serving: {{portion}} {{pluralize measurement quantity}}, {{cals}} calories</span>
+</div>
+
+<div class="portion-controls">
+    <label for="portion_select">How many portions?</label>
+    <select id="portion_select">
+        <option value="0.5">1/2 serving ({{getExactPortion this "0.5"}})</option>
+        <option value="1" selected="selected">1 serving ({{getExactPortion this "1"}})</option>
+        <option value="1.5">1.5 servings ({{getExactPortion this "1.5"}})</option>
+        <option value="2">2 servings ({{getExactPortion this "2"}})</option>
+        <option value="2.5">2.5 servings ({{getExactPortion this "2.5"}})</option>
+        <option value="3">3 servings ({{getExactPortion this "3"}})</option>
+        <option value="3.5">3.5 servings ({{getExactPortion this "3.5"}})</option>
+        <option value="4">4 servings ({{getExactPortion this "4"}})</option>
+        <option value="4.5">4.5 servings ({{getExactPortion this "4.5"}})</option>
+        <option value="5">5 servings ({{getExactPortion this "5"}})</option>
+    </select>
+
+    <div class="controls">
+        <a id="submit_and_route" class="dont-route btn btn-primary">Add</a>
+        <a id="submit_and_go_home" class="dont-route btn btn-primary">Add and return home</a>
+    </div>
+</div>

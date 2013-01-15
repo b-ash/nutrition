@@ -1,4 +1,4 @@
-BeastMacros = require 'models/beast'
+BeastMacros = require 'models/beast_macro_counts'
 
 Application =
     initialize: (onSuccess) ->

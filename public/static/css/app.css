@@ -7251,7 +7251,10 @@ html {
 }
 .footer {
   text-align: center;
-  margin: 15px 0;
+  padding: 15px 0;
+}
+.btn:visited {
+  color: #000;
 }
 .list .list-item {
   margin-bottom: 10px;
@@ -7347,8 +7350,21 @@ html {
 .list .list-item .percentage-bar .percentage-complete .percentage-text.exceeding {
   color: #c00;
 }
-.stats .stat .name {
+.stats {
+  margin-bottom: 50px;
+}
+.macro-replacement {
+  margin-bottom: 10px;
+}
+.portion-controls {
+  margin-top: 20px;
+  margin-bottom: 50px;
+}
+.portion-controls label {
   font-style: italic;
+}
+.portion-controls .controls {
+  margin-top: 20px;
 }
 /* ==|== non-semantic helper classes ========================================
    Please define your styles before this section.
