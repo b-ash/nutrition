@@ -5,12 +5,16 @@ NavView = require('views/nav')
 views =
     index: require('views/index')
     stats: require('views/stats')
+    food:  require('views/food_all_macros')
+    foodMacro: require('views/food_macro')
 
 
 module.exports = class Router extends Backbone.Router
     currentView: null
     routes:
         '': 'index'
+        'food': 'foodAllMacros'
+        'food/:macro': 'foodMacro'
         'stats': 'stats'
         '*query': 'redirectDefault'
 
@@ -22,6 +26,12 @@ module.exports = class Router extends Backbone.Router
 
     stats: =>
         @setupView('stats', 'stats', {model: app.model})
+
+    foodAllMacros: =>
+        @setupView('food', 'food', {model: app.model})
+
+    foodMacro: (macro) =>
+        @setupView('food', 'foodMacro', {macro})
 
     setupView: (navItem, claxx, params={}) =>
         @navSetup(navItem)

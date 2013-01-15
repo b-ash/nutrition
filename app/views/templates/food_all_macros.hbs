@@ -1,0 +1,11 @@
+<header>
+    <h4>Select a macro category</h4>
+</header>
+
+<div class="list macros">
+    {{#keys macros}}
+        <div class="list-item macro center-text" data-key="{{key}}">
+            <a href="/food/{{key}}" class="btn btn-large btn-secondary btn-macro">{{val.display}}</a>
+        </div>
+    {{/keys}}
+</div>

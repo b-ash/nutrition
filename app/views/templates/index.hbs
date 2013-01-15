@@ -2,9 +2,9 @@
     <h4>Current Macros</h4>
 </header>
 
-<div class="macros">
+<div class="list macros">
     {{#keys macros}}
-        <div class="macro" data-key="{{key}}">
+        <div class="list-item macro" data-key="{{key}}">
             <div class="percentage-bar relative">
                 <div class="percentage-complete absolute {{key}}" style="width: {{getPercentageWidth key}}%;">
                     <div class="percentage-text absolute {{#ifIsExceedingGoal key}}exceeding{{/ifIsExceedingGoal}}">

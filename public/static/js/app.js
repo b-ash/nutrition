@@ -124,7 +124,9 @@ window.require.define({"lib/router": function(exports, require, module) {
 
   views = {
     index: require('views/index'),
-    stats: require('views/stats')
+    stats: require('views/stats'),
+    food: require('views/food_all_macros'),
+    foodMacro: require('views/food_macro')
   };
 
   module.exports = Router = (function(_super) {
@@ -140,6 +142,10 @@ window.require.define({"lib/router": function(exports, require, module) {
 
       this.setupView = __bind(this.setupView, this);
 
+      this.foodMacro = __bind(this.foodMacro, this);
+
+      this.foodAllMacros = __bind(this.foodAllMacros, this);
+
       this.stats = __bind(this.stats, this);
 
       this.index = __bind(this.index, this);
@@ -152,6 +158,8 @@ window.require.define({"lib/router": function(exports, require, module) {
 
     Router.prototype.routes = {
       '': 'index',
+      'food': 'foodAllMacros',
+      'food/:macro': 'foodMacro',
       'stats': 'stats',
       '*query': 'redirectDefault'
     };
@@ -171,6 +179,18 @@ window.require.define({"lib/router": function(exports, require, module) {
     Router.prototype.stats = function() {
       return this.setupView('stats', 'stats', {
         model: app.model
+      });
+    };
+
+    Router.prototype.foodAllMacros = function() {
+      return this.setupView('food', 'food', {
+        model: app.model
+      });
+    };
+
+    Router.prototype.foodMacro = function(macro) {
+      return this.setupView('food', 'foodMacro', {
+        macro: macro
       });
     };
 
@@ -383,6 +403,58 @@ window.require.define({"models/beast": function(exports, require, module) {
   
 }});
 
+window.require.define({"models/foods": function(exports, require, module) {
+  var Foods,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+
+  Foods = (function() {
+
+    Foods.prototype.legumes = {
+      display: 'Legumes',
+      cals: 125,
+      foods: [
+        {
+          display: 'Beans',
+          portion: 0.5,
+          measurement: 'cup'
+        }, {
+          display: 'Refried Beans',
+          portion: 0.5,
+          measurement: 'cup'
+        }, {
+          display: 'Fava (cooked)',
+          portion: 0.66,
+          measurement: 'cup'
+        }, {
+          display: 'Lentils',
+          portion: 0.5,
+          measurement: 'cup'
+        }, {
+          display: 'Peas',
+          portion: 0.5,
+          measurement: 'cup'
+        }
+      ]
+    };
+
+    function Foods(macro) {
+      this.macro = macro;
+      this.toJSON = __bind(this.toJSON, this);
+
+    }
+
+    Foods.prototype.toJSON = function() {
+      return this[this.macro] || {};
+    };
+
+    return Foods;
+
+  })();
+
+  module.exports = Foods;
+  
+}});
+
 window.require.define({"models/model": function(exports, require, module) {
   var LocalStorageModel,
     __hasProp = {}.hasOwnProperty,
@@ -486,6 +558,92 @@ window.require.define({"models/stats": function(exports, require, module) {
   
 }});
 
+window.require.define({"views/food_all_macros": function(exports, require, module) {
+  var FoodAllMacrosView, View,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  View = require('./view');
+
+  FoodAllMacrosView = (function(_super) {
+
+    __extends(FoodAllMacrosView, _super);
+
+    function FoodAllMacrosView() {
+      this.getRenderData = __bind(this.getRenderData, this);
+      return FoodAllMacrosView.__super__.constructor.apply(this, arguments);
+    }
+
+    FoodAllMacrosView.prototype.tagName = 'div';
+
+    FoodAllMacrosView.prototype.className = '.content';
+
+    FoodAllMacrosView.prototype.template = require('./templates/food_all_macros');
+
+    FoodAllMacrosView.prototype.events = {
+      'click a': 'routeEvent'
+    };
+
+    FoodAllMacrosView.prototype.getRenderData = function() {
+      return this.model.toJSON();
+    };
+
+    return FoodAllMacrosView;
+
+  })(View);
+
+  module.exports = FoodAllMacrosView;
+  
+}});
+
+window.require.define({"views/food_macro": function(exports, require, module) {
+  var FoodMacroView, Foods, View,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  View = require('./view');
+
+  Foods = require('models/foods');
+
+  FoodMacroView = (function(_super) {
+
+    __extends(FoodMacroView, _super);
+
+    function FoodMacroView() {
+      this.getRenderData = __bind(this.getRenderData, this);
+
+      this.initialize = __bind(this.initialize, this);
+      return FoodMacroView.__super__.constructor.apply(this, arguments);
+    }
+
+    FoodMacroView.prototype.tagName = 'div';
+
+    FoodMacroView.prototype.className = '.content';
+
+    FoodMacroView.prototype.template = require('./templates/food_macro');
+
+    FoodMacroView.prototype.events = {
+      'click a': 'routeEvent'
+    };
+
+    FoodMacroView.prototype.initialize = function() {
+      return this.model = new Foods(this.options.macro);
+    };
+
+    FoodMacroView.prototype.getRenderData = function() {
+      return this.model.toJSON();
+    };
+
+    return FoodMacroView;
+
+  })(View);
+
+  module.exports = FoodMacroView;
+  
+}});
+
 window.require.define({"views/index": function(exports, require, module) {
   var IndexView, View,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
@@ -536,9 +694,9 @@ window.require.define({"views/index": function(exports, require, module) {
       $percentageText = $totalBar.find('.percentage-text');
       $completionBar = $totalBar.find('.percentage-complete');
       $currentCount.text(this.model.get('macros')[macro].count);
-      $completionBar.animate({
+      $completionBar.css({
         width: "" + pixelPercentage + "px"
-      }, 'fast');
+      });
       if (this.model.isExceedingGoal(macro)) {
         return $percentageText.addClass('exceeding');
       }
@@ -652,6 +810,99 @@ window.require.define({"views/stats": function(exports, require, module) {
   
 }});
 
+window.require.define({"views/templates/food_all_macros": function(exports, require, module) {
+  module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
+    helpers = helpers || Handlebars.helpers;
+    var buffer = "", stack1, stack2, foundHelper, tmp1, self=this, functionType="function", helperMissing=helpers.helperMissing, undef=void 0, escapeExpression=this.escapeExpression, blockHelperMissing=helpers.blockHelperMissing;
+
+  function program1(depth0,data) {
+    
+    var buffer = "", stack1;
+    buffer += "\n        <div class=\"list-item macro center-text\" data-key=\"";
+    foundHelper = helpers.key;
+    stack1 = foundHelper || depth0.key;
+    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
+    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "key", { hash: {} }); }
+    buffer += escapeExpression(stack1) + "\">\n            <a href=\"/food/";
+    foundHelper = helpers.key;
+    stack1 = foundHelper || depth0.key;
+    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
+    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "key", { hash: {} }); }
+    buffer += escapeExpression(stack1) + "\" class=\"btn btn-large btn-secondary btn-macro\">";
+    foundHelper = helpers.val;
+    stack1 = foundHelper || depth0.val;
+    stack1 = (stack1 === null || stack1 === undefined || stack1 === false ? stack1 : stack1.display);
+    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
+    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "val.display", { hash: {} }); }
+    buffer += escapeExpression(stack1) + "</a>\n        </div>\n    ";
+    return buffer;}
+
+    buffer += "<header>\n    <h4>Select a macro category</h4>\n</header>\n\n<div class=\"list macros\">\n    ";
+    foundHelper = helpers.macros;
+    stack1 = foundHelper || depth0.macros;
+    foundHelper = helpers.keys;
+    stack2 = foundHelper || depth0.keys;
+    tmp1 = self.program(1, program1, data);
+    tmp1.hash = {};
+    tmp1.fn = tmp1;
+    tmp1.inverse = self.noop;
+    if(foundHelper && typeof stack2 === functionType) { stack1 = stack2.call(depth0, stack1, tmp1); }
+    else { stack1 = blockHelperMissing.call(depth0, stack2, stack1, tmp1); }
+    if(stack1 || stack1 === 0) { buffer += stack1; }
+    buffer += "\n</div>\n";
+    return buffer;});
+}});
+
+window.require.define({"views/templates/food_macro": function(exports, require, module) {
+  module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
+    helpers = helpers || Handlebars.helpers;
+    var buffer = "", stack1, stack2, foundHelper, tmp1, self=this, functionType="function", helperMissing=helpers.helperMissing, undef=void 0, escapeExpression=this.escapeExpression;
+
+  function program1(depth0,data) {
+    
+    var buffer = "", stack1;
+    buffer += "\n        <div class=\"list-item food\">\n            <a class=\"btn btn-secondary btn-large btn-food dont-route\">";
+    foundHelper = helpers.display;
+    stack1 = foundHelper || depth0.display;
+    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
+    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "display", { hash: {} }); }
+    buffer += escapeExpression(stack1) + "</a>\n        </div>\n    ";
+    return buffer;}
+
+  function program3(depth0,data) {
+    
+    
+    return "\n<div>No foods found</div>\n";}
+
+    buffer += "<header>\n    <div class=\"clearfix\">\n        <h4 class=\"left without-top-margin\">";
+    foundHelper = helpers.display;
+    stack1 = foundHelper || depth0.display;
+    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
+    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "display", { hash: {} }); }
+    buffer += escapeExpression(stack1) + "</h4>\n        <a href=\"/food\" class=\"right\">Go back</a>\n    </div>\n</header>\n\n<div class=\"list foods\">\n    ";
+    foundHelper = helpers.foods;
+    stack1 = foundHelper || depth0.foods;
+    stack2 = helpers.each;
+    tmp1 = self.program(1, program1, data);
+    tmp1.hash = {};
+    tmp1.fn = tmp1;
+    tmp1.inverse = self.noop;
+    stack1 = stack2.call(depth0, stack1, tmp1);
+    if(stack1 || stack1 === 0) { buffer += stack1; }
+    buffer += "\n</div>\n\n";
+    foundHelper = helpers.foods;
+    stack1 = foundHelper || depth0.foods;
+    stack2 = helpers.unless;
+    tmp1 = self.program(3, program3, data);
+    tmp1.hash = {};
+    tmp1.fn = tmp1;
+    tmp1.inverse = self.noop;
+    stack1 = stack2.call(depth0, stack1, tmp1);
+    if(stack1 || stack1 === 0) { buffer += stack1; }
+    buffer += "\n";
+    return buffer;});
+}});
+
 window.require.define({"views/templates/index": function(exports, require, module) {
   module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
     helpers = helpers || Handlebars.helpers;
@@ -660,7 +911,7 @@ window.require.define({"views/templates/index": function(exports, require, modul
   function program1(depth0,data) {
     
     var buffer = "", stack1, stack2;
-    buffer += "\n        <div class=\"macro\" data-key=\"";
+    buffer += "\n        <div class=\"list-item macro\" data-key=\"";
     foundHelper = helpers.key;
     stack1 = foundHelper || depth0.key;
     if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
@@ -717,7 +968,7 @@ window.require.define({"views/templates/index": function(exports, require, modul
     
     return "exceeding";}
 
-    buffer += "<header>\n    <h4>Current Macros</h4>\n</header>\n\n<div class=\"macros\">\n    ";
+    buffer += "<header>\n    <h4>Current Macros</h4>\n</header>\n\n<div class=\"list macros\">\n    ";
     foundHelper = helpers.macros;
     stack1 = foundHelper || depth0.macros;
     foundHelper = helpers.keys;
@@ -741,7 +992,7 @@ window.require.define({"views/templates/stats": function(exports, require, modul
   function program1(depth0,data) {
     
     var buffer = "", stack1;
-    buffer += "\n    <div class=\"stat\">\n        <span class=\"name\">";
+    buffer += "\n    <div class=\"list-item stat\">\n        <span class=\"name\">";
     foundHelper = helpers.display;
     stack1 = foundHelper || depth0.display;
     if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
@@ -754,7 +1005,7 @@ window.require.define({"views/templates/stats": function(exports, require, modul
     buffer += escapeExpression(stack1) + "</span>\n    </div>\n    ";
     return buffer;}
 
-    buffer += "<header>\n    <h4>Stats</h4>\n</header>\n\n<div class=\"stats\">\n    ";
+    buffer += "<header>\n    <h4>Stats</h4>\n</header>\n\n<div class=\"list stats\">\n    ";
     foundHelper = helpers.stats;
     stack1 = foundHelper || depth0.stats;
     stack2 = helpers.each;

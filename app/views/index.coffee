@@ -1,5 +1,6 @@
 View = require './view'
 
+
 class IndexView extends View
     tagName: 'div'
     className: '.content'
@@ -27,7 +28,7 @@ class IndexView extends View
         $completionBar = $totalBar.find('.percentage-complete')
 
         $currentCount.text(@model.get('macros')[macro].count)
-        $completionBar.animate({width: "#{pixelPercentage}px"}, 'fast')
+        $completionBar.css {width: "#{pixelPercentage}px"}
 
         if @model.isExceedingGoal(macro)
             $percentageText.addClass('exceeding')

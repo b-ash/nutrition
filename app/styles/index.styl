@@ -16,15 +16,20 @@ html
         margin-left: 10px
 
         .dropdown-menu
-            min-width: 120px
+            min-width: 80px
 
 .footer
     text-align: center
     margin: 15px 0
 
-.macros
-    .macro
+.list
+    .list-item
         margin-bottom: 10px
+
+        .btn
+            width: 260px
+            padding-top: 5px
+            padding-bottom: 5px
 
         .percentage-bar
             border-radius 4px
@@ -39,20 +44,22 @@ html
                 max-width: 100%
                 height: 30px
 
+                transition: width 0.4s
+
                 &.starches
-                    background-color: #963
+                    background: linear-gradient(top, darken(#963, 15%), lighten(#964, 30%))
                 &.legumes
-                    background-color: #330
+                    background: linear-gradient(top, #330, lighten(#330, 20%))
                 &.veggies
-                    background-color: #2E873B
+                    background: linear-gradient(top, darken(#2E873B, 15%), lighten(#2E873B, 30%))
                 &.fruits
-                    background-color: #C69
+                    background: linear-gradient(top, darken(#C69, 15%), lighten(#C69, 40%))
                 &.proteins
-                    background-color: #633
+                    background: linear-gradient(top, #633, lighten(#633, 30%))
                 &.fats
-                    background-color: #C66
+                    background: linear-gradient(top, darken(#C66, 15%), lighten(#C66, 30%))
                 &.shake
-                    background-color: #39F
+                    background: linear-gradient(top, darken(#39F, 15%), lighten(#39F, 30%))
 
                 .percentage-text
                     left: 5px
@@ -64,9 +71,5 @@ html
                     &.exceeding
                         color: #C00
 
-.stats
-    .stat
-        margin-bottom: 10px
-
-        .name
-            font-style: italic
+.stats .stat .name
+    font-style: italic

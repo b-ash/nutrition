@@ -7225,6 +7225,12 @@ div {
 .center-text {
   text-align: center;
 }
+.inline {
+  display: inline;
+}
+.without-top-margin {
+  margin-top: 0;
+}
 html {
   width: 320px;
   height: 450px;
@@ -7241,16 +7247,21 @@ html {
   margin-left: 10px;
 }
 .navbar .container .dropdown-menu {
-  min-width: 120px;
+  min-width: 80px;
 }
 .footer {
   text-align: center;
   margin: 15px 0;
 }
-.macros .macro {
+.list .list-item {
   margin-bottom: 10px;
 }
-.macros .macro .percentage-bar {
+.list .list-item .btn {
+  width: 260px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+.list .list-item .percentage-bar {
   -webkit-border-radius: 4px;
   border-radius: 4px;
   border: 1px solid #aaa;
@@ -7258,46 +7269,83 @@ html {
   height: 30px;
   background-color: #ddd;
 }
-.macros .macro .percentage-bar .percentage-complete {
+.list .list-item .percentage-bar .percentage-complete {
   -webkit-border-radius: 4px;
   border-radius: 4px;
   width: 0;
   max-width: 100%;
   height: 30px;
+  -webkit-transition: width 0.4s;
+  -moz-transition: width 0.4s;
+  -o-transition: width 0.4s;
+  -ms-transition: width 0.4s;
+  transition: width 0.4s;
 }
-.macros .macro .percentage-bar .percentage-complete.starches {
-  background-color: #963;
+.list .list-item .percentage-bar .percentage-complete.starches {
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0, #82572b), color-stop(1, #c19273));
+  background: -webkit-linear-gradient(top, #82572b 0%, #c19273 100%);
+  background: -moz-linear-gradient(top, #82572b 0%, #c19273 100%);
+  background: -o-linear-gradient(top, #82572b 0%, #c19273 100%);
+  background: -ms-linear-gradient(top, #82572b 0%, #c19273 100%);
+  background: linear-gradient(top, #82572b 0%, #c19273 100%);
 }
-.macros .macro .percentage-bar .percentage-complete.legumes {
-  background-color: #330;
+.list .list-item .percentage-bar .percentage-complete.legumes {
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0, #330), color-stop(1, #8f8f00));
+  background: -webkit-linear-gradient(top, #330 0%, #8f8f00 100%);
+  background: -moz-linear-gradient(top, #330 0%, #8f8f00 100%);
+  background: -o-linear-gradient(top, #330 0%, #8f8f00 100%);
+  background: -ms-linear-gradient(top, #330 0%, #8f8f00 100%);
+  background: linear-gradient(top, #330 0%, #8f8f00 100%);
 }
-.macros .macro .percentage-bar .percentage-complete.veggies {
-  background-color: #2e873b;
+.list .list-item .percentage-bar .percentage-complete.veggies {
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0, #277332), color-stop(1, #53c464));
+  background: -webkit-linear-gradient(top, #277332 0%, #53c464 100%);
+  background: -moz-linear-gradient(top, #277332 0%, #53c464 100%);
+  background: -o-linear-gradient(top, #277332 0%, #53c464 100%);
+  background: -ms-linear-gradient(top, #277332 0%, #53c464 100%);
+  background: linear-gradient(top, #277332 0%, #53c464 100%);
 }
-.macros .macro .percentage-bar .percentage-complete.fruits {
-  background-color: #c69;
+.list .list-item .percentage-bar .percentage-complete.fruits {
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0, #c14482), color-stop(1, #e0a3c2));
+  background: -webkit-linear-gradient(top, #c14482 0%, #e0a3c2 100%);
+  background: -moz-linear-gradient(top, #c14482 0%, #e0a3c2 100%);
+  background: -o-linear-gradient(top, #c14482 0%, #e0a3c2 100%);
+  background: -ms-linear-gradient(top, #c14482 0%, #e0a3c2 100%);
+  background: linear-gradient(top, #c14482 0%, #e0a3c2 100%);
 }
-.macros .macro .percentage-bar .percentage-complete.proteins {
-  background-color: #633;
+.list .list-item .percentage-bar .percentage-complete.proteins {
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0, #633), color-stop(1, #ac5858));
+  background: -webkit-linear-gradient(top, #633 0%, #ac5858 100%);
+  background: -moz-linear-gradient(top, #633 0%, #ac5858 100%);
+  background: -o-linear-gradient(top, #633 0%, #ac5858 100%);
+  background: -ms-linear-gradient(top, #633 0%, #ac5858 100%);
+  background: linear-gradient(top, #633 0%, #ac5858 100%);
 }
-.macros .macro .percentage-bar .percentage-complete.fats {
-  background-color: #c66;
+.list .list-item .percentage-bar .percentage-complete.fats {
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0, #c14444), color-stop(1, #db9494));
+  background: -webkit-linear-gradient(top, #c14444 0%, #db9494 100%);
+  background: -moz-linear-gradient(top, #c14444 0%, #db9494 100%);
+  background: -o-linear-gradient(top, #c14444 0%, #db9494 100%);
+  background: -ms-linear-gradient(top, #c14444 0%, #db9494 100%);
+  background: linear-gradient(top, #c14444 0%, #db9494 100%);
 }
-.macros .macro .percentage-bar .percentage-complete.shake {
-  background-color: #39f;
+.list .list-item .percentage-bar .percentage-complete.shake {
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0, #0582ff), color-stop(1, #70b8ff));
+  background: -webkit-linear-gradient(top, #0582ff 0%, #70b8ff 100%);
+  background: -moz-linear-gradient(top, #0582ff 0%, #70b8ff 100%);
+  background: -o-linear-gradient(top, #0582ff 0%, #70b8ff 100%);
+  background: -ms-linear-gradient(top, #0582ff 0%, #70b8ff 100%);
+  background: linear-gradient(top, #0582ff 0%, #70b8ff 100%);
 }
-.macros .macro .percentage-bar .percentage-complete .percentage-text {
+.list .list-item .percentage-bar .percentage-complete .percentage-text {
   left: 5px;
   line-height: 30px;
   color: #fff;
   display: inline;
   width: 200px;
 }
-.macros .macro .percentage-bar .percentage-complete .percentage-text.exceeding {
+.list .list-item .percentage-bar .percentage-complete .percentage-text.exceeding {
   color: #c00;
-}
-.stats .stat {
-  margin-bottom: 10px;
 }
 .stats .stat .name {
   font-style: italic;
