@@ -253,7 +253,7 @@ window.require.define({"lib/utils": function(exports, require, module) {
   
   module.exports = {
     roundFloat: function(percentage) {
-      return Math.round(percentage * 10) / 10;
+      return Math.round(percentage * 100) / 100;
     },
     pluralize: function(word, quantity) {
       if (quantity > 1) {
