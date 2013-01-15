@@ -7176,28 +7176,131 @@ a.badge:hover {
 .affix {
   position: fixed;
 }
-.center-text {
-  text-align: center;
+::-moz-selection {
+  background: #e4edf1;
+  color: #fff;
+  text-shadow: none;
 }
-.bold {
-  font-weight: bold;
+::selection {
+  background: #e4edf1;
+  color: #fff;
+  text-shadow: none;
 }
-.italic {
-  font-style: italic;
+a {
+  cursor: pointer;
 }
-.invisible {
-  visibility: hidden;
+a:hover {
+  text-decoration: underline;
+}
+div {
+  -webkit-tap-highlight-color: rgba(0,0,0,0);
+}
+.alert {
+  clear: both;
+}
+.clear {
+  clear: both;
 }
 .hidden {
   display: none;
 }
+.invisible {
+  visibility: hidden;
+}
+.bold {
+  font-weight: bold;
+}
+.left {
+  float: left;
+}
+.right {
+  float: right;
+}
+.absolute {
+  position: absolute;
+}
+.relative {
+  position: relative;
+}
+.center-text {
+  text-align: center;
+}
 html {
   width: 320px;
   height: 450px;
-  border-right: 1px solid #000;
 }
-span {
-  color: #aaa;
+.main-page {
+  margin-top: 55px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+.navbar {
+  width: 320px;
+}
+.navbar .container {
+  margin-left: 10px;
+}
+.navbar .container .dropdown-menu {
+  min-width: 120px;
+}
+.footer {
+  text-align: center;
+  margin: 15px 0;
+}
+.macros .macro {
+  margin-bottom: 10px;
+}
+.macros .macro .percentage-bar {
+  -webkit-border-radius: 4px;
+  border-radius: 4px;
+  border: 1px solid #aaa;
+  width: 300px;
+  height: 30px;
+  background-color: #ddd;
+}
+.macros .macro .percentage-bar .percentage-complete {
+  -webkit-border-radius: 4px;
+  border-radius: 4px;
+  width: 0;
+  max-width: 100%;
+  height: 30px;
+}
+.macros .macro .percentage-bar .percentage-complete.starches {
+  background-color: #963;
+}
+.macros .macro .percentage-bar .percentage-complete.legumes {
+  background-color: #330;
+}
+.macros .macro .percentage-bar .percentage-complete.veggies {
+  background-color: #2e873b;
+}
+.macros .macro .percentage-bar .percentage-complete.fruits {
+  background-color: #c69;
+}
+.macros .macro .percentage-bar .percentage-complete.proteins {
+  background-color: #633;
+}
+.macros .macro .percentage-bar .percentage-complete.fats {
+  background-color: #c66;
+}
+.macros .macro .percentage-bar .percentage-complete.shake {
+  background-color: #39f;
+}
+.macros .macro .percentage-bar .percentage-complete .percentage-text {
+  left: 5px;
+  line-height: 30px;
+  color: #fff;
+  display: inline;
+  width: 200px;
+}
+.macros .macro .percentage-bar .percentage-complete .percentage-text.exceeding {
+  color: #c00;
+}
+.stats .stat {
+  margin-bottom: 10px;
+}
+.stats .stat .name {
+  font-style: italic;
 }
 /* ==|== non-semantic helper classes ========================================
    Please define your styles before this section.

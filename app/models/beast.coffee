@@ -4,25 +4,60 @@ LocalStorageModel = require('./model')
 # Body Beast nutrition macro requirements
 class BeastMacros extends LocalStorageModel
 
+    id: 'bodybeast-3000c'
     goals: ->
-        starches: [7, 8]
-        legugumes: 4
-        veggies: [6, 7]
+        starches: 8
+        legumes: 4
+        veggies: 7
         fruits: 7
-        proteins: [13, 14]
-        fats: [6, 7]
+        proteins: 14
+        fats: 7
         shake: 1
 
     defaults: ->
-        starches: 0
-        legugumes: 0
-        veggies: 0
-        fruits: 0
-        proteins: 0
-        fats: 0
-        shake: 0
+        macros:
+            starches:
+                display: 'Starches', count: 0
+            legumes:
+                display: 'Legumes', count: 0
+            veggies:
+                display: 'Veggies', count: 0
+            fruits:
+                display: 'Fruits', count: 0
+            proteins:
+                display: 'Proteins', count: 0
+            fats:
+                display: 'Fats', count: 0
+            shake:
+                display: 'Shake', count: 0
+        timestamp: new moment().format('MM-DD-YY')
 
     initialize: =>
-        
+        @fetch()
+
+    increment: (key) =>
+        macros = @get('macros')
+        macros[key].count++
+        @save('macros', macros)
+        @trigger('incrememt', key)
+
+    getMacroPercentage: (macro) =>
+        goal = @goals()[macro]
+        macro = @get('macros')[macro].count
+        percentage = (macro / goal) * 100
+        return Math.min(Math.round(percentage * 10) / 10, 100)
+
+    getGoalForMacro: (macro) =>
+        @goals()[macro]
+
+    isExceedingGoal: (macro) =>
+        goal = @getGoalForMacro(macro)
+        macro = @get('macros')[macro].count
+        return macro > goal
+
+    clear: =>
+        @save @defaults()
+        @trigger('cleared')
+
 
 module.exports = BeastMacros

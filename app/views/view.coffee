@@ -11,13 +11,13 @@ module.exports = class View extends Backbone.View
         return
 
     getRenderData: ->
-        {}
+        return
 
-    getPartialRenderData: ->
+    getPartialsRenderData: ->
         {}
 
     render: =>
-        @$el.html @template(@getRenderData(), @getPartialRenderData())
+        @$el.html @template @getRenderData(), {partials: @getPartialsRenderData()}
         @afterRender()
         @
 
@@ -33,10 +33,20 @@ module.exports = class View extends Backbone.View
         $link = $ event.target
         url = $link.attr('href')
 
-        return true if $link.attr('target') is '_blank' or typeof url is 'undefined' or url.substr(0, 4) is 'http' or url is '' or url is 'javascript:void(0)'
+        if $link.attr('target') is '_blank' or 
+           typeof url is 'undefined' or 
+           url.substr(0, 4) is 'http' or 
+           url is '' or 
+           url is 'javascript:void(0)'
+            return true 
 
         event.preventDefault()
-        @routeLink url
+
+        if $link.hasClass('dont-route')
+            return true
+        else
+            @routeLink url
 
     routeLink: (url) =>
         app.router.navigate url, {trigger: true}
+        @trigger('routed')

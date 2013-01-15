@@ -1,10 +1,38 @@
-.center-text
-    text-align: center
-.bold
-    font-weight: bold
-.italic
-    font-style: italic
-.invisible
-    visibility: hidden
+::-moz-selection 
+    background: #E4EDF1
+    color: #fff
+    text-shadow: none
+
+::selection
+    background: #E4EDF1
+    color: #fff
+    text-shadow: none
+
+a
+    cursor: pointer
+    &:hover
+        text-decoration: underline
+
+div
+    -webkit-tap-highlight-color: rgba(0,0,0,0)
+
+.alert
+    clear: both
+.clear
+    clear: both
 .hidden
     display: none
+.invisible
+    visibility: hidden
+.bold
+    font-weight: bold
+.left
+    float: left
+.right
+    float: right
+.absolute
+    position: absolute
+.relative
+    position: relative
+.center-text
+    text-align: center

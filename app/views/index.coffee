@@ -1,17 +1,36 @@
 View = require './view'
-BeastMacros = require 'models/beast'
 
 class IndexView extends View
-    el: '.main-page'
+    tagName: 'div'
+    className: '.content'
     template: require './templates/index'
-    events: {}
-    dom: {}
+    events: 
+        'click .percentage-bar': 'increment'
 
     initialize: =>
-        @model = new BeastMacros()
+        @model.on('cleared', @render)
 
     getRenderData: =>
-        {macros: @model.toJSON()}
+        @model.toJSON()
+
+    increment: (event) =>
+        # TODO: make each macro a view
+        $totalBar = $(event.currentTarget)
+        macro = $totalBar.parents('.macro').attr('data-key')
+        @model.increment(macro)
+
+        macroPercentage = @model.getMacroPercentage(macro)
+        pixelPercentage = macroPercentage / 100 * 300
+
+        $currentCount = $totalBar.find('#text_count')
+        $percentageText = $totalBar.find('.percentage-text')
+        $completionBar = $totalBar.find('.percentage-complete')
+
+        $currentCount.text(@model.get('macros')[macro].count)
+        $completionBar.animate({width: "#{pixelPercentage}px"}, 'fast')
+
+        if @model.isExceedingGoal(macro)
+            $percentageText.addClass('exceeding')
 
 
 module.exports = IndexView

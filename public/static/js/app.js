@@ -75,7 +75,9 @@
 })();
 
 window.require.define({"application": function(exports, require, module) {
-  var Application;
+  var Application, BeastMacros;
+
+  BeastMacros = require('models/beast');
 
   Application = {
     initialize: function(onSuccess) {
@@ -83,6 +85,7 @@ window.require.define({"application": function(exports, require, module) {
       Router = require('lib/router');
       this.views = {};
       this.router = new Router();
+      this.model = new BeastMacros();
       Backbone.history.start({
         pushState: true
       });
@@ -108,7 +111,7 @@ window.require.define({"initialize": function(exports, require, module) {
 }});
 
 window.require.define({"lib/router": function(exports, require, module) {
-  var IndexView, Router, app, utils,
+  var NavView, Router, app, utils, views,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -117,24 +120,90 @@ window.require.define({"lib/router": function(exports, require, module) {
 
   utils = require('lib/utils');
 
-  IndexView = require('views/index');
+  NavView = require('views/nav');
+
+  views = {
+    index: require('views/index'),
+    stats: require('views/stats')
+  };
 
   module.exports = Router = (function(_super) {
 
     __extends(Router, _super);
 
     function Router() {
+      this.setCurrentView = __bind(this.setCurrentView, this);
+
+      this.closeCurrentView = __bind(this.closeCurrentView, this);
+
+      this.navSetup = __bind(this.navSetup, this);
+
+      this.setupView = __bind(this.setupView, this);
+
+      this.stats = __bind(this.stats, this);
+
       this.index = __bind(this.index, this);
+
+      this.redirectDefault = __bind(this.redirectDefault, this);
       return Router.__super__.constructor.apply(this, arguments);
     }
 
+    Router.prototype.currentView = null;
+
     Router.prototype.routes = {
-      '*query': 'index'
+      '': 'index',
+      'stats': 'stats',
+      '*query': 'redirectDefault'
+    };
+
+    Router.prototype.redirectDefault = function(actions) {
+      return this.navigate('', {
+        trigger: true
+      });
     };
 
     Router.prototype.index = function() {
-      app.views.indexView = new IndexView();
-      return app.views.indexView.render();
+      return this.setupView('index', 'index', {
+        model: app.model
+      });
+    };
+
+    Router.prototype.stats = function() {
+      return this.setupView('stats', 'stats', {
+        model: app.model
+      });
+    };
+
+    Router.prototype.setupView = function(navItem, claxx, params) {
+      var view;
+      if (params == null) {
+        params = {};
+      }
+      this.navSetup(navItem);
+      view = app.views[claxx];
+      if (view !== this.currentView) {
+        this.closeCurrentView();
+        view = app.views[claxx] = new views[claxx](params);
+        return this.setCurrentView(view);
+      }
+    };
+
+    Router.prototype.navSetup = function(activeView) {
+      if (!(app.views.nav != null)) {
+        app.views.nav = new NavView();
+      }
+      app.views.nav.activeView = activeView;
+      return app.views.nav.render();
+    };
+
+    Router.prototype.closeCurrentView = function() {
+      var _ref;
+      return (_ref = this.currentView) != null ? _ref.close() : void 0;
+    };
+
+    Router.prototype.setCurrentView = function(view) {
+      this.currentView = view;
+      return $('#main_page').append(view.render().$el);
     };
 
     return Router;
@@ -161,6 +230,35 @@ window.require.define({"lib/view_helper": function(exports, require, module) {
       return console.log(optionalValue);
     }
   });
+
+  Handlebars.registerHelper("keys", function(list, fn) {
+    var buffer, key, val;
+    buffer = '';
+    for (key in list) {
+      val = list[key];
+      buffer += fn({
+        key: key,
+        val: val
+      });
+    }
+    return buffer;
+  });
+
+  Handlebars.registerHelper("getPercentageWidth", function(macro) {
+    return window.app.model.getMacroPercentage(macro);
+  });
+
+  Handlebars.registerHelper("getGoalForMacro", function(macro) {
+    return window.app.model.getGoalForMacro(macro);
+  });
+
+  Handlebars.registerHelper("ifIsExceedingGoal", function(macro, block) {
+    if (window.app.model.isExceedingGoal(macro)) {
+      return block(this);
+    } else {
+      return block.inverse(this);
+    }
+  });
   
 }});
 
@@ -177,35 +275,105 @@ window.require.define({"models/beast": function(exports, require, module) {
     __extends(BeastMacros, _super);
 
     function BeastMacros() {
+      this.clear = __bind(this.clear, this);
+
+      this.isExceedingGoal = __bind(this.isExceedingGoal, this);
+
+      this.getGoalForMacro = __bind(this.getGoalForMacro, this);
+
+      this.getMacroPercentage = __bind(this.getMacroPercentage, this);
+
+      this.increment = __bind(this.increment, this);
+
       this.initialize = __bind(this.initialize, this);
       return BeastMacros.__super__.constructor.apply(this, arguments);
     }
 
+    BeastMacros.prototype.id = 'bodybeast-3000c';
+
     BeastMacros.prototype.goals = function() {
       return {
-        starches: [7, 8],
-        legugumes: 4,
-        veggies: [6, 7],
+        starches: 8,
+        legumes: 4,
+        veggies: 7,
         fruits: 7,
-        proteins: [13, 14],
-        fats: [6, 7],
+        proteins: 14,
+        fats: 7,
         shake: 1
       };
     };
 
     BeastMacros.prototype.defaults = function() {
       return {
-        starches: 0,
-        legugumes: 0,
-        veggies: 0,
-        fruits: 0,
-        proteins: 0,
-        fats: 0,
-        shake: 0
+        macros: {
+          starches: {
+            display: 'Starches',
+            count: 0
+          },
+          legumes: {
+            display: 'Legumes',
+            count: 0
+          },
+          veggies: {
+            display: 'Veggies',
+            count: 0
+          },
+          fruits: {
+            display: 'Fruits',
+            count: 0
+          },
+          proteins: {
+            display: 'Proteins',
+            count: 0
+          },
+          fats: {
+            display: 'Fats',
+            count: 0
+          },
+          shake: {
+            display: 'Shake',
+            count: 0
+          }
+        },
+        timestamp: new moment().format('MM-DD-YY')
       };
     };
 
-    BeastMacros.prototype.initialize = function() {};
+    BeastMacros.prototype.initialize = function() {
+      return this.fetch();
+    };
+
+    BeastMacros.prototype.increment = function(key) {
+      var macros;
+      macros = this.get('macros');
+      macros[key].count++;
+      this.save('macros', macros);
+      return this.trigger('incrememt', key);
+    };
+
+    BeastMacros.prototype.getMacroPercentage = function(macro) {
+      var goal, percentage;
+      goal = this.goals()[macro];
+      macro = this.get('macros')[macro].count;
+      percentage = (macro / goal) * 100;
+      return Math.min(Math.round(percentage * 10) / 10, 100);
+    };
+
+    BeastMacros.prototype.getGoalForMacro = function(macro) {
+      return this.goals()[macro];
+    };
+
+    BeastMacros.prototype.isExceedingGoal = function(macro) {
+      var goal;
+      goal = this.getGoalForMacro(macro);
+      macro = this.get('macros')[macro].count;
+      return macro > goal;
+    };
+
+    BeastMacros.prototype.clear = function() {
+      this.save(this.defaults());
+      return this.trigger('cleared');
+    };
 
     return BeastMacros;
 
@@ -238,43 +406,142 @@ window.require.define({"models/model": function(exports, require, module) {
   
 }});
 
+window.require.define({"models/stats": function(exports, require, module) {
+  var Stats;
+
+  Stats = (function() {
+
+    function Stats() {}
+
+    Stats.prototype.toJSON = function() {
+      var bfp, build, cim, cmr, lbm, rmr, rmr2, weight;
+      weight = 150;
+      bfp = 10;
+      lbm = this.lbm(weight, bfp);
+      rmr = this.rmr(lbm);
+      cmr = this.cmr(rmr);
+      rmr2 = this.rmr2(rmr, cmr);
+      cim = this.cim(rmr2);
+      build = this.build(bfp, cim);
+      return {
+        stats: [
+          {
+            display: 'Lean Body Mass',
+            val: lbm
+          }, {
+            display: 'Resting Metabolic Rate',
+            val: rmr
+          }, {
+            display: 'Caloric Modification for Recovery',
+            val: cmr
+          }, {
+            display: 'RMR Modified for Recovery',
+            val: rmr2
+          }, {
+            display: 'Calorie Intake to Maintain Weight',
+            val: cim
+          }, {
+            display: 'Calories needed to build / bulk',
+            val: build
+          }
+        ]
+      };
+    };
+
+    Stats.prototype.lbm = function(weight, bfp) {
+      return (100 - bfp) / 100 * weight;
+    };
+
+    Stats.prototype.rmr = function(lbm) {
+      return lbm * 10;
+    };
+
+    Stats.prototype.cmr = function(rmr) {
+      return rmr * 0.3;
+    };
+
+    Stats.prototype.rmr2 = function(rmr, cmr) {
+      return rmr + cmr;
+    };
+
+    Stats.prototype.cim = function(rmr2) {
+      return rmr2 + 600;
+    };
+
+    Stats.prototype.build = function(bfp, cim) {
+      if (bfp > 20) {
+        return cim + (cim * 0.1);
+      } else if (bfp > 10) {
+        return cim + (cim * 0.15);
+      } else {
+        return cim + (cim * 0.2);
+      }
+    };
+
+    return Stats;
+
+  })();
+
+  module.exports = Stats;
+  
+}});
+
 window.require.define({"views/index": function(exports, require, module) {
-  var BeastMacros, IndexView, View,
+  var IndexView, View,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   View = require('./view');
 
-  BeastMacros = require('models/beast');
-
   IndexView = (function(_super) {
 
     __extends(IndexView, _super);
 
     function IndexView() {
+      this.increment = __bind(this.increment, this);
+
       this.getRenderData = __bind(this.getRenderData, this);
 
       this.initialize = __bind(this.initialize, this);
       return IndexView.__super__.constructor.apply(this, arguments);
     }
 
-    IndexView.prototype.el = '.main-page';
+    IndexView.prototype.tagName = 'div';
+
+    IndexView.prototype.className = '.content';
 
     IndexView.prototype.template = require('./templates/index');
 
-    IndexView.prototype.events = {};
-
-    IndexView.prototype.dom = {};
+    IndexView.prototype.events = {
+      'click .percentage-bar': 'increment'
+    };
 
     IndexView.prototype.initialize = function() {
-      return this.model = new BeastMacros();
+      return this.model.on('cleared', this.render);
     };
 
     IndexView.prototype.getRenderData = function() {
-      return {
-        macros: this.model.toJSON()
-      };
+      return this.model.toJSON();
+    };
+
+    IndexView.prototype.increment = function(event) {
+      var $completionBar, $currentCount, $percentageText, $totalBar, macro, macroPercentage, pixelPercentage;
+      $totalBar = $(event.currentTarget);
+      macro = $totalBar.parents('.macro').attr('data-key');
+      this.model.increment(macro);
+      macroPercentage = this.model.getMacroPercentage(macro);
+      pixelPercentage = macroPercentage / 100 * 300;
+      $currentCount = $totalBar.find('#text_count');
+      $percentageText = $totalBar.find('.percentage-text');
+      $completionBar = $totalBar.find('.percentage-complete');
+      $currentCount.text(this.model.get('macros')[macro].count);
+      $completionBar.animate({
+        width: "" + pixelPercentage + "px"
+      }, 'fast');
+      if (this.model.isExceedingGoal(macro)) {
+        return $percentageText.addClass('exceeding');
+      }
     };
 
     return IndexView;
@@ -285,13 +552,220 @@ window.require.define({"views/index": function(exports, require, module) {
   
 }});
 
+window.require.define({"views/nav": function(exports, require, module) {
+  var BeastMacros, NavView, View, app,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  app = require('application');
+
+  View = require('./view');
+
+  BeastMacros = require('models/beast');
+
+  NavView = (function(_super) {
+
+    __extends(NavView, _super);
+
+    function NavView() {
+      this.clear = __bind(this.clear, this);
+
+      this.updateActiveTab = __bind(this.updateActiveTab, this);
+
+      this.initialize = __bind(this.initialize, this);
+      return NavView.__super__.constructor.apply(this, arguments);
+    }
+
+    NavView.prototype.el = '#nav';
+
+    NavView.prototype.activeView = null;
+
+    NavView.prototype.events = {
+      'click a': 'routeEvent',
+      'click #clear_list': 'clear'
+    };
+
+    NavView.prototype.initialize = function() {
+      return this.on('routed', this.updateActiveTab);
+    };
+
+    NavView.prototype.updateActiveTab = function() {
+      this.$('.nav li').removeClass('active');
+      return this.$("#" + this.activeView + "_nav").addClass('active');
+    };
+
+    NavView.prototype.clear = function() {
+      return app.model.clear();
+    };
+
+    return NavView;
+
+  })(View);
+
+  module.exports = NavView;
+  
+}});
+
+window.require.define({"views/stats": function(exports, require, module) {
+  var Stats, StatsView, View,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  View = require('./view');
+
+  Stats = require('models/stats');
+
+  StatsView = (function(_super) {
+
+    __extends(StatsView, _super);
+
+    function StatsView() {
+      this.getRenderData = __bind(this.getRenderData, this);
+
+      this.initialize = __bind(this.initialize, this);
+      return StatsView.__super__.constructor.apply(this, arguments);
+    }
+
+    StatsView.prototype.tagName = 'div';
+
+    StatsView.prototype.className = '.content';
+
+    StatsView.prototype.template = require('./templates/stats');
+
+    StatsView.prototype.events = {};
+
+    StatsView.prototype.initialize = function() {
+      return this.model = new Stats();
+    };
+
+    StatsView.prototype.getRenderData = function() {
+      return this.model.toJSON();
+    };
+
+    return StatsView;
+
+  })(View);
+
+  module.exports = StatsView;
+  
+}});
+
 window.require.define({"views/templates/index": function(exports, require, module) {
   module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
     helpers = helpers || Handlebars.helpers;
-    var foundHelper, self=this;
+    var buffer = "", stack1, stack2, foundHelper, tmp1, self=this, functionType="function", helperMissing=helpers.helperMissing, undef=void 0, escapeExpression=this.escapeExpression, blockHelperMissing=helpers.blockHelperMissing;
 
+  function program1(depth0,data) {
+    
+    var buffer = "", stack1, stack2;
+    buffer += "\n        <div class=\"macro\" data-key=\"";
+    foundHelper = helpers.key;
+    stack1 = foundHelper || depth0.key;
+    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
+    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "key", { hash: {} }); }
+    buffer += escapeExpression(stack1) + "\">\n            <div class=\"percentage-bar relative\">\n                <div class=\"percentage-complete absolute ";
+    foundHelper = helpers.key;
+    stack1 = foundHelper || depth0.key;
+    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
+    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "key", { hash: {} }); }
+    buffer += escapeExpression(stack1) + "\" style=\"width: ";
+    foundHelper = helpers.key;
+    stack1 = foundHelper || depth0.key;
+    foundHelper = helpers.getPercentageWidth;
+    stack2 = foundHelper || depth0.getPercentageWidth;
+    if(typeof stack2 === functionType) { stack1 = stack2.call(depth0, stack1, { hash: {} }); }
+    else if(stack2=== undef) { stack1 = helperMissing.call(depth0, "getPercentageWidth", stack1, { hash: {} }); }
+    else { stack1 = stack2; }
+    buffer += escapeExpression(stack1) + "%;\">\n                    <div class=\"percentage-text absolute ";
+    foundHelper = helpers.key;
+    stack1 = foundHelper || depth0.key;
+    foundHelper = helpers.ifIsExceedingGoal;
+    stack2 = foundHelper || depth0.ifIsExceedingGoal;
+    tmp1 = self.program(2, program2, data);
+    tmp1.hash = {};
+    tmp1.fn = tmp1;
+    tmp1.inverse = self.noop;
+    if(foundHelper && typeof stack2 === functionType) { stack1 = stack2.call(depth0, stack1, tmp1); }
+    else { stack1 = blockHelperMissing.call(depth0, stack2, stack1, tmp1); }
+    if(stack1 || stack1 === 0) { buffer += stack1; }
+    buffer += "\">\n                        <span id=\"text_display\">";
+    foundHelper = helpers.val;
+    stack1 = foundHelper || depth0.val;
+    stack1 = (stack1 === null || stack1 === undefined || stack1 === false ? stack1 : stack1.display);
+    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
+    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "val.display", { hash: {} }); }
+    buffer += escapeExpression(stack1) + ": </span>\n                        <span id=\"text_count\">";
+    foundHelper = helpers.val;
+    stack1 = foundHelper || depth0.val;
+    stack1 = (stack1 === null || stack1 === undefined || stack1 === false ? stack1 : stack1.count);
+    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
+    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "val.count", { hash: {} }); }
+    buffer += escapeExpression(stack1) + "</span>\n                        <span id=\"text_total\"> / ";
+    foundHelper = helpers.key;
+    stack1 = foundHelper || depth0.key;
+    foundHelper = helpers.getGoalForMacro;
+    stack2 = foundHelper || depth0.getGoalForMacro;
+    if(typeof stack2 === functionType) { stack1 = stack2.call(depth0, stack1, { hash: {} }); }
+    else if(stack2=== undef) { stack1 = helperMissing.call(depth0, "getGoalForMacro", stack1, { hash: {} }); }
+    else { stack1 = stack2; }
+    buffer += escapeExpression(stack1) + "</span>\n                    </div>\n                </div>\n            </div>\n        </div>\n    ";
+    return buffer;}
+  function program2(depth0,data) {
+    
+    
+    return "exceeding";}
 
-    return "<div class=\"center-text\">\n    <span>Nutrition made easy</span>\n</div>\n";});
+    buffer += "<header>\n    <h4>Current Macros</h4>\n</header>\n\n<div class=\"macros\">\n    ";
+    foundHelper = helpers.macros;
+    stack1 = foundHelper || depth0.macros;
+    foundHelper = helpers.keys;
+    stack2 = foundHelper || depth0.keys;
+    tmp1 = self.program(1, program1, data);
+    tmp1.hash = {};
+    tmp1.fn = tmp1;
+    tmp1.inverse = self.noop;
+    if(foundHelper && typeof stack2 === functionType) { stack1 = stack2.call(depth0, stack1, tmp1); }
+    else { stack1 = blockHelperMissing.call(depth0, stack2, stack1, tmp1); }
+    if(stack1 || stack1 === 0) { buffer += stack1; }
+    buffer += "\n</div>\n";
+    return buffer;});
+}});
+
+window.require.define({"views/templates/stats": function(exports, require, module) {
+  module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
+    helpers = helpers || Handlebars.helpers;
+    var buffer = "", stack1, stack2, foundHelper, tmp1, self=this, functionType="function", helperMissing=helpers.helperMissing, undef=void 0, escapeExpression=this.escapeExpression;
+
+  function program1(depth0,data) {
+    
+    var buffer = "", stack1;
+    buffer += "\n    <div class=\"stat\">\n        <span class=\"name\">";
+    foundHelper = helpers.display;
+    stack1 = foundHelper || depth0.display;
+    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
+    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "display", { hash: {} }); }
+    buffer += escapeExpression(stack1) + ":</span>\n        <span class=\"val right\">";
+    foundHelper = helpers.val;
+    stack1 = foundHelper || depth0.val;
+    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
+    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "val", { hash: {} }); }
+    buffer += escapeExpression(stack1) + "</span>\n    </div>\n    ";
+    return buffer;}
+
+    buffer += "<header>\n    <h4>Stats</h4>\n</header>\n\n<div class=\"stats\">\n    ";
+    foundHelper = helpers.stats;
+    stack1 = foundHelper || depth0.stats;
+    stack2 = helpers.each;
+    tmp1 = self.program(1, program1, data);
+    tmp1.hash = {};
+    tmp1.fn = tmp1;
+    tmp1.inverse = self.noop;
+    stack1 = stack2.call(depth0, stack1, tmp1);
+    if(stack1 || stack1 === 0) { buffer += stack1; }
+    buffer += "\n</div>\n";
+    return buffer;});
 }});
 
 window.require.define({"views/view": function(exports, require, module) {
@@ -325,16 +799,16 @@ window.require.define({"views/view": function(exports, require, module) {
 
     View.prototype.template = function() {};
 
-    View.prototype.getRenderData = function() {
-      return {};
-    };
+    View.prototype.getRenderData = function() {};
 
-    View.prototype.getPartialRenderData = function() {
+    View.prototype.getPartialsRenderData = function() {
       return {};
     };
 
     View.prototype.render = function() {
-      this.$el.html(this.template(this.getRenderData(), this.getPartialRenderData()));
+      this.$el.html(this.template(this.getRenderData(), {
+        partials: this.getPartialsRenderData()
+      }));
       this.afterRender();
       return this;
     };
@@ -355,13 +829,18 @@ window.require.define({"views/view": function(exports, require, module) {
         return true;
       }
       event.preventDefault();
-      return this.routeLink(url);
+      if ($link.hasClass('dont-route')) {
+        return true;
+      } else {
+        return this.routeLink(url);
+      }
     };
 
     View.prototype.routeLink = function(url) {
-      return app.router.navigate(url, {
+      app.router.navigate(url, {
         trigger: true
       });
+      return this.trigger('routed');
     };
 
     return View;
