@@ -1,15 +1,21 @@
 class Stats
 
+    constructor: (@weight, @bfp, @phase) ->
+
     toJSON: ->
         weight = 150
         bfp = 10
 
-        lbm = @lbm(weight, bfp)
+        lbm = @lbm(@weight, @bfp)
         rmr = @rmr(lbm)
         cmr = @cmr(rmr)
         rmr2 = @rmr2(rmr, cmr)
         cim = @cim(rmr2)
-        build = @build(bfp, cim)
+
+        if @phase is 'build' or @phase is 'bulk'
+            cals = @build(bfp, cim)
+        else
+            cals = @beast(bfp, cim)
 
         stats: [
             {display: 'Lean Body Mass', val: lbm}
@@ -17,7 +23,7 @@ class Stats
             {display: 'Caloric Modification for Recovery', val: cmr}
             {display: 'RMR Modified for Recovery', val: rmr2}
             {display: 'Calorie Intake to Maintain Weight', val: cim}
-            {display: 'Calories needed to build / bulk', val: build}
+            {display: 'Calories needed to build / bulk', val: cals}
         ]
 
     lbm: (weight, bfp) ->
@@ -42,6 +48,26 @@ class Stats
             cim + (cim * 0.15)
         else
             cim + (cim * 0.2)
+
+    beast: (bfp, cim) ->
+        if bfp > 20
+            cim - (cim * 0.2)
+        else if bfp > 10
+            cim - (cim * 0.15)
+        else
+            cim - (cim * 0.1)
+
+    calorieBracket: (weight, bfp) ->
+        lbm = @lbm(weight, bfp)
+        rmr = @rmr(lbm)
+        cmr = @cmr(rmr)
+        rmr2 = @rmr2(rmr, cmr)
+        cim = @cim(rmr2)
+
+        if @phase is 'build' or @phase is 'bulk'
+            return @build(bfp, cim)
+        else
+            return @beast(bfp, cim)
 
 
 module.exports = Stats

@@ -1,18 +1,10 @@
-LocalStorageModel = require('./local_storage_model')
+BaseMacrosModel = require('./base_macros_model')
 
 
 # Body Beast nutrition macro requirements
-class BeastMacros extends LocalStorageModel
+class BeastMacros extends BaseMacrosModel
 
     id: 'bodybeast-3000c'
-    goals: ->
-        starches: 8
-        legumes: 4
-        veggies: 7
-        fruits: 7
-        proteins: 14
-        fats: 7
-        shake: 1
 
     defaults: ->
         macros:

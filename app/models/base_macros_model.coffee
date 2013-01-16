@@ -1,8 +1,9 @@
 utils = require('lib/utils')
+LocalStorageModel = require('./local_storage_model')
 
 
 # Body Beast nutrition macro requirements
-class Model extends Backbone.Model
+class BaseMacrosModel extends LocalStorageModel
 
     id: 'bodybeast-3000c'
     goals: ->
@@ -22,13 +23,13 @@ class Model extends Backbone.Model
         @trigger('incrememt', key)
 
     getMacroPercentage: (macro) =>
-        goal = @goals()[macro]
+        goal = @getGoalForMacro(macro)
         macro = @get('macros')[macro].count
         percentage = (macro / goal) * 100
         return Math.min(utils.roundFloat(percentage), 100)
 
     getGoalForMacro: (macro) =>
-        @goals()[macro]
+        @stats.goals()[macro]
 
     isExceedingGoal: (macro) =>
         goal = @getGoalForMacro(macro)
@@ -40,4 +41,4 @@ class Model extends Backbone.Model
         @trigger('cleared')
 
 
-module.exports = Model
+module.exports = BaseMacrosModel
