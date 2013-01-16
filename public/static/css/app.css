@@ -7374,6 +7374,9 @@ html {
 .portion-controls .controls {
   margin-top: 20px;
 }
+.help {
+  margin-bottom: 20px;
+}
 /* ==|== non-semantic helper classes ========================================
    Please define your styles before this section.
    ========================================================================== */

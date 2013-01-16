@@ -2292,7 +2292,7 @@ window.require.define({"views/templates/help": function(exports, require, module
     var foundHelper, self=this;
 
 
-    return "<header>\n    <h4>Help</h4>\n</header>\n\n<div class=\"help\">\n    <span>Free condiments</span>\n    <ul>\n        <li>Lemon and lime juice</li>\n        <li>Black pepper</li>\n        <li>Vinegar (any variety)</li>\n        <li>Mustard (any variety)</li>\n        <li>Herbs</li>\n        <li>Spices</li>\n        <li>Garlic and ginger</li>\n        <li>Hot sauce</li>\n        <li>Flavored extracts: vanilla, peppermint, almond, etc.</li>\n    </ul>\n</div>\n";});
+    return "<header>\n    <h4>Help</h4>\n</header>\n\n<div class=\"help\">\n    <p>The point of this is to create a quick way to track the basic macronutrients outlined in the Body Beast nutrition guide.</p>\n</div>\n\n<div class=\"help\">\n    <p>Click on the bars on the main page to track your daily intake. If you're unsure of the nutrient value for a given food, use the \"Food\" tab to find the appropriate value.</p>\n</div>\n\n<div class=\"help\">\n    <p>If it's not in the \"Food\" section, it's not on the diet guide ;)</p>\n</div>\n\n<div class=\"help\">\n    <span>Free condiments</span>\n    <ul>\n        <li>Lemon and lime juice</li>\n        <li>Black pepper</li>\n        <li>Vinegar (any variety)</li>\n        <li>Mustard (any variety)</li>\n        <li>Herbs</li>\n        <li>Spices</li>\n        <li>Garlic and ginger</li>\n        <li>Hot sauce</li>\n        <li>Flavored extracts: vanilla, peppermint, almond, etc.</li>\n    </ul>\n</div>";});
 }});
 
 window.require.define({"views/templates/index": function(exports, require, module) {
