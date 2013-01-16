@@ -4,7 +4,7 @@ Stats = require 'models/stats'
 
 class StatsView extends View
     tagName: 'div'
-    className: '.content'
+    className: 'content'
     template: require './templates/stats'
     events: {}
 

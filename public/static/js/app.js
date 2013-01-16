@@ -1706,7 +1706,7 @@ window.require.define({"views/food": function(exports, require, module) {
 
     FoodMacroView.prototype.tagName = 'div';
 
-    FoodMacroView.prototype.className = '.content';
+    FoodMacroView.prototype.className = 'content';
 
     FoodMacroView.prototype.template = require('./templates/food');
 
@@ -1773,7 +1773,7 @@ window.require.define({"views/food_all_macros": function(exports, require, modul
 
     FoodAllMacrosView.prototype.tagName = 'div';
 
-    FoodAllMacrosView.prototype.className = '.content';
+    FoodAllMacrosView.prototype.className = 'content';
 
     FoodAllMacrosView.prototype.template = require('./templates/food_all_macros');
 
@@ -1820,7 +1820,7 @@ window.require.define({"views/food_macro": function(exports, require, module) {
 
     FoodMacroView.prototype.tagName = 'div';
 
-    FoodMacroView.prototype.className = '.content';
+    FoodMacroView.prototype.className = 'content';
 
     FoodMacroView.prototype.template = require('./templates/food_macro');
 
@@ -1863,7 +1863,7 @@ window.require.define({"views/help": function(exports, require, module) {
 
     HelpView.prototype.tagName = 'div';
 
-    HelpView.prototype.className = '.content';
+    HelpView.prototype.className = 'content';
 
     HelpView.prototype.template = require('./templates/help');
 
@@ -1898,7 +1898,7 @@ window.require.define({"views/index": function(exports, require, module) {
 
     IndexView.prototype.tagName = 'div';
 
-    IndexView.prototype.className = '.content';
+    IndexView.prototype.className = 'content';
 
     IndexView.prototype.template = require('./templates/index');
 
@@ -2011,7 +2011,7 @@ window.require.define({"views/stats": function(exports, require, module) {
 
     StatsView.prototype.tagName = 'div';
 
-    StatsView.prototype.className = '.content';
+    StatsView.prototype.className = 'content';
 
     StatsView.prototype.template = require('./templates/stats');
 
