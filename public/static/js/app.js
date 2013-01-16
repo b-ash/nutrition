@@ -1917,13 +1917,13 @@ window.require.define({"views/index": function(exports, require, module) {
     IndexView.prototype.increment = function(event) {
       var $completionBar, $currentCount, $percentageText, $totalBar, macro, macroPercentage, pixelPercentage;
       $totalBar = $(event.currentTarget);
-      macro = $totalBar.parents('.macro').attr('data-key');
-      this.model.increment(macro);
-      macroPercentage = this.model.getMacroPercentage(macro);
-      pixelPercentage = macroPercentage / 100 * 300;
       $currentCount = $totalBar.find('#text_count');
       $percentageText = $totalBar.find('.percentage-text');
       $completionBar = $totalBar.find('.percentage-complete');
+      macro = $totalBar.parents('.macro').attr('data-key');
+      this.model.increment(macro);
+      macroPercentage = this.model.getMacroPercentage(macro);
+      pixelPercentage = macroPercentage / 100 * $totalBar.width();
       $currentCount.text(this.model.get('macros')[macro].count);
       $completionBar.css({
         width: "" + pixelPercentage + "px"
