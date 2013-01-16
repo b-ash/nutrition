@@ -730,7 +730,7 @@ window.require.define({"models/foods/beast/legumes": function(exports, require, 
     cals: 125,
     foods: {
       beans: {
-        display: 'Beans (cooked)',
+        display: 'Beans - black, kidney, etc. (cooked)',
         portion: 0.5,
         measurement: 'cup',
         description: 'Black, garbanzo, pinto, kidney, white, lima'
@@ -1267,7 +1267,7 @@ window.require.define({"models/foods/beast/veggies": function(exports, require, 
         description: 'Cooked, or 1 cup raw'
       },
       beans: {
-        display: 'Asparagus',
+        display: 'Beans [green, wax, italian] (Cooked)',
         portion: 0.5,
         measurement: 'cup',
         description: 'Green, wax, italian. Cooked, or 1 cup raw'

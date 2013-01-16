@@ -23,8 +23,14 @@ exports.startServer = (port, path, callback) ->
 
     # Serve our static assets
     app.use express.static("#{__dirname}/#{path}")
-    app.get "/create", (req, res) ->
+    serveIndex = (req, res) ->
         res.sendfile "#{__dirname}/#{path}/index.html"
+    
+    app.get "/food", serveIndex
+    app.get "/help", serveIndex
+    app.get "/stats", serveIndex
+    app.get "/food/:macro", serveIndex
+    app.get "/food/:macro/:food", serveIndex
 
     #api = new Db().init app
 
