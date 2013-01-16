@@ -4,7 +4,7 @@ module.exports =
     cals: 125
     foods:
         beans:
-            display: 'Beans (cooked)'
+            display: 'Beans - black, kidney, etc. (cooked)'
             portion: 0.5
             measurement: 'cup'
             description: 'Black, garbanzo, pinto, kidney, white, lima'
