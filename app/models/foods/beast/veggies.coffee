@@ -109,7 +109,7 @@ module.exports = {
             measurement: 'cup'
             description: 'Cooked, or 1 cup raw'
         onions:
-            display: 'onions'
+            display: 'Onions'
             portion: 0.5
             measurement: 'cup'
             description: 'Cooked, or 1 cup raw'
@@ -124,7 +124,7 @@ module.exports = {
             measurement: 'cup'
             description: 'Cooked, or 1 cup raw'
         spinach:
-            display: 'Asparagus'
+            display: 'Spinach'
             portion: 0.5
             measurement: 'cup'
             description: 'Cooked, or 2 cups raw'
