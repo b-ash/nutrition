@@ -32,7 +32,7 @@ module.exports = class Router extends Backbone.Router
         @setupView('stats', 'stats', {model: app.model})
 
     help: =>
-        @setupView('help', 'help')
+        @setupView('settings', 'help')
 
     foodAllMacros: =>
         @setupView('food', 'foodAll')

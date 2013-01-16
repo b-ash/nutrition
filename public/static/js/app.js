@@ -191,7 +191,7 @@ window.require.define({"lib/router": function(exports, require, module) {
     };
 
     Router.prototype.help = function() {
-      return this.setupView('help', 'help');
+      return this.setupView('settings', 'help');
     };
 
     Router.prototype.foodAllMacros = function() {
