@@ -10,6 +10,10 @@ Application =
         @router = new Router()
         #@model = new BeastMacros()
         @user = new BeastUser()
+
+        if not @user.configured
+            window.location = '/food'
+
         Backbone.history.start
             pushState: true
 
