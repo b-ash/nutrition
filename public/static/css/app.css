@@ -7358,9 +7358,6 @@ html {
 .list .list-item .percentage-bar .percentage-complete .percentage-text.exceeding {
   color: #c00;
 }
-.stats {
-  margin-bottom: 50px;
-}
 .macro-replacement {
   margin-bottom: 10px;
 }

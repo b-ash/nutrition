@@ -22,11 +22,11 @@ class FoodMacroView extends View
         servingSize = @$('#portion_select').val()
         modelData = @model.toJSON()
         macro = modelData.macroOverride or modelData.macro
-        app.model.increment(macro, servingSize)
+        app.macros.increment(macro, servingSize)
 
     submitAndRoute: =>
         @increment()
-        app.router.navigate("/food/#{@options.macro}", true)
+        app.router.navigate("/food", true)
 
     submitAndGoHome: =>
         @increment()

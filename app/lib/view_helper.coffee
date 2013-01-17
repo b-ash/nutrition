@@ -20,13 +20,13 @@ Handlebars.registerHelper "keys", (list, ctx, fn) ->
     return buffer
 
 Handlebars.registerHelper "getPercentageWidth", (macro) ->
-    return window.app.model.getMacroPercentage(macro)
+    return window.app.macros.getMacroPercentage(macro)
 
 Handlebars.registerHelper "getGoalForMacro", (macro) ->
-    return window.app.model.getGoalForMacro(macro)
+    return window.app.macros.getGoalForMacro(macro)
 
 Handlebars.registerHelper "ifIsExceedingGoal", (macro, block) ->
-    if window.app.model.isExceedingGoal(macro)
+    if window.app.macros.isExceedingGoal(macro)
         return block(this)
     else
         return block.inverse(this)

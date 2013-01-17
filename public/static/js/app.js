@@ -75,9 +75,13 @@
 })();
 
 window.require.define({"application": function(exports, require, module) {
-  var Application, BeastMacros;
+  var Application, BeastMacros, BeastUser, Stats;
+
+  BeastUser = require('models/beast_user');
 
   BeastMacros = require('models/beast_macro_counts');
+
+  Stats = require('models/stats');
 
   Application = {
     initialize: function(onSuccess) {
@@ -85,11 +89,24 @@ window.require.define({"application": function(exports, require, module) {
       Router = require('lib/router');
       this.views = {};
       this.router = new Router();
-      this.model = new BeastMacros();
+      this.user = new BeastUser();
+      if (this.user.get('configured')) {
+        this.afterConfiguration();
+      } else if (window.location.pathname !== '/configure') {
+        return window.location.href = '/configure';
+      }
       Backbone.history.start({
         pushState: true
       });
       return onSuccess();
+    },
+    onConfigure: function() {
+      var _ref;
+      return (_ref = this.macros) != null ? _ref.destroy() : void 0;
+    },
+    afterConfiguration: function() {
+      this.stats = new Stats(this.user);
+      return this.macros = new BeastMacros(this.stats, this.user);
     }
   };
 
@@ -126,6 +143,7 @@ window.require.define({"lib/router": function(exports, require, module) {
     index: require('views/index'),
     stats: require('views/stats'),
     help: require('views/help'),
+    configure: require('views/configure'),
     foodAll: require('views/food_all_macros'),
     foodMacro: require('views/food_macro'),
     food: require('views/food')
@@ -150,6 +168,8 @@ window.require.define({"lib/router": function(exports, require, module) {
 
       this.foodAllMacros = __bind(this.foodAllMacros, this);
 
+      this.configure = __bind(this.configure, this);
+
       this.help = __bind(this.help, this);
 
       this.stats = __bind(this.stats, this);
@@ -169,6 +189,7 @@ window.require.define({"lib/router": function(exports, require, module) {
       'food/:macro/:food': 'food',
       'stats': 'stats',
       'help': 'help',
+      'configure': 'configure',
       '*query': 'redirectDefault'
     };
 
@@ -180,18 +201,24 @@ window.require.define({"lib/router": function(exports, require, module) {
 
     Router.prototype.index = function() {
       return this.setupView('index', 'index', {
-        model: app.model
+        model: app.macros
       });
     };
 
     Router.prototype.stats = function() {
       return this.setupView('stats', 'stats', {
-        model: app.model
+        model: app.stats
       });
     };
 
     Router.prototype.help = function() {
       return this.setupView('settings', 'help');
+    };
+
+    Router.prototype.configure = function() {
+      return this.setupView('settings', 'configure', {
+        model: app.user
+      });
     };
 
     Router.prototype.foodAllMacros = function() {
@@ -251,6 +278,10 @@ window.require.define({"lib/router": function(exports, require, module) {
 
 window.require.define({"lib/utils": function(exports, require, module) {
   
+  String.prototype.capitalize = function() {
+    return this.charAt(0).toUpperCase() + this.slice(1);
+  };
+
   module.exports = {
     roundFloat: function(percentage) {
       return Math.round(percentage * 100) / 100;
@@ -297,15 +328,15 @@ window.require.define({"lib/view_helper": function(exports, require, module) {
   });
 
   Handlebars.registerHelper("getPercentageWidth", function(macro) {
-    return window.app.model.getMacroPercentage(macro);
+    return window.app.macros.getMacroPercentage(macro);
   });
 
   Handlebars.registerHelper("getGoalForMacro", function(macro) {
-    return window.app.model.getGoalForMacro(macro);
+    return window.app.macros.getGoalForMacro(macro);
   });
 
   Handlebars.registerHelper("ifIsExceedingGoal", function(macro, block) {
-    if (window.app.model.isExceedingGoal(macro)) {
+    if (window.app.macros.isExceedingGoal(macro)) {
       return block(this);
     } else {
       return block.inverse(this);
@@ -327,33 +358,103 @@ window.require.define({"lib/view_helper": function(exports, require, module) {
   
 }});
 
-window.require.define({"models/beast_macro_counts": function(exports, require, module) {
-  var BeastMacros, LocalStorageModel,
+window.require.define({"models/base_macros_model": function(exports, require, module) {
+  var BaseMacrosModel, LocalStorageModel, utils,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
+  utils = require('lib/utils');
+
   LocalStorageModel = require('./local_storage_model');
+
+  BaseMacrosModel = (function(_super) {
+
+    __extends(BaseMacrosModel, _super);
+
+    function BaseMacrosModel() {
+      this.clear = __bind(this.clear, this);
+
+      this.isExceedingGoal = __bind(this.isExceedingGoal, this);
+
+      this.getGoalForMacro = __bind(this.getGoalForMacro, this);
+
+      this.getMacroPercentage = __bind(this.getMacroPercentage, this);
+
+      this.increment = __bind(this.increment, this);
+
+      this.initialize = __bind(this.initialize, this);
+      return BaseMacrosModel.__super__.constructor.apply(this, arguments);
+    }
+
+    BaseMacrosModel.prototype.initialize = function() {
+      return this.fetch();
+    };
+
+    BaseMacrosModel.prototype.increment = function(key, amt) {
+      var macros;
+      if (amt == null) {
+        amt = 1;
+      }
+      macros = this.get('macros');
+      macros[key].count += parseFloat(amt);
+      this.save('macros', macros);
+      return this.trigger('incrememt', key);
+    };
+
+    BaseMacrosModel.prototype.getMacroPercentage = function(macro) {
+      var goal, percentage;
+      goal = this.getGoalForMacro(macro);
+      macro = this.get('macros')[macro].count;
+      percentage = (macro / goal) * 100;
+      return Math.min(utils.roundFloat(percentage), 100);
+    };
+
+    BaseMacrosModel.prototype.getGoalForMacro = function(macro) {
+      return this.goals[macro];
+    };
+
+    BaseMacrosModel.prototype.isExceedingGoal = function(macro) {
+      var goal;
+      goal = this.getGoalForMacro(macro);
+      macro = this.get('macros')[macro].count;
+      return macro > goal;
+    };
+
+    BaseMacrosModel.prototype.clear = function() {
+      this.save(this.defaults());
+      return this.trigger('cleared');
+    };
+
+    return BaseMacrosModel;
+
+  })(LocalStorageModel);
+
+  module.exports = BaseMacrosModel;
+  
+}});
+
+window.require.define({"models/beast_macro_counts": function(exports, require, module) {
+  var BaseMacrosModel, BeastMacros,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  BaseMacrosModel = require('./base_macros_model');
 
   BeastMacros = (function(_super) {
 
     __extends(BeastMacros, _super);
 
     function BeastMacros() {
+      this.initialize = __bind(this.initialize, this);
       return BeastMacros.__super__.constructor.apply(this, arguments);
     }
 
-    BeastMacros.prototype.id = 'bodybeast-3000c';
-
-    BeastMacros.prototype.goals = function() {
-      return {
-        starches: 8,
-        legumes: 4,
-        veggies: 7,
-        fruits: 7,
-        proteins: 14,
-        fats: 7,
-        shake: 1
-      };
+    BeastMacros.prototype.initialize = function(stats) {
+      this.id = "bodybeast-" + (stats.getCalories()) + "c";
+      this.goals = stats.getGoals();
+      return BeastMacros.__super__.initialize.apply(this, arguments);
     };
 
     BeastMacros.prototype.defaults = function() {
@@ -394,9 +495,613 @@ window.require.define({"models/beast_macro_counts": function(exports, require, m
 
     return BeastMacros;
 
-  })(LocalStorageModel);
+  })(BaseMacrosModel);
 
   module.exports = BeastMacros;
+  
+}});
+
+window.require.define({"models/beast_user": function(exports, require, module) {
+  var BeastUserConfig, LocalStorageModel,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  LocalStorageModel = require('./local_storage_model');
+
+  BeastUserConfig = (function(_super) {
+
+    __extends(BeastUserConfig, _super);
+
+    function BeastUserConfig() {
+      this.initialize = __bind(this.initialize, this);
+      return BeastUserConfig.__super__.constructor.apply(this, arguments);
+    }
+
+    BeastUserConfig.prototype.id = 'user';
+
+    BeastUserConfig.prototype.initialize = function() {
+      return this.fetch();
+    };
+
+    BeastUserConfig.prototype.defaults = function() {
+      return {
+        name: null,
+        weight: null,
+        bfp: null,
+        phase: 'build',
+        configured: false
+      };
+    };
+
+    return BeastUserConfig;
+
+  })(LocalStorageModel);
+
+  module.exports = BeastUserConfig;
+  
+}});
+
+window.require.define({"models/calorie_brackets/beast/beast/1800c": function(exports, require, module) {
+  
+  module.exports = {
+    cals: 1800,
+    goals: {
+      starches: 1,
+      legumes: 2,
+      veggies: 4,
+      fruits: 1,
+      proteins: 19,
+      fats: 2,
+      shake: 1
+    }
+  };
+  
+}});
+
+window.require.define({"models/calorie_brackets/beast/beast/2000c": function(exports, require, module) {
+  
+  module.exports = {
+    cals: 2000,
+    goals: {
+      starches: 1,
+      legumes: 3,
+      veggies: 4,
+      fruits: 1,
+      proteins: 21,
+      fats: 2,
+      shake: 1
+    }
+  };
+  
+}});
+
+window.require.define({"models/calorie_brackets/beast/beast/2200c": function(exports, require, module) {
+  
+  module.exports = {
+    cals: 2200,
+    goals: {
+      starches: 1,
+      legumes: 3,
+      veggies: 4,
+      fruits: 2,
+      proteins: 23,
+      fats: 3,
+      shake: 1
+    }
+  };
+  
+}});
+
+window.require.define({"models/calorie_brackets/beast/beast/2400c": function(exports, require, module) {
+  
+  module.exports = {
+    cals: 2400,
+    goals: {
+      starches: 1,
+      legumes: 3,
+      veggies: 4,
+      fruits: 2,
+      proteins: 26,
+      fats: 3,
+      shake: 1
+    }
+  };
+  
+}});
+
+window.require.define({"models/calorie_brackets/beast/beast/2600c": function(exports, require, module) {
+  
+  module.exports = {
+    cals: 2600,
+    goals: {
+      starches: 2,
+      legumes: 3,
+      veggies: 4,
+      fruits: 3,
+      proteins: 29,
+      fats: 3,
+      shake: 1
+    }
+  };
+  
+}});
+
+window.require.define({"models/calorie_brackets/beast/beast/2800c": function(exports, require, module) {
+  
+  module.exports = {
+    cals: 2800,
+    goals: {
+      starches: 2,
+      legumes: 3,
+      veggies: 5,
+      fruits: 4,
+      proteins: 31,
+      fats: 3,
+      shake: 1
+    }
+  };
+  
+}});
+
+window.require.define({"models/calorie_brackets/beast/beast/3000c": function(exports, require, module) {
+  
+  module.exports = {
+    cals: 3000,
+    goals: {
+      starches: 2,
+      legumes: 3,
+      veggies: 5,
+      fruits: 5,
+      proteins: 34,
+      fats: 3,
+      shake: 1
+    }
+  };
+  
+}});
+
+window.require.define({"models/calorie_brackets/beast/beast/3200c": function(exports, require, module) {
+  
+  module.exports = {
+    cals: 3200,
+    goals: {
+      starches: 2,
+      legumes: 4,
+      veggies: 5,
+      fruits: 5,
+      proteins: 36,
+      fats: 3,
+      shake: 1
+    }
+  };
+  
+}});
+
+window.require.define({"models/calorie_brackets/beast/beast/3400c": function(exports, require, module) {
+  
+  module.exports = {
+    cals: 3400,
+    goals: {
+      starches: 3,
+      legumes: 4,
+      veggies: 5,
+      fruits: 5,
+      proteins: 39,
+      fats: 3,
+      shake: 1
+    }
+  };
+  
+}});
+
+window.require.define({"models/calorie_brackets/beast/beast/3600c": function(exports, require, module) {
+  
+  module.exports = {
+    cals: 3600,
+    goals: {
+      starches: 3,
+      legumes: 5,
+      veggies: 5,
+      fruits: 5,
+      proteins: 40,
+      fats: 3,
+      shake: 1
+    }
+  };
+  
+}});
+
+window.require.define({"models/calorie_brackets/beast/beast/3800c": function(exports, require, module) {
+  
+  module.exports = {
+    cals: 3800,
+    goals: {
+      starches: 3,
+      legumes: 5,
+      veggies: 5,
+      fruits: 6,
+      proteins: 43,
+      fats: 3,
+      shake: 1
+    }
+  };
+  
+}});
+
+window.require.define({"models/calorie_brackets/beast/beast/4000c": function(exports, require, module) {
+  
+  module.exports = {
+    cals: 4000,
+    goals: {
+      starches: 3,
+      legumes: 5,
+      veggies: 5,
+      fruits: 7,
+      proteins: 46,
+      fats: 3,
+      shake: 1
+    }
+  };
+  
+}});
+
+window.require.define({"models/calorie_brackets/beast/beast/4200c": function(exports, require, module) {
+  
+  module.exports = {
+    cals: 4200,
+    goals: {
+      starches: 3,
+      legumes: 6,
+      veggies: 5,
+      fruits: 7,
+      proteins: 48,
+      fats: 3,
+      shake: 1
+    }
+  };
+  
+}});
+
+window.require.define({"models/calorie_brackets/beast/beast/4400c": function(exports, require, module) {
+  
+  module.exports = {
+    cals: 4400,
+    goals: {
+      starches: 3,
+      legumes: 7,
+      veggies: 5,
+      fruits: 7,
+      proteins: 50,
+      fats: 3,
+      shake: 1
+    }
+  };
+  
+}});
+
+window.require.define({"models/calorie_brackets/beast/beast/4600c": function(exports, require, module) {
+  
+  module.exports = {
+    cals: 4600,
+    goals: {
+      starches: 3,
+      legumes: 8,
+      veggies: 5,
+      fruits: 7,
+      proteins: 52,
+      fats: 3,
+      shake: 1
+    }
+  };
+  
+}});
+
+window.require.define({"models/calorie_brackets/beast/beast/4800c": function(exports, require, module) {
+  
+  module.exports = {
+    cals: 4800,
+    goals: {
+      starches: 3,
+      legumes: 9,
+      veggies: 5,
+      fruits: 7,
+      proteins: 54,
+      fats: 3,
+      shake: 1
+    }
+  };
+  
+}});
+
+window.require.define({"models/calorie_brackets/beast/build/2000c": function(exports, require, module) {
+  
+  module.exports = {
+    cals: 2000,
+    goals: {
+      starches: 5,
+      legumes: 2,
+      veggies: 4,
+      fruits: 5,
+      proteins: 9,
+      fats: 4,
+      shake: 1
+    }
+  };
+  
+}});
+
+window.require.define({"models/calorie_brackets/beast/build/2200c": function(exports, require, module) {
+  
+  module.exports = {
+    cals: 2200,
+    goals: {
+      starches: 5,
+      legumes: 3,
+      veggies: 5,
+      fruits: 5,
+      proteins: 10,
+      fats: 5,
+      shake: 1
+    }
+  };
+  
+}});
+
+window.require.define({"models/calorie_brackets/beast/build/2400c": function(exports, require, module) {
+  
+  module.exports = {
+    cals: 2400,
+    goals: {
+      starches: 6,
+      legumes: 3,
+      veggies: 5,
+      fruits: 6,
+      proteins: 12,
+      fats: 5,
+      shake: 1
+    }
+  };
+  
+}});
+
+window.require.define({"models/calorie_brackets/beast/build/2600c": function(exports, require, module) {
+  
+  module.exports = {
+    cals: 2600,
+    goals: {
+      starches: 7,
+      legumes: 3,
+      veggies: 6,
+      fruits: 6,
+      proteins: 12,
+      fats: 6,
+      shake: 1
+    }
+  };
+  
+}});
+
+window.require.define({"models/calorie_brackets/beast/build/2800c": function(exports, require, module) {
+  
+  module.exports = {
+    cals: 2800,
+    goals: {
+      starches: 7,
+      legumes: 4,
+      veggies: 6,
+      fruits: 7,
+      proteins: 13,
+      fats: 6,
+      shake: 1
+    }
+  };
+  
+}});
+
+window.require.define({"models/calorie_brackets/beast/build/3000c": function(exports, require, module) {
+  
+  module.exports = {
+    cals: 3000,
+    goals: {
+      starches: 8,
+      legumes: 4,
+      veggies: 7,
+      fruits: 7,
+      proteins: 14,
+      fats: 7,
+      shake: 1
+    }
+  };
+  
+}});
+
+window.require.define({"models/calorie_brackets/beast/build/3200c": function(exports, require, module) {
+  
+  module.exports = {
+    cals: 3200,
+    goals: {
+      starches: 8,
+      legumes: 4,
+      veggies: 7,
+      fruits: 9,
+      proteins: 16,
+      fats: 7,
+      shake: 1
+    }
+  };
+  
+}});
+
+window.require.define({"models/calorie_brackets/beast/build/3400c": function(exports, require, module) {
+  
+  module.exports = {
+    cals: 3400,
+    goals: {
+      starches: 8,
+      legumes: 4,
+      veggies: 8,
+      fruits: 10,
+      proteins: 17,
+      fats: 8,
+      shake: 1
+    }
+  };
+  
+}});
+
+window.require.define({"models/calorie_brackets/beast/build/3600c": function(exports, require, module) {
+  
+  module.exports = {
+    cals: 3600,
+    goals: {
+      starches: 8,
+      legumes: 5,
+      veggies: 8,
+      fruits: 11,
+      proteins: 18,
+      fats: 8,
+      shake: 1
+    }
+  };
+  
+}});
+
+window.require.define({"models/calorie_brackets/beast/build/3800c": function(exports, require, module) {
+  
+  module.exports = {
+    cals: 3800,
+    goals: {
+      starches: 8,
+      legumes: 6,
+      veggies: 9,
+      fruits: 11,
+      proteins: 19,
+      fats: 8,
+      shake: 1
+    }
+  };
+  
+}});
+
+window.require.define({"models/calorie_brackets/beast/build/4000c": function(exports, require, module) {
+  
+  module.exports = {
+    cals: 4000,
+    goals: {
+      starches: 9,
+      legumes: 6,
+      veggies: 9,
+      fruits: 12,
+      proteins: 20,
+      fats: 9,
+      shake: 1
+    }
+  };
+  
+}});
+
+window.require.define({"models/calorie_brackets/beast/build/4200c": function(exports, require, module) {
+  
+  module.exports = {
+    cals: 4200,
+    goals: {
+      starches: 10,
+      legumes: 6,
+      veggies: 10,
+      fruits: 12,
+      proteins: 21,
+      fats: 9,
+      shake: 1
+    }
+  };
+  
+}});
+
+window.require.define({"models/calorie_brackets/beast/build/4400c": function(exports, require, module) {
+  
+  module.exports = {
+    cals: 4400,
+    goals: {
+      starches: 10,
+      legumes: 6,
+      veggies: 10,
+      fruits: 14,
+      proteins: 23,
+      fats: 9,
+      shake: 1
+    }
+  };
+  
+}});
+
+window.require.define({"models/calorie_brackets/beast/build/4600c": function(exports, require, module) {
+  
+  module.exports = {
+    cals: 4600,
+    goals: {
+      starches: 11,
+      legumes: 6,
+      veggies: 11,
+      fruits: 14,
+      proteins: 24,
+      fats: 10,
+      shake: 1
+    }
+  };
+  
+}});
+
+window.require.define({"models/calorie_brackets/beast/build/4800c": function(exports, require, module) {
+  
+  module.exports = {
+    cals: 4800,
+    goals: {
+      starches: 11,
+      legumes: 6,
+      veggies: 11,
+      fruits: 15,
+      proteins: 26,
+      fats: 11,
+      shake: 1
+    }
+  };
+  
+}});
+
+window.require.define({"models/calorie_brackets/beast/build/5000c": function(exports, require, module) {
+  
+  module.exports = {
+    cals: 5000,
+    goals: {
+      starches: 12,
+      legumes: 6,
+      veggies: 11,
+      fruits: 16,
+      proteins: 27,
+      fats: 11,
+      shake: 1
+    }
+  };
+  
+}});
+
+window.require.define({"models/calorie_brackets/beast_brackets": function(exports, require, module) {
+  var BeastCalorieBrackets;
+
+  BeastCalorieBrackets = (function() {
+
+    function BeastCalorieBrackets() {}
+
+    BeastCalorieBrackets.getBracket = function(calories, phase) {
+      return require("./beast/" + phase + "/" + calories + "c");
+    };
+
+    return BeastCalorieBrackets;
+
+  })();
+
+  module.exports = BeastCalorieBrackets;
   
 }});
 
@@ -1484,11 +2189,9 @@ window.require.define({"models/foods/beast_foods": function(exports, require, mo
 }});
 
 window.require.define({"models/local_storage_model": function(exports, require, module) {
-  var LocalStorageModel, Model,
+  var LocalStorageModel,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-  Model = require('./model');
 
   LocalStorageModel = (function(_super) {
 
@@ -1502,136 +2205,106 @@ window.require.define({"models/local_storage_model": function(exports, require, 
 
     return LocalStorageModel;
 
-  })(Model);
+  })(Backbone.Model);
 
   module.exports = LocalStorageModel;
   
 }});
 
-window.require.define({"models/model": function(exports, require, module) {
-  var Model, utils,
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-    __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-  utils = require('lib/utils');
-
-  Model = (function(_super) {
-
-    __extends(Model, _super);
-
-    function Model() {
-      this.clear = __bind(this.clear, this);
-
-      this.isExceedingGoal = __bind(this.isExceedingGoal, this);
-
-      this.getGoalForMacro = __bind(this.getGoalForMacro, this);
-
-      this.getMacroPercentage = __bind(this.getMacroPercentage, this);
-
-      this.increment = __bind(this.increment, this);
-
-      this.initialize = __bind(this.initialize, this);
-      return Model.__super__.constructor.apply(this, arguments);
-    }
-
-    Model.prototype.id = 'bodybeast-3000c';
-
-    Model.prototype.goals = function() {
-      return {};
-    };
-
-    Model.prototype.defaults = function() {
-      return {
-        macros: {},
-        timestamp: new moment().format('MM-DD-YY')
-      };
-    };
-
-    Model.prototype.initialize = function() {
-      return this.fetch();
-    };
-
-    Model.prototype.increment = function(key, amt) {
-      var macros;
-      if (amt == null) {
-        amt = 1;
-      }
-      macros = this.get('macros');
-      macros[key].count += parseFloat(amt);
-      this.save('macros', macros);
-      return this.trigger('incrememt', key);
-    };
-
-    Model.prototype.getMacroPercentage = function(macro) {
-      var goal, percentage;
-      goal = this.goals()[macro];
-      macro = this.get('macros')[macro].count;
-      percentage = (macro / goal) * 100;
-      return Math.min(utils.roundFloat(percentage), 100);
-    };
-
-    Model.prototype.getGoalForMacro = function(macro) {
-      return this.goals()[macro];
-    };
-
-    Model.prototype.isExceedingGoal = function(macro) {
-      var goal;
-      goal = this.getGoalForMacro(macro);
-      macro = this.get('macros')[macro].count;
-      return macro > goal;
-    };
-
-    Model.prototype.clear = function() {
-      this.save(this.defaults());
-      return this.trigger('cleared');
-    };
-
-    return Model;
-
-  })(Backbone.Model);
-
-  module.exports = Model;
-  
-}});
-
 window.require.define({"models/stats": function(exports, require, module) {
-  var Stats;
+  var BeastBrackets, Stats,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+
+  BeastBrackets = require('./calorie_brackets/beast_brackets');
 
   Stats = (function() {
 
-    function Stats() {}
+    function Stats(user) {
+      this.getMacroBreakdown = __bind(this.getMacroBreakdown, this);
 
-    Stats.prototype.toJSON = function() {
-      var bfp, build, cim, cmr, lbm, rmr, rmr2, weight;
-      weight = 150;
-      bfp = 10;
-      lbm = this.lbm(weight, bfp);
+      this.getGoals = __bind(this.getGoals, this);
+
+      this.getCalories = __bind(this.getCalories, this);
+
+      this.getCalorieBracket = __bind(this.getCalorieBracket, this);
+      this.weight = user.get('weight');
+      this.bfp = user.get('bfp');
+      this.phase = user.get('phase');
+      this.calorieBracket = this.getCalorieBracket();
+    }
+
+    Stats.prototype.getCalorieBracket = function() {
+      var cals, cim, cmr, lbm, rawCals, rmr, rmr2;
+      lbm = this.lbm(this.weight, this.bfp);
       rmr = this.rmr(lbm);
       cmr = this.cmr(rmr);
       rmr2 = this.rmr2(rmr, cmr);
       cim = this.cim(rmr2);
-      build = this.build(bfp, cim);
+      if (this.phase === 'build') {
+        rawCals = this.build(this.bfp, cim);
+      } else {
+        rawCals = this.beast(this.bfp, cim);
+      }
+      cals = this.roundCalsToBracket(rawCals, this.phase);
+      return {
+        lbm: lbm,
+        rmr: rmr,
+        cmr: cmr,
+        rmr2: rmr2,
+        cim: cim,
+        rawCals: rawCals,
+        cals: cals
+      };
+    };
+
+    Stats.prototype.getCalories = function() {
+      return this.calorieBracket.cals;
+    };
+
+    Stats.prototype.getGoals = function() {
+      var goals;
+      goals = BeastBrackets.getBracket(this.getCalories(), this.phase);
+      return goals.goals;
+    };
+
+    Stats.prototype.getMacroBreakdown = function() {
+      if (this.phase === 'build') {
+        return '25/50/25';
+      } else {
+        return '40/30/30';
+      }
+    };
+
+    Stats.prototype.toJSON = function() {
       return {
         stats: [
           {
+            display: 'Phase',
+            val: this.phase.capitalize()
+          }, {
+            display: 'Macro Breakdown',
+            val: this.getMacroBreakdown()
+          }, {
             display: 'Lean Body Mass',
-            val: lbm
+            val: this.calorieBracket.lbm
           }, {
             display: 'Resting Metabolic Rate',
-            val: rmr
+            val: this.calorieBracket.rmr
           }, {
             display: 'Caloric Modification for Recovery',
-            val: cmr
+            val: this.calorieBracket.cmr
           }, {
             display: 'RMR Modified for Recovery',
-            val: rmr2
+            val: this.calorieBracket.rmr2
           }, {
             display: 'Calorie Intake to Maintain Weight',
-            val: cim
+            val: this.calorieBracket.cim
           }, {
-            display: 'Calories needed to build / bulk',
-            val: build
+            display: "Calories needed to " + this.phase,
+            val: this.calorieBracket.rawCals
+          }, {
+            display: 'Calorie Bracket',
+            val: this.calorieBracket.cals
           }
         ]
       };
@@ -1667,11 +2340,109 @@ window.require.define({"models/stats": function(exports, require, module) {
       }
     };
 
+    Stats.prototype.beast = function(bfp, cim) {
+      if (bfp > 20) {
+        return cim - (cim * 0.2);
+      } else if (bfp > 10) {
+        return cim - (cim * 0.15);
+      } else {
+        return cim - (cim * 0.1);
+      }
+    };
+
+    Stats.prototype.roundCalsToBracket = function(rawCals, phase) {
+      var cals;
+      if (phase === 'build') {
+        cals = Math.ceil(rawCals / 200) * 200;
+        return this.getCalsBetweenValues(cals, 2000, 5000);
+      } else {
+        cals = Math.floor(rawCals / 200) * 200;
+        return this.getCalsBetweenValues(cals, 1800, 4800);
+      }
+    };
+
+    Stats.prototype.getCalsBetweenValues = function(cals, lowerBound, upperBound) {
+      if (cals < lowerBound) {
+        return lowerBound;
+      } else if (cals > upperBound) {
+        return upperBound;
+      } else {
+        return cals;
+      }
+    };
+
     return Stats;
 
   })();
 
   module.exports = Stats;
+  
+}});
+
+window.require.define({"views/configure": function(exports, require, module) {
+  var ConfigureView, View, app,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  app = require('application');
+
+  View = require('./view');
+
+  ConfigureView = (function(_super) {
+
+    __extends(ConfigureView, _super);
+
+    function ConfigureView() {
+      this.configure = __bind(this.configure, this);
+
+      this.afterRender = __bind(this.afterRender, this);
+
+      this.getRenderData = __bind(this.getRenderData, this);
+      return ConfigureView.__super__.constructor.apply(this, arguments);
+    }
+
+    ConfigureView.prototype.tagName = 'div';
+
+    ConfigureView.prototype.className = 'content';
+
+    ConfigureView.prototype.template = require('./templates/configure');
+
+    ConfigureView.prototype.events = {
+      'click #configure': 'configure'
+    };
+
+    ConfigureView.prototype.getRenderData = function() {
+      return this.model.toJSON();
+    };
+
+    ConfigureView.prototype.afterRender = function() {
+      return this.$("#phase option[value=" + (this.model.get('phase')) + "]").attr('selected', 'selected');
+    };
+
+    ConfigureView.prototype.configure = function() {
+      var bfp, name, phase, weight;
+      name = this.$('#name').val() || null;
+      weight = this.$('#weight').val() || 0;
+      bfp = this.$('#bfp').val() || 0;
+      phase = this.$('#phase').val();
+      this.model.save({
+        name: name,
+        weight: parseInt(weight),
+        bfp: parseInt(bfp),
+        phase: phase,
+        configured: true
+      });
+      app.onConfigure();
+      app.afterConfiguration();
+      return app.router.navigate('', true);
+    };
+
+    return ConfigureView;
+
+  })(View);
+
+  module.exports = ConfigureView;
   
 }});
 
@@ -1729,12 +2500,12 @@ window.require.define({"views/food": function(exports, require, module) {
       servingSize = this.$('#portion_select').val();
       modelData = this.model.toJSON();
       macro = modelData.macroOverride || modelData.macro;
-      return app.model.increment(macro, servingSize);
+      return app.macros.increment(macro, servingSize);
     };
 
     FoodMacroView.prototype.submitAndRoute = function() {
       this.increment();
-      return app.router.navigate("/food/" + this.options.macro, true);
+      return app.router.navigate("/food", true);
     };
 
     FoodMacroView.prototype.submitAndGoHome = function() {
@@ -1845,11 +2616,9 @@ window.require.define({"views/food_macro": function(exports, require, module) {
 }});
 
 window.require.define({"views/help": function(exports, require, module) {
-  var HelpView, View, app,
+  var HelpView, View,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-  app = require('application');
 
   View = require('./view');
 
@@ -1956,7 +2725,9 @@ window.require.define({"views/nav": function(exports, require, module) {
     __extends(NavView, _super);
 
     function NavView() {
-      this.clear = __bind(this.clear, this);
+      this.routeEventWrap = __bind(this.routeEventWrap, this);
+
+      this.clearMacros = __bind(this.clearMacros, this);
 
       this.afterRender = __bind(this.afterRender, this);
       return NavView.__super__.constructor.apply(this, arguments);
@@ -1967,8 +2738,8 @@ window.require.define({"views/nav": function(exports, require, module) {
     NavView.prototype.activeView = null;
 
     NavView.prototype.events = {
-      'click a': 'routeEvent',
-      'click #clear_list': 'clear'
+      'click a': 'routeEventWrap',
+      'click #clear_list': 'clearMacros'
     };
 
     NavView.prototype.afterRender = function() {
@@ -1976,8 +2747,15 @@ window.require.define({"views/nav": function(exports, require, module) {
       return this.$("#" + this.activeView + "_nav").addClass('active');
     };
 
-    NavView.prototype.clear = function() {
-      return app.model.clear();
+    NavView.prototype.clearMacros = function() {
+      return app.macros.clear();
+    };
+
+    NavView.prototype.routeEventWrap = function(event) {
+      if (!app.user.get('configured')) {
+        return event.preventDefault();
+      }
+      return this.routeEvent(event);
     };
 
     return NavView;
@@ -1989,10 +2767,12 @@ window.require.define({"views/nav": function(exports, require, module) {
 }});
 
 window.require.define({"views/stats": function(exports, require, module) {
-  var Stats, StatsView, View,
+  var Stats, StatsView, View, app,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  app = require('application');
 
   View = require('./view');
 
@@ -2004,8 +2784,6 @@ window.require.define({"views/stats": function(exports, require, module) {
 
     function StatsView() {
       this.getRenderData = __bind(this.getRenderData, this);
-
-      this.initialize = __bind(this.initialize, this);
       return StatsView.__super__.constructor.apply(this, arguments);
     }
 
@@ -2017,12 +2795,11 @@ window.require.define({"views/stats": function(exports, require, module) {
 
     StatsView.prototype.events = {};
 
-    StatsView.prototype.initialize = function() {
-      return this.model = new Stats();
-    };
-
     StatsView.prototype.getRenderData = function() {
-      return this.model.toJSON();
+      return {
+        user: app.user.toJSON(),
+        stats: this.model.toJSON()
+      };
     };
 
     return StatsView;
@@ -2031,6 +2808,108 @@ window.require.define({"views/stats": function(exports, require, module) {
 
   module.exports = StatsView;
   
+}});
+
+window.require.define({"views/templates/configure": function(exports, require, module) {
+  module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
+    helpers = helpers || Handlebars.helpers;
+    var buffer = "", stack1, stack2, foundHelper, tmp1, self=this, functionType="function", helperMissing=helpers.helperMissing, undef=void 0, escapeExpression=this.escapeExpression, blockHelperMissing=helpers.blockHelperMissing;
+
+  function program1(depth0,data) {
+    
+    
+    return "\n        <h4>Reconfigure your profile</h4>\n    ";}
+
+  function program3(depth0,data) {
+    
+    
+    return "\n        <h4>Configure your profile</h4>\n    ";}
+
+  function program5(depth0,data) {
+    
+    var buffer = "", stack1;
+    buffer += " value=\"";
+    foundHelper = helpers.name;
+    stack1 = foundHelper || depth0.name;
+    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
+    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "name", { hash: {} }); }
+    buffer += escapeExpression(stack1) + "\"";
+    return buffer;}
+
+  function program7(depth0,data) {
+    
+    var buffer = "", stack1;
+    buffer += " value=\"";
+    foundHelper = helpers.weight;
+    stack1 = foundHelper || depth0.weight;
+    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
+    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "weight", { hash: {} }); }
+    buffer += escapeExpression(stack1) + "\"";
+    return buffer;}
+
+  function program9(depth0,data) {
+    
+    var buffer = "", stack1;
+    buffer += " value=\"";
+    foundHelper = helpers.bfp;
+    stack1 = foundHelper || depth0.bfp;
+    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
+    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "bfp", { hash: {} }); }
+    buffer += escapeExpression(stack1) + "\"";
+    return buffer;}
+
+    buffer += "<header>\n    ";
+    foundHelper = helpers.configured;
+    stack1 = foundHelper || depth0.configured;
+    tmp1 = self.program(1, program1, data);
+    tmp1.hash = {};
+    tmp1.fn = tmp1;
+    tmp1.inverse = self.noop;
+    if(foundHelper && typeof stack1 === functionType) { stack1 = stack1.call(depth0, tmp1); }
+    else { stack1 = blockHelperMissing.call(depth0, stack1, tmp1); }
+    if(stack1 || stack1 === 0) { buffer += stack1; }
+    buffer += "\n    ";
+    foundHelper = helpers.configured;
+    stack1 = foundHelper || depth0.configured;
+    tmp1 = self.noop;
+    tmp1.hash = {};
+    tmp1.fn = tmp1;
+    tmp1.inverse = self.program(3, program3, data);
+    if(foundHelper && typeof stack1 === functionType) { stack1 = stack1.call(depth0, tmp1); }
+    else { stack1 = blockHelperMissing.call(depth0, stack1, tmp1); }
+    if(stack1 || stack1 === 0) { buffer += stack1; }
+    buffer += "\n</header>\n\n<div>\n    <input id=\"name\" type=\"text\" placeholder=\"My name is...\" ";
+    foundHelper = helpers.name;
+    stack1 = foundHelper || depth0.name;
+    stack2 = helpers['if'];
+    tmp1 = self.program(5, program5, data);
+    tmp1.hash = {};
+    tmp1.fn = tmp1;
+    tmp1.inverse = self.noop;
+    stack1 = stack2.call(depth0, stack1, tmp1);
+    if(stack1 || stack1 === 0) { buffer += stack1; }
+    buffer += " />\n</div>\n\n<div>\n    <input id=\"weight\" type=\"number\" placeholder=\"Weight\" ";
+    foundHelper = helpers.weight;
+    stack1 = foundHelper || depth0.weight;
+    stack2 = helpers['if'];
+    tmp1 = self.program(7, program7, data);
+    tmp1.hash = {};
+    tmp1.fn = tmp1;
+    tmp1.inverse = self.noop;
+    stack1 = stack2.call(depth0, stack1, tmp1);
+    if(stack1 || stack1 === 0) { buffer += stack1; }
+    buffer += " />\n    <input id=\"bfp\" type=\"number\" placeholder=\"Body Fat Percentage\" ";
+    foundHelper = helpers.bfp;
+    stack1 = foundHelper || depth0.bfp;
+    stack2 = helpers['if'];
+    tmp1 = self.program(9, program9, data);
+    tmp1.hash = {};
+    tmp1.fn = tmp1;
+    tmp1.inverse = self.noop;
+    stack1 = stack2.call(depth0, stack1, tmp1);
+    if(stack1 || stack1 === 0) { buffer += stack1; }
+    buffer += " />\n</div>\n\n<div>\n    <select id=\"phase\">\n        <option value=\"build\">Build / Bulk (phases 1 &amp; 2)</option>\n        <option value=\"beast\">Beast (phase 3)</option>\n    </select>\n</div>\n\n<div class=\"configure-actions\">\n    <a id=\"configure\" class=\"btn btn-primary dont-route\">Configure</a>\n</div>\n";
+    return buffer;});
 }});
 
 window.require.define({"views/templates/food": function(exports, require, module) {
@@ -2385,6 +3264,18 @@ window.require.define({"views/templates/stats": function(exports, require, modul
   function program1(depth0,data) {
     
     var buffer = "", stack1;
+    buffer += " for ";
+    foundHelper = helpers.user;
+    stack1 = foundHelper || depth0.user;
+    stack1 = (stack1 === null || stack1 === undefined || stack1 === false ? stack1 : stack1.name);
+    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
+    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "user.name", { hash: {} }); }
+    buffer += escapeExpression(stack1);
+    return buffer;}
+
+  function program3(depth0,data) {
+    
+    var buffer = "", stack1;
     buffer += "\n    <div class=\"list-item stat\">\n        <span class=\"name italic\">";
     foundHelper = helpers.display;
     stack1 = foundHelper || depth0.display;
@@ -2398,11 +3289,23 @@ window.require.define({"views/templates/stats": function(exports, require, modul
     buffer += escapeExpression(stack1) + "</span>\n    </div>\n    ";
     return buffer;}
 
-    buffer += "<header>\n    <h4>Stats</h4>\n</header>\n\n<div class=\"list stats\">\n    ";
+    buffer += "<header>\n    <h4>Stats";
+    foundHelper = helpers.user;
+    stack1 = foundHelper || depth0.user;
+    stack1 = (stack1 === null || stack1 === undefined || stack1 === false ? stack1 : stack1.name);
+    stack2 = helpers['if'];
+    tmp1 = self.program(1, program1, data);
+    tmp1.hash = {};
+    tmp1.fn = tmp1;
+    tmp1.inverse = self.noop;
+    stack1 = stack2.call(depth0, stack1, tmp1);
+    if(stack1 || stack1 === 0) { buffer += stack1; }
+    buffer += "</h4>\n</header>\n\n<div class=\"list stats\">\n    ";
     foundHelper = helpers.stats;
     stack1 = foundHelper || depth0.stats;
+    stack1 = (stack1 === null || stack1 === undefined || stack1 === false ? stack1 : stack1.stats);
     stack2 = helpers.each;
-    tmp1 = self.program(1, program1, data);
+    tmp1 = self.program(3, program3, data);
     tmp1.hash = {};
     tmp1.fn = tmp1;
     tmp1.inverse = self.noop;

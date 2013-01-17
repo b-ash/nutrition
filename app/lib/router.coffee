@@ -6,6 +6,7 @@ views =
     index: require('views/index')
     stats: require('views/stats')
     help: require('views/help')
+    configure: require('views/configure')
     foodAll:  require('views/food_all_macros')
     foodMacro: require('views/food_macro')
     food: require ('views/food')
@@ -20,19 +21,23 @@ module.exports = class Router extends Backbone.Router
         'food/:macro/:food': 'food'
         'stats': 'stats'
         'help': 'help'
+        'configure': 'configure'
         '*query': 'redirectDefault'
 
     redirectDefault: (actions) =>
         @navigate '', {trigger: true}
 
     index: =>
-        @setupView('index', 'index', {model: app.model})
+        @setupView('index', 'index', {model: app.macros})
 
     stats: =>
-        @setupView('stats', 'stats', {model: app.model})
+        @setupView('stats', 'stats', {model: app.stats})
 
     help: =>
         @setupView('settings', 'help')
+
+    configure: =>
+        @setupView('settings', 'configure', {model: app.user})
 
     foodAllMacros: =>
         @setupView('food', 'foodAll')

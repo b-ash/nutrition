@@ -4,7 +4,11 @@ BaseMacrosModel = require('./base_macros_model')
 # Body Beast nutrition macro requirements
 class BeastMacros extends BaseMacrosModel
 
-    id: 'bodybeast-3000c'
+    initialize: (stats) =>
+        @id = "bodybeast-#{stats.getCalories()}c"
+        @goals = stats.getGoals()
+
+        super
 
     defaults: ->
         macros:

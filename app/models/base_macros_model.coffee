@@ -2,16 +2,8 @@ utils = require('lib/utils')
 LocalStorageModel = require('./local_storage_model')
 
 
-# Body Beast nutrition macro requirements
+# Body Beast nutrition macro requirements to be extended
 class BaseMacrosModel extends LocalStorageModel
-
-    id: 'bodybeast-3000c'
-    goals: ->
-        {}
-
-    defaults: ->
-        macros: {}
-        timestamp: new moment().format('MM-DD-YY')
 
     initialize: =>
         @fetch()
@@ -29,7 +21,7 @@ class BaseMacrosModel extends LocalStorageModel
         return Math.min(utils.roundFloat(percentage), 100)
 
     getGoalForMacro: (macro) =>
-        @stats.goals()[macro]
+        @goals[macro]
 
     isExceedingGoal: (macro) =>
         goal = @getGoalForMacro(macro)

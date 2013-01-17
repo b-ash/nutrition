@@ -1,4 +1,3 @@
-app = require 'application'
 View = require './view'
 
 

@@ -1,0 +1,28 @@
+<header>
+    {{#configured}}
+        <h4>Reconfigure your profile</h4>
+    {{/configured}}
+    {{^configured}}
+        <h4>Configure your profile</h4>
+    {{/configured}}
+</header>
+
+<div>
+    <input id="name" type="text" placeholder="My name is..." {{#if name}} value="{{name}}"{{/if}} />
+</div>
+
+<div>
+    <input id="weight" type="number" placeholder="Weight" {{#if weight}} value="{{weight}}"{{/if}} />
+    <input id="bfp" type="number" placeholder="Body Fat Percentage" {{#if bfp}} value="{{bfp}}"{{/if}} />
+</div>
+
+<div>
+    <select id="phase">
+        <option value="build">Build / Bulk (phases 1 &amp; 2)</option>
+        <option value="beast">Beast (phase 3)</option>
+    </select>
+</div>
+
+<div class="configure-actions">
+    <a id="configure" class="btn btn-primary dont-route">Configure</a>
+</div>

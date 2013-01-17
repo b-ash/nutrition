@@ -1,5 +1,6 @@
-BeastMacros = require 'models/beast_macro_counts'
 BeastUser = require 'models/beast_user'
+BeastMacros = require 'models/beast_macro_counts'
+Stats = require 'models/stats'
 
 
 Application =
@@ -8,16 +9,24 @@ Application =
 
         @views = {}
         @router = new Router()
-        #@model = new BeastMacros()
         @user = new BeastUser()
 
-        if not @user.configured
-            window.location = '/food'
+        if @user.get('configured')
+            @afterConfiguration()
+        else if window.location.pathname isnt '/configure'
+            return window.location.href = '/configure'
 
         Backbone.history.start
             pushState: true
 
         onSuccess()
+
+    onConfigure: ->
+        @macros?.destroy()
+
+    afterConfiguration: ->
+        @stats = new Stats @user
+        @macros = new BeastMacros @stats, @user
     
 
 module.exports = Application

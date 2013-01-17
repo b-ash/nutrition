@@ -1,9 +1,9 @@
 <header>
-    <h4>Stats</h4>
+    <h4>Stats{{#if user.name}} for {{user.name}}{{/if}}</h4>
 </header>
 
 <div class="list stats">
-    {{#each stats}}
+    {{#each stats.stats}}
     <div class="list-item stat">
         <span class="name italic">{{display}}:</span>
         <span class="val right">{{val}}</span>

@@ -29,6 +29,7 @@ exports.startServer = (port, path, callback) ->
     app.get "/food", serveIndex
     app.get "/help", serveIndex
     app.get "/stats", serveIndex
+    app.get "/configure", serveIndex
     app.get "/food/:macro", serveIndex
     app.get "/food/:macro/:food", serveIndex
 

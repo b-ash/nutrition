@@ -1,3 +1,4 @@
+app = require 'application'
 View = require './view'
 Stats = require 'models/stats'
 
@@ -8,11 +9,9 @@ class StatsView extends View
     template: require './templates/stats'
     events: {}
 
-    initialize: =>
-        @model = new Stats()
-
     getRenderData: =>
-        @model.toJSON()
+        user: app.user.toJSON()
+        stats: @model.toJSON()
 
 
 module.exports = StatsView
