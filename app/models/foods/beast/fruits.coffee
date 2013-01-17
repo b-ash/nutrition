@@ -81,7 +81,7 @@ module.exports = {
         grapes:
             display: 'Grapes'
             portion: 17
-            measurement: 'cup'
+            measurement: 'grape'
             description: 'Small'
         honeydew:
             display: 'Honeydew Melon'

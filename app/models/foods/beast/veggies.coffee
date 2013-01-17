@@ -24,7 +24,7 @@ module.exports = {
             measurement: 'cup'
             description: 'Cooked, or 1 cup raw'
         beans:
-            display: 'Beans [green, wax, italian] (Cooked)'
+            display: 'Beans - green, wax, italian (Cooked)'
             portion: 0.5
             measurement: 'cup'
             description: 'Green, wax, italian. Cooked, or 1 cup raw'
@@ -72,7 +72,7 @@ module.exports = {
             display: 'Cucumber'
             portion: 1
             measurement: 'cup'
-            description: 'Raw'
+            description: 'Raw. Probably includes pickles.'
         eggplant:
             display: 'Eggplant'
             portion: 0.5

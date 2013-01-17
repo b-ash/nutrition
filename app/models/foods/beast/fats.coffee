@@ -8,34 +8,14 @@ module.exports = {
             portion: 1
             measurement: 'oz'
             description: ''
-        chia:
-            display: 'Chia Seeds'
-            portion: 2
-            measurement: 'Tbsp'
-            description: ''
-        nut_butters:
-            display: 'Nut Butters'
-            portion: 1.5
-            measurement: 'tsp'
-            description: 'Almond, cashew, peanut (3.5g protein)'
-        nuts:
-            display: 'Nuts'
-            portion: 5
-            measurement: 'nut'
-            description: 'Almonds, cashews, walnuts, pecans, hazelnuts'
-        oils:
-            display: 'Oils'
-            portion: 1
-            measurement: 'tsp'
-            description: 'Olive, peanut, safflower, sunflower, flaxseed'
-        seeds:
-            display: 'Seeds'
-            portion: 1
-            measurement: 'Tbsp'
-            description: 'Flax, pumpkin, sunflower, sesame'
         butter:
             display: 'Butter'
             portion: 1
+            measurement: 'Tbsp'
+            description: ''
+        chia:
+            display: 'Chia Seeds'
+            portion: 2
             measurement: 'Tbsp'
             description: ''
         milk:
@@ -63,6 +43,31 @@ module.exports = {
             portion: 1
             measurement: 'yolk'
             description: ''
+        nut_butters:
+            display: 'Nut Butters'
+            portion: 1.5
+            measurement: 'tsp'
+            description: 'Almond, cashew, peanut (3.5g protein)'
+        nuts:
+            display: 'Nuts'
+            portion: 5
+            measurement: 'nut'
+            description: 'Almonds, cashews, walnuts, pecans, hazelnuts'
+        oils:
+            display: 'Oils'
+            portion: 1
+            measurement: 'tsp'
+            description: 'Olive, peanut, safflower, sunflower, flaxseed'
+        olives:
+            display: 'Olives'
+            portion: 1
+            measurement: 'Tbsp'
+            description: ''
+        seeds:
+            display: 'Seeds'
+            portion: 1
+            measurement: 'Tbsp'
+            description: 'Flax, pumpkin, sunflower, sesame'
         sour_cream:
             display: 'Sour Cream'
             portion: 2

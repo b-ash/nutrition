@@ -1135,39 +1135,15 @@ window.require.define({"models/foods/beast/fats": function(exports, require, mod
         measurement: 'oz',
         description: ''
       },
-      chia: {
-        display: 'Chia Seeds',
-        portion: 2,
-        measurement: 'Tbsp',
-        description: ''
-      },
-      nut_butters: {
-        display: 'Nut Butters',
-        portion: 1.5,
-        measurement: 'tsp',
-        description: 'Almond, cashew, peanut (3.5g protein)'
-      },
-      nuts: {
-        display: 'Nuts',
-        portion: 5,
-        measurement: 'nut',
-        description: 'Almonds, cashews, walnuts, pecans, hazelnuts'
-      },
-      oils: {
-        display: 'Oils',
-        portion: 1,
-        measurement: 'tsp',
-        description: 'Olive, peanut, safflower, sunflower, flaxseed'
-      },
-      seeds: {
-        display: 'Seeds',
-        portion: 1,
-        measurement: 'Tbsp',
-        description: 'Flax, pumpkin, sunflower, sesame'
-      },
       butter: {
         display: 'Butter',
         portion: 1,
+        measurement: 'Tbsp',
+        description: ''
+      },
+      chia: {
+        display: 'Chia Seeds',
+        portion: 2,
         measurement: 'Tbsp',
         description: ''
       },
@@ -1200,6 +1176,36 @@ window.require.define({"models/foods/beast/fats": function(exports, require, mod
         portion: 1,
         measurement: 'yolk',
         description: ''
+      },
+      nut_butters: {
+        display: 'Nut Butters',
+        portion: 1.5,
+        measurement: 'tsp',
+        description: 'Almond, cashew, peanut (3.5g protein)'
+      },
+      nuts: {
+        display: 'Nuts',
+        portion: 5,
+        measurement: 'nut',
+        description: 'Almonds, cashews, walnuts, pecans, hazelnuts'
+      },
+      oils: {
+        display: 'Oils',
+        portion: 1,
+        measurement: 'tsp',
+        description: 'Olive, peanut, safflower, sunflower, flaxseed'
+      },
+      olives: {
+        display: 'Olives',
+        portion: 1,
+        measurement: 'Tbsp',
+        description: ''
+      },
+      seeds: {
+        display: 'Seeds',
+        portion: 1,
+        measurement: 'Tbsp',
+        description: 'Flax, pumpkin, sunflower, sesame'
       },
       sour_cream: {
         display: 'Sour Cream',
@@ -1312,7 +1318,7 @@ window.require.define({"models/foods/beast/fruits": function(exports, require, m
       grapes: {
         display: 'Grapes',
         portion: 17,
-        measurement: 'cup',
+        measurement: 'grape',
         description: 'Small'
       },
       honeydew: {
@@ -1973,7 +1979,7 @@ window.require.define({"models/foods/beast/veggies": function(exports, require, 
         description: 'Cooked, or 1 cup raw'
       },
       beans: {
-        display: 'Beans [green, wax, italian] (Cooked)',
+        display: 'Beans - green, wax, italian (Cooked)',
         portion: 0.5,
         measurement: 'cup',
         description: 'Green, wax, italian. Cooked, or 1 cup raw'
@@ -2030,7 +2036,7 @@ window.require.define({"models/foods/beast/veggies": function(exports, require, 
         display: 'Cucumber',
         portion: 1,
         measurement: 'cup',
-        description: 'Raw'
+        description: 'Raw. Probably includes pickles.'
       },
       eggplant: {
         display: 'Eggplant',
@@ -3172,7 +3178,7 @@ window.require.define({"views/templates/help": function(exports, require, module
     var foundHelper, self=this;
 
 
-    return "<header>\n    <h4>Help</h4>\n</header>\n\n<div class=\"help\">\n    <p>The point of this is to create a quick way to track the basic macronutrients outlined in the Body Beast nutrition guide.</p>\n</div>\n\n<div class=\"help\">\n    <p>Click on the bars on the main page to track your daily intake. If you're unsure of the nutrient value for a given food, use the \"Food\" tab to find the appropriate value.</p>\n</div>\n\n<div class=\"help\">\n    <p>If it's not in the \"Food\" section, it's not on the diet guide ;)</p>\n</div>\n\n<div class=\"help\">\n    <span>Free condiments</span>\n    <ul>\n        <li>Lemon and lime juice</li>\n        <li>Black pepper</li>\n        <li>Vinegar (any variety)</li>\n        <li>Mustard (any variety)</li>\n        <li>Herbs</li>\n        <li>Spices</li>\n        <li>Garlic and ginger</li>\n        <li>Hot sauce</li>\n        <li>Flavored extracts: vanilla, peppermint, almond, etc.</li>\n    </ul>\n</div>";});
+    return "<header>\n    <h4>Help</h4>\n</header>\n\n<div class=\"help\">\n    <h5>Purpose</h5>\n    <p>The point of this is to create a quick way to track the basic macronutrients outlined in the Body Beast nutrition guide.</p>\n</div>\n\n<div class=\"help\">\n    <h5>How</h5>\n    <p>Click on the bars on the main page to track your daily intake. If you're unsure of the nutrient value for a given food, use the \"Food\" tab to find the appropriate value.</p>\n</div>\n\n<div class=\"help\">\n    <p>If it's not in the \"Food\" section, it's not on the diet guide ;)</p>\n</div>\n\n<div class=\"help\">\n    <h5>Shakes</h5>\n    <p>In the diet guide, there is a section for mass-gain shakes that are made by combining different macros. However, the shake in this app is mainly a placeholder for \"take your supplements\".</p>\n    <p>The daily shake described is 2 scoops of the Beachbody fuel shot (5g whey protein, 200 cals) and 1 scoop of the Beachbody base shake (18g whey protein, 130 cals). Figure out your shake requirements and get those calories in!</p>\n</div>\n\n<div class=\"help\">\n    <h5>Free condiments</h5>\n    <ul>\n        <li>Lemon and lime juice</li>\n        <li>Black pepper</li>\n        <li>Vinegar (any variety)</li>\n        <li>Mustard (any variety)</li>\n        <li>Herbs</li>\n        <li>Spices</li>\n        <li>Garlic and ginger</li>\n        <li>Hot sauce</li>\n        <li>Flavored extracts: vanilla, peppermint, almond, etc.</li>\n    </ul>\n</div>";});
 }});
 
 window.require.define({"views/templates/index": function(exports, require, module) {
