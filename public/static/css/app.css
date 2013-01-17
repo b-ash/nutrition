@@ -7243,6 +7243,9 @@ html {
   padding-right: 10px;
   margin-top: 55px;
 }
+.navbar .nav {
+  left: -9px;
+}
 .navbar .container {
   max-width: 420px;
   margin-left: auto;
