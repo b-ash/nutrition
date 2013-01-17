@@ -5,9 +5,15 @@
   "version": "0.2.3",
   "homepage": "",
   "subdomain": "nutrition",
+  "contributors": [
+    {
+      "name": "Bash Ash",
+      "email": "ashbryanct@gmail.com"
+    }
+  ],
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "https://github.com/b-ash/nutrition.git"
   },
   "engines": {
     "node": "~0.8.x"
