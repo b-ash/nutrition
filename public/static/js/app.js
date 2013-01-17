@@ -382,6 +382,10 @@ window.require.define({"models/base_macros_model": function(exports, require, mo
 
       this.getMacroPercentage = __bind(this.getMacroPercentage, this);
 
+      this.changeByAmount = __bind(this.changeByAmount, this);
+
+      this.decrement = __bind(this.decrement, this);
+
       this.increment = __bind(this.increment, this);
 
       this.initialize = __bind(this.initialize, this);
@@ -392,15 +396,26 @@ window.require.define({"models/base_macros_model": function(exports, require, mo
       return this.fetch();
     };
 
-    BaseMacrosModel.prototype.increment = function(key, amt) {
-      var macros;
+    BaseMacrosModel.prototype.increment = function(macro, amt) {
       if (amt == null) {
         amt = 1;
       }
+      return this.changeByAmount(macro, amt);
+    };
+
+    BaseMacrosModel.prototype.decrement = function(macro, amt) {
+      if (amt == null) {
+        amt = -1;
+      }
+      return this.changeByAmount(macro, amt);
+    };
+
+    BaseMacrosModel.prototype.changeByAmount = function(macro, amt) {
+      var macros, newCount;
       macros = this.get('macros');
-      macros[key].count += parseFloat(amt);
-      this.save('macros', macros);
-      return this.trigger('incrememt', key);
+      newCount = Math.max(macros[macro].count + parseFloat(amt), 0);
+      macros[macro].count = newCount;
+      return this.save('macros', macros);
     };
 
     BaseMacrosModel.prototype.getMacroPercentage = function(macro) {
@@ -2664,6 +2679,12 @@ window.require.define({"views/index": function(exports, require, module) {
     __extends(IndexView, _super);
 
     function IndexView() {
+      this.onClose = __bind(this.onClose, this);
+
+      this.changePercentBar = __bind(this.changePercentBar, this);
+
+      this.resetMacro = __bind(this.resetMacro, this);
+
       this.increment = __bind(this.increment, this);
 
       this.getRenderData = __bind(this.getRenderData, this);
@@ -2679,7 +2700,8 @@ window.require.define({"views/index": function(exports, require, module) {
     IndexView.prototype.template = require('./templates/index');
 
     IndexView.prototype.events = {
-      'click .percentage-bar': 'increment'
+      'click .percentage-bar': 'increment',
+      'click .btn-reset': 'resetMacro'
     };
 
     IndexView.prototype.initialize = function() {
@@ -2691,13 +2713,29 @@ window.require.define({"views/index": function(exports, require, module) {
     };
 
     IndexView.prototype.increment = function(event) {
-      var $completionBar, $currentCount, $percentageText, $totalBar, macro, macroPercentage, pixelPercentage;
-      $totalBar = $(event.currentTarget);
-      $currentCount = $totalBar.find('#text_count');
-      $percentageText = $totalBar.find('.percentage-text');
-      $completionBar = $totalBar.find('.percentage-complete');
-      macro = $totalBar.parents('.macro').attr('data-key');
+      var $macro, macro;
+      event.stopPropagation();
+      $macro = $(event.currentTarget).parents('.macro');
+      macro = $macro.attr('data-key');
       this.model.increment(macro);
+      return this.changePercentBar($macro, macro);
+    };
+
+    IndexView.prototype.resetMacro = function(event) {
+      var $macro, macro;
+      event.stopPropagation();
+      $macro = $(event.currentTarget).parents('.macro');
+      macro = $macro.attr('data-key');
+      this.model.decrement(macro);
+      return this.changePercentBar($macro, macro);
+    };
+
+    IndexView.prototype.changePercentBar = function($macro, macro) {
+      var $completionBar, $currentCount, $percentageText, $totalBar, macroPercentage, pixelPercentage;
+      $totalBar = $macro.find('.percentage-bar');
+      $currentCount = $macro.find('.text_count');
+      $percentageText = $macro.find('.percentage-text');
+      $completionBar = $macro.find('.percentage-complete');
       macroPercentage = this.model.getMacroPercentage(macro);
       pixelPercentage = macroPercentage / 100 * $totalBar.width();
       $currentCount.text(this.model.get('macros')[macro].count);
@@ -2706,7 +2744,13 @@ window.require.define({"views/index": function(exports, require, module) {
       });
       if (this.model.isExceedingGoal(macro)) {
         return $percentageText.addClass('exceeding');
+      } else {
+        return $percentageText.removeClass('exceeding');
       }
+    };
+
+    IndexView.prototype.onClose = function() {
+      return this.model.off('cleared', this.render);
     };
 
     return IndexView;
@@ -3178,7 +3222,7 @@ window.require.define({"views/templates/help": function(exports, require, module
     var foundHelper, self=this;
 
 
-    return "<header>\n    <h4>Help</h4>\n</header>\n\n<div class=\"help\">\n    <h5>Purpose</h5>\n    <p>The point of this is to create a quick way to track the basic macronutrients outlined in the Body Beast nutrition guide.</p>\n</div>\n\n<div class=\"help\">\n    <h5>How</h5>\n    <p>Click on the bars on the main page to track your daily intake. If you're unsure of the nutrient value for a given food, use the \"Food\" tab to find the appropriate value.</p>\n</div>\n\n<div class=\"help\">\n    <p>If it's not in the \"Food\" section, it's not on the diet guide ;)</p>\n</div>\n\n<div class=\"help\">\n    <h5>Shakes</h5>\n    <p>In the diet guide, there is a section for mass-gain shakes that are made by combining different macros. However, the shake in this app is mainly a placeholder for \"take your supplements\".</p>\n    <p>The daily shake described is 2 scoops of the Beachbody fuel shot (5g whey protein, 200 cals) and 1 scoop of the Beachbody base shake (18g whey protein, 130 cals). Figure out your shake requirements and get those calories in!</p>\n</div>\n\n<div class=\"help\">\n    <h5>Free condiments</h5>\n    <ul>\n        <li>Lemon and lime juice</li>\n        <li>Black pepper</li>\n        <li>Vinegar (any variety)</li>\n        <li>Mustard (any variety)</li>\n        <li>Herbs</li>\n        <li>Spices</li>\n        <li>Garlic and ginger</li>\n        <li>Hot sauce</li>\n        <li>Flavored extracts: vanilla, peppermint, almond, etc.</li>\n    </ul>\n</div>";});
+    return "<header>\n    <h4>Help</h4>\n</header>\n\n<div class=\"help\">\n    <h5>Purpose</h5>\n    <p>The point of this is to create a quick way to track the basic macronutrients outlined in the Body Beast nutrition guide.</p>\n</div>\n\n<div class=\"help\">\n    <h5>How</h5>\n    <p>Click on the bars on the main page to track your daily intake. If you're unsure of the nutrient value for a given food, use the \"Food\" tab to find the appropriate value.</p>\n</div>\n\n<div class=\"help\">\n    <p>If it's not in the \"Food\" section, it's not on the diet guide ;)</p>\n</div>\n\n<div class=\"help\">\n    <h5>Shakes</h5>\n    <p>In the diet guide, there is a section for mass-gain shakes that are made by combining different macros. However, the shake in this app is mainly a placeholder for \"take your supplements\".</p>\n    <p>The daily shake described is 2 scoops of the Beachbody fuel shot (5g whey protein, 200 cals) and 1 scoop of the Beachbody base shake (18g whey protein, 130 cals). Figure out your shake requirements and get those calories in.</p>\n    <p>Don't forget your post-workout shake.</p>\n</div>\n\n<div class=\"help\">\n    <h5>Free condiments</h5>\n    <ul>\n        <li>Lemon and lime juice</li>\n        <li>Black pepper</li>\n        <li>Vinegar (any variety)</li>\n        <li>Mustard (any variety)</li>\n        <li>Herbs</li>\n        <li>Spices</li>\n        <li>Garlic and ginger</li>\n        <li>Hot sauce</li>\n        <li>Flavored extracts: vanilla, peppermint, almond, etc.</li>\n    </ul>\n</div>";});
 }});
 
 window.require.define({"views/templates/index": function(exports, require, module) {
@@ -3194,7 +3238,7 @@ window.require.define({"views/templates/index": function(exports, require, modul
     stack1 = foundHelper || depth0.key;
     if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
     else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "key", { hash: {} }); }
-    buffer += escapeExpression(stack1) + "\">\n            <div class=\"percentage-bar relative\">\n                <div class=\"percentage-complete absolute ";
+    buffer += escapeExpression(stack1) + "\">\n            <div class=\"percentage-bar relative\">\n                <div class=\"btn-reset absolute\">\n                    <span class=\"ui-icon ui-icon-minusthick\"></span>\n                </div>\n                <div class=\"percentage-complete absolute ";
     foundHelper = helpers.key;
     stack1 = foundHelper || depth0.key;
     if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
@@ -3219,19 +3263,19 @@ window.require.define({"views/templates/index": function(exports, require, modul
     if(foundHelper && typeof stack2 === functionType) { stack1 = stack2.call(depth0, stack1, tmp1); }
     else { stack1 = blockHelperMissing.call(depth0, stack2, stack1, tmp1); }
     if(stack1 || stack1 === 0) { buffer += stack1; }
-    buffer += "\">\n                        <span id=\"text_display\">";
+    buffer += "\">\n                        <span class=\"text_display with-default-cursor\">";
     foundHelper = helpers.val;
     stack1 = foundHelper || depth0.val;
     stack1 = (stack1 === null || stack1 === undefined || stack1 === false ? stack1 : stack1.display);
     if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
     else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "val.display", { hash: {} }); }
-    buffer += escapeExpression(stack1) + ": </span>\n                        <span id=\"text_count\">";
+    buffer += escapeExpression(stack1) + ": </span>\n                        <span class=\"text_count with-default-cursor\">";
     foundHelper = helpers.val;
     stack1 = foundHelper || depth0.val;
     stack1 = (stack1 === null || stack1 === undefined || stack1 === false ? stack1 : stack1.count);
     if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
     else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "val.count", { hash: {} }); }
-    buffer += escapeExpression(stack1) + "</span>\n                        <span id=\"text_total\"> / ";
+    buffer += escapeExpression(stack1) + "</span>\n                        <span class=\"text_total with-default-curser\"> / ";
     foundHelper = helpers.key;
     stack1 = foundHelper || depth0.key;
     foundHelper = helpers.getGoalForMacro;

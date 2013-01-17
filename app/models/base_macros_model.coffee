@@ -8,11 +8,18 @@ class BaseMacrosModel extends LocalStorageModel
     initialize: =>
         @fetch()
 
-    increment: (key, amt=1) =>
+    increment: (macro, amt=1) =>
+        @changeByAmount(macro, amt)
+
+    decrement: (macro, amt=-1) =>
+        @changeByAmount(macro, amt)
+
+    changeByAmount: (macro, amt) =>
         macros = @get('macros')
-        macros[key].count += parseFloat(amt)
+
+        newCount = Math.max (macros[macro].count + parseFloat(amt)), 0
+        macros[macro].count = newCount
         @save('macros', macros)
-        @trigger('incrememt', key)
 
     getMacroPercentage: (macro) =>
         goal = @getGoalForMacro(macro)

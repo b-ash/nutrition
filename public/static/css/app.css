@@ -258,26 +258,26 @@ td { vertical-align: top; }
 .ui-widget { font-family: Verdana,Arial,sans-serif; font-size: 1.1em; }
 .ui-widget .ui-widget { font-size: 1em; }
 .ui-widget input, .ui-widget select, .ui-widget textarea, .ui-widget button { font-family: Verdana,Arial,sans-serif; font-size: 1em; }
-.ui-widget-content { border: 1px solid #aaaaaa; background: #ffffff url(/logzilla/static/images/ui-bg_flat_75_ffffff_40x100.png) 50% 50% repeat-x; color: #222222; }
+.ui-widget-content { border: 1px solid #aaaaaa; background: #ffffff url(/static/images/ui-bg_flat_75_ffffff_40x100.png) 50% 50% repeat-x; color: #222222; }
 .ui-widget-content a { color: #222222; }
-.ui-widget-header { border: 1px solid #aaaaaa; background: #cccccc url(/logzilla/static/images/ui-bg_highlight-soft_75_cccccc_1x100.png) 50% 50% repeat-x; color: #222222; font-weight: bold; }
+.ui-widget-header { border: 1px solid #aaaaaa; background: #cccccc url(/static/images/ui-bg_highlight-soft_75_cccccc_1x100.png) 50% 50% repeat-x; color: #222222; font-weight: bold; }
 .ui-widget-header a { color: #222222; }
 
 /* Interaction states
 ----------------------------------*/
-.ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default { border: 1px solid #d3d3d3; background: #e6e6e6 url(/logzilla/static/images/ui-bg_glass_75_e6e6e6_1x400.png) 50% 50% repeat-x; font-weight: normal; color: #555555; }
+.ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default { border: 1px solid #d3d3d3; background: #e6e6e6 url(/static/images/ui-bg_glass_75_e6e6e6_1x400.png) 50% 50% repeat-x; font-weight: normal; color: #555555; }
 .ui-state-default a, .ui-state-default a:link, .ui-state-default a:visited { color: #555555; text-decoration: none; }
-.ui-state-hover, .ui-widget-content .ui-state-hover, .ui-widget-header .ui-state-hover, .ui-state-focus, .ui-widget-content .ui-state-focus, .ui-widget-header .ui-state-focus { border: 1px solid #999999; background: #dadada url(/logzilla/static/images/ui-bg_glass_75_dadada_1x400.png) 50% 50% repeat-x; font-weight: normal; color: #212121; }
+.ui-state-hover, .ui-widget-content .ui-state-hover, .ui-widget-header .ui-state-hover, .ui-state-focus, .ui-widget-content .ui-state-focus, .ui-widget-header .ui-state-focus { border: 1px solid #999999; background: #dadada url(/static/images/ui-bg_glass_75_dadada_1x400.png) 50% 50% repeat-x; font-weight: normal; color: #212121; }
 .ui-state-hover a, .ui-state-hover a:hover { color: #212121; text-decoration: none; }
-.ui-state-active, .ui-widget-content .ui-state-active, .ui-widget-header .ui-state-active { border: 1px solid #aaaaaa; background: #ffffff url(/logzilla/static/images/ui-bg_glass_65_ffffff_1x400.png) 50% 50% repeat-x; font-weight: normal; color: #212121; }
+.ui-state-active, .ui-widget-content .ui-state-active, .ui-widget-header .ui-state-active { border: 1px solid #aaaaaa; background: #ffffff url(/static/images/ui-bg_glass_65_ffffff_1x400.png) 50% 50% repeat-x; font-weight: normal; color: #212121; }
 .ui-state-active a, .ui-state-active a:link, .ui-state-active a:visited { color: #212121; text-decoration: none; }
 .ui-widget :active { outline: none; }
 
 /* Interaction Cues
 ----------------------------------*/
-.ui-state-highlight, .ui-widget-content .ui-state-highlight, .ui-widget-header .ui-state-highlight  {border: 1px solid #fcefa1; background: #fbf9ee url(/logzilla/static/images/ui-bg_glass_55_fbf9ee_1x400.png) 50% 50% repeat-x; color: #363636; }
+.ui-state-highlight, .ui-widget-content .ui-state-highlight, .ui-widget-header .ui-state-highlight  {border: 1px solid #fcefa1; background: #fbf9ee url(/static/images/ui-bg_glass_55_fbf9ee_1x400.png) 50% 50% repeat-x; color: #363636; }
 .ui-state-highlight a, .ui-widget-content .ui-state-highlight a,.ui-widget-header .ui-state-highlight a { color: #363636; }
-.ui-state-error, .ui-widget-content .ui-state-error, .ui-widget-header .ui-state-error {border: 1px solid #cd0a0a; background: #fef1ec url(/logzilla/static/images/ui-bg_glass_95_fef1ec_1x400.png) 50% 50% repeat-x; color: #cd0a0a; }
+.ui-state-error, .ui-widget-content .ui-state-error, .ui-widget-header .ui-state-error {border: 1px solid #cd0a0a; background: #fef1ec url(/static/images/ui-bg_glass_95_fef1ec_1x400.png) 50% 50% repeat-x; color: #cd0a0a; }
 .ui-state-error a, .ui-widget-content .ui-state-error a, .ui-widget-header .ui-state-error a { color: #cd0a0a; }
 .ui-state-error-text, .ui-widget-content .ui-state-error-text, .ui-widget-header .ui-state-error-text { color: #cd0a0a; }
 .ui-priority-primary, .ui-widget-content .ui-priority-primary, .ui-widget-header .ui-priority-primary { font-weight: bold; }
@@ -288,14 +288,14 @@ td { vertical-align: top; }
 ----------------------------------*/
 
 /* states and images */
-.ui-icon { width: 16px; height: 16px; background-image: url(/logzilla/static/images/ui-icons_222222_256x240.png); }
-.ui-widget-content .ui-icon {background-image: url(/logzilla/static/images/ui-icons_222222_256x240.png); }
-.ui-widget-header .ui-icon {background-image: url(/logzilla/static/images/ui-icons_222222_256x240.png); }
-.ui-state-default .ui-icon { background-image: url(/logzilla/static/images/ui-icons_888888_256x240.png); }
-.ui-state-hover .ui-icon, .ui-state-focus .ui-icon {background-image: url(/logzilla/static/images/ui-icons_454545_256x240.png); }
-.ui-state-active .ui-icon {background-image: url(/logzilla/static/images/ui-icons_454545_256x240.png); }
-.ui-state-highlight .ui-icon {background-image: url(/logzilla/static/images/ui-icons_2e83ff_256x240.png); }
-.ui-state-error .ui-icon, .ui-state-error-text .ui-icon {background-image: url(/logzilla/static/images/ui-icons_cd0a0a_256x240.png); }
+.ui-icon { width: 16px; height: 16px; background-image: url(/static/images/ui-icons_222222_256x240.png); }
+.ui-widget-content .ui-icon {background-image: url(/static/images/ui-icons_222222_256x240.png); }
+.ui-widget-header .ui-icon {background-image: url(/static/images/ui-icons_222222_256x240.png); }
+.ui-state-default .ui-icon { background-image: url(/static/images/ui-icons_888888_256x240.png); }
+.ui-state-hover .ui-icon, .ui-state-focus .ui-icon {background-image: url(/static/images/ui-icons_454545_256x240.png); }
+.ui-state-active .ui-icon {background-image: url(/static/images/ui-icons_454545_256x240.png); }
+.ui-state-highlight .ui-icon {background-image: url(/static/images/ui-icons_2e83ff_256x240.png); }
+.ui-state-error .ui-icon, .ui-state-error-text .ui-icon {background-image: url(/static/images/ui-icons_cd0a0a_256x240.png); }
 
 /* positioning */
 .ui-icon-carat-1-n { background-position: 0 0; }
@@ -485,8 +485,8 @@ td { vertical-align: top; }
 .ui-corner-all, .ui-corner-bottom, .ui-corner-right, .ui-corner-br { -moz-border-radius-bottomright: 4px; -webkit-border-bottom-right-radius: 4px; -khtml-border-bottom-right-radius: 4px; border-bottom-right-radius: 4px; }
 
 /* Overlays */
-.ui-widget-overlay { background: #aaaaaa url(/logzilla/static/images/ui-bg_flat_0_aaaaaa_40x100.png) 50% 50% repeat-x; opacity: .30;filter:Alpha(Opacity=30); }
-.ui-widget-shadow { margin: -8px 0 0 -8px; padding: 8px; background: #aaaaaa url(/logzilla/static/images/ui-bg_flat_0_aaaaaa_40x100.png) 50% 50% repeat-x; opacity: .30;filter:Alpha(Opacity=30); -moz-border-radius: 8px; -khtml-border-radius: 8px; -webkit-border-radius: 8px; border-radius: 8px; }/*!
+.ui-widget-overlay { background: #aaaaaa url(/static/images/ui-bg_flat_0_aaaaaa_40x100.png) 50% 50% repeat-x; opacity: .30;filter:Alpha(Opacity=30); }
+.ui-widget-shadow { margin: -8px 0 0 -8px; padding: 8px; background: #aaaaaa url(/static/images/ui-bg_flat_0_aaaaaa_40x100.png) 50% 50% repeat-x; opacity: .30;filter:Alpha(Opacity=30); -moz-border-radius: 8px; -khtml-border-radius: 8px; -webkit-border-radius: 8px; border-radius: 8px; }/*!
  * jQuery UI Resizable 1.8.20
  *
  * Copyright 2012, AUTHORS.txt (http://jqueryui.com/about)
@@ -831,7 +831,7 @@ button.ui-button::-moz-focus-inner { border: 0; padding: 0; } /* reset extra pad
   width: 12px;
   height: 13px;
   font-size: 1px;
-  background: url(/logzilla/static/images/chosen-sprite.png) right top no-repeat;
+  background: url(/static/images/chosen-sprite.png) right top no-repeat;
 }
 .chzn-container-single .chzn-single abbr:hover {
   background-position: right -11px;
@@ -860,7 +860,7 @@ button.ui-button::-moz-focus-inner { border: 0; padding: 0; } /* reset extra pad
   width: 18px;
 }
 .chzn-container-single .chzn-single div b {
-  background: url('/logzilla/static/images/chosen-sprite.png') no-repeat 0 1px;
+  background: url('/static/images/chosen-sprite.png') no-repeat 0 1px;
   display: block;
   width: 100%;
   height: 100%;
@@ -874,14 +874,14 @@ button.ui-button::-moz-focus-inner { border: 0; padding: 0; } /* reset extra pad
 }
 
 .chzn-container-single .chzn-search input {
-  background: #fff url('/logzilla/static/images/chosen-sprite.png') no-repeat 100% -22px;
-  background: url('/logzilla/static/images/chosen-sprite.png') no-repeat 100% -22px, -webkit-gradient(linear, left bottom, left top, color-stop(0.85, white), color-stop(0.99, #eeeeee));
-  background: url('/logzilla/static/images/chosen-sprite.png') no-repeat 100% -22px, -webkit-linear-gradient(center bottom, white 85%, #eeeeee 99%);
-  background: url('/logzilla/static/images/chosen-sprite.png') no-repeat 100% -22px, -moz-linear-gradient(center bottom, white 85%, #eeeeee 99%);
-  background: url('/logzilla/static/images/chosen-sprite.png') no-repeat 100% -22px, -o-linear-gradient(bottom, white 85%, #eeeeee 99%);
-  background: url('/logzilla/static/images/chosen-sprite.png') no-repeat 100% -22px, -ms-linear-gradient(top, #ffffff 85%,#eeeeee 99%);
-  background: url('/logzilla/static/images/chosen-sprite.png') no-repeat 100% -22px, -ms-linear-gradient(top, #ffffff 85%,#eeeeee 99%);
-  background: url('/logzilla/static/images/chosen-sprite.png') no-repeat 100% -22px, linear-gradient(top, #ffffff 85%,#eeeeee 99%);
+  background: #fff url('/static/images/chosen-sprite.png') no-repeat 100% -22px;
+  background: url('/static/images/chosen-sprite.png') no-repeat 100% -22px, -webkit-gradient(linear, left bottom, left top, color-stop(0.85, white), color-stop(0.99, #eeeeee));
+  background: url('/static/images/chosen-sprite.png') no-repeat 100% -22px, -webkit-linear-gradient(center bottom, white 85%, #eeeeee 99%);
+  background: url('/static/images/chosen-sprite.png') no-repeat 100% -22px, -moz-linear-gradient(center bottom, white 85%, #eeeeee 99%);
+  background: url('/static/images/chosen-sprite.png') no-repeat 100% -22px, -o-linear-gradient(bottom, white 85%, #eeeeee 99%);
+  background: url('/static/images/chosen-sprite.png') no-repeat 100% -22px, -ms-linear-gradient(top, #ffffff 85%,#eeeeee 99%);
+  background: url('/static/images/chosen-sprite.png') no-repeat 100% -22px, -ms-linear-gradient(top, #ffffff 85%,#eeeeee 99%);
+  background: url('/static/images/chosen-sprite.png') no-repeat 100% -22px, linear-gradient(top, #ffffff 85%,#eeeeee 99%);
   margin: 1px 0;
   padding: 4px 20px 4px 5px;
   outline: 0;
@@ -986,7 +986,7 @@ button.ui-button::-moz-focus-inner { border: 0; padding: 0; } /* reset extra pad
   width: 12px;
   height: 13px;
   font-size: 1px;
-  background: url(/logzilla/static/images/chosen-sprite.png) right top no-repeat;
+  background: url(/static/images/chosen-sprite.png) right top no-repeat;
 }
 .chzn-container-multi .chzn-choices .search-choice .search-choice-close:hover {
   background-position: right -11px;
@@ -1126,14 +1126,14 @@ button.ui-button::-moz-focus-inner { border: 0; padding: 0; } /* reset extra pad
 .chzn-rtl .chzn-results .group-option { padding-left: 0; padding-right: 20px; }
 .chzn-rtl.chzn-container-active .chzn-single-with-drop div { border-right: none; }
 .chzn-rtl .chzn-search input {
-  background: url('/logzilla/static/images/chosen-sprite.png') no-repeat -38px -22px, #ffffff;
-  background: url('/logzilla/static/images/chosen-sprite.png') no-repeat -38px -22px, -webkit-gradient(linear, left bottom, left top, color-stop(0.85, white), color-stop(0.99, #eeeeee));
-  background: url('/logzilla/static/images/chosen-sprite.png') no-repeat -38px -22px, -webkit-linear-gradient(center bottom, white 85%, #eeeeee 99%);  
-  background: url('/logzilla/static/images/chosen-sprite.png') no-repeat -38px -22px, -moz-linear-gradient(center bottom, white 85%, #eeeeee 99%);
-  background: url('/logzilla/static/images/chosen-sprite.png') no-repeat -38px -22px, -o-linear-gradient(bottom, white 85%, #eeeeee 99%);
-  background: url('/logzilla/static/images/chosen-sprite.png') no-repeat -38px -22px, -ms-linear-gradient(top, #ffffff 85%,#eeeeee 99%);
-  background: url('/logzilla/static/images/chosen-sprite.png') no-repeat -38px -22px, -ms-linear-gradient(top, #ffffff 85%,#eeeeee 99%);
-  background: url('/logzilla/static/images/chosen-sprite.png') no-repeat -38px -22px, linear-gradient(top, #ffffff 85%,#eeeeee 99%);
+  background: url('/static/images/chosen-sprite.png') no-repeat -38px -22px, #ffffff;
+  background: url('/static/images/chosen-sprite.png') no-repeat -38px -22px, -webkit-gradient(linear, left bottom, left top, color-stop(0.85, white), color-stop(0.99, #eeeeee));
+  background: url('/static/images/chosen-sprite.png') no-repeat -38px -22px, -webkit-linear-gradient(center bottom, white 85%, #eeeeee 99%);  
+  background: url('/static/images/chosen-sprite.png') no-repeat -38px -22px, -moz-linear-gradient(center bottom, white 85%, #eeeeee 99%);
+  background: url('/static/images/chosen-sprite.png') no-repeat -38px -22px, -o-linear-gradient(bottom, white 85%, #eeeeee 99%);
+  background: url('/static/images/chosen-sprite.png') no-repeat -38px -22px, -ms-linear-gradient(top, #ffffff 85%,#eeeeee 99%);
+  background: url('/static/images/chosen-sprite.png') no-repeat -38px -22px, -ms-linear-gradient(top, #ffffff 85%,#eeeeee 99%);
+  background: url('/static/images/chosen-sprite.png') no-repeat -38px -22px, linear-gradient(top, #ffffff 85%,#eeeeee 99%);
   padding: 4px 5px 4px 20px;
 }
 /* @end */
@@ -7231,6 +7231,9 @@ div {
 .without-top-margin {
   margin-top: 0;
 }
+.with-default-cursor {
+  cursor: default;
+}
 html {
   width: 100%;
   height: 450px;
@@ -7265,8 +7268,12 @@ html {
   text-align: center;
   padding: 15px 0;
 }
-.btn:visited {
-  color: #000;
+.btn-reset {
+  position: absolute;
+  cursor: pointer;
+  top: 7px;
+  right: 5px;
+  z-index: 10;
 }
 .list .list-item {
   margin-bottom: 10px;
@@ -7274,6 +7281,9 @@ html {
 .list .list-item .btn {
   width: 100%;
   padding: 5px 0;
+}
+.list .list-item .btn:visited {
+  color: #000;
 }
 .list .list-item .percentage-bar {
   -webkit-border-radius: 4px;

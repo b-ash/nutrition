@@ -6,11 +6,14 @@
     {{#keys macros this}}
         <div class="list-item macro" data-key="{{key}}">
             <div class="percentage-bar relative">
+                <div class="btn-reset absolute">
+                    <span class="ui-icon ui-icon-minusthick"></span>
+                </div>
                 <div class="percentage-complete absolute {{key}}" style="width: {{getPercentageWidth key}}%;">
                     <div class="percentage-text absolute {{#ifIsExceedingGoal key}}exceeding{{/ifIsExceedingGoal}}">
-                        <span id="text_display">{{val.display}}: </span>
-                        <span id="text_count">{{val.count}}</span>
-                        <span id="text_total"> / {{getGoalForMacro key}}</span>
+                        <span class="text_display with-default-cursor">{{val.display}}: </span>
+                        <span class="text_count with-default-cursor">{{val.count}}</span>
+                        <span class="text_total with-default-curser"> / {{getGoalForMacro key}}</span>
                     </div>
                 </div>
             </div>
