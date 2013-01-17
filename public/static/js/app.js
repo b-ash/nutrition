@@ -90,19 +90,20 @@ window.require.define({"application": function(exports, require, module) {
       this.views = {};
       this.router = new Router();
       this.user = new BeastUser();
-      if (this.user.get('configured')) {
-        this.afterConfiguration();
-      } else if (window.location.pathname !== '/configure') {
+      if (!this.user.get('configured') && window.location.pathname !== '/configure') {
         return window.location.href = '/configure';
+      } else {
+        this.afterConfiguration();
+        Backbone.history.start({
+          pushState: true
+        });
+        return onSuccess();
       }
-      Backbone.history.start({
-        pushState: true
-      });
-      return onSuccess();
     },
     onConfigure: function() {
-      var _ref;
-      return (_ref = this.macros) != null ? _ref.destroy() : void 0;
+      this.afterConfiguration();
+      this.macros.destroy();
+      return this.macros = new BeastMacros(this.stats, this.user);
     },
     afterConfiguration: function() {
       this.stats = new Stats(this.user);

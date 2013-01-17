@@ -11,18 +11,20 @@ Application =
         @router = new Router()
         @user = new BeastUser()
 
-        if @user.get('configured')
+        if not @user.get('configured') and window.location.pathname isnt '/configure'
+            window.location.href = '/configure'
+        else
             @afterConfiguration()
-        else if window.location.pathname isnt '/configure'
-            return window.location.href = '/configure'
+            
+            Backbone.history.start
+                pushState: true
 
-        Backbone.history.start
-            pushState: true
-
-        onSuccess()
+            onSuccess()
 
     onConfigure: ->
-        @macros?.destroy()
+        @afterConfiguration()
+        @macros.destroy()
+        @macros = new BeastMacros @stats, @user
 
     afterConfiguration: ->
         @stats = new Stats @user
