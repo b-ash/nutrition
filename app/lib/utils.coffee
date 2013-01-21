@@ -3,8 +3,8 @@ String.prototype.capitalize = ->
 
 
 module.exports =
-    roundFloat: (percentage) ->
-        Math.round(percentage * 100) / 100
+    roundFloat: (percentage, precision=100) ->
+        Math.round(percentage * precision) / precision
 
     pluralize: (word, quantity) ->
         if quantity > 1

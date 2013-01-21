@@ -5,7 +5,7 @@ module.exports = {
     fruits: 'Fruits'
     proteins: 'Proteins'
     fats: 'Fats'
-    liquid_protein: 'Protein Liquids'
-    liquid_balanced: 'Balanced Liquids'
-    liquid_carb: 'Carb Liquids'
+    liquid_protein: 'Protein Liquids (Legume)'
+    liquid_balanced: 'Balanced Liquids (Veggie)'
+    liquid_carb: 'Carb Liquids (Fruit)'
 }

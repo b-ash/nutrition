@@ -1,4 +1,5 @@
 BeastBrackets = require('./calorie_brackets/beast_brackets')
+utils = require('lib/utils')
 
 
 class Stats
@@ -10,16 +11,16 @@ class Stats
         @calorieBracket = @getCalorieBracket()
 
     getCalorieBracket: =>
-        lbm = @lbm(@weight, @bfp)
-        rmr = @rmr(lbm)
-        cmr = @cmr(rmr)
-        rmr2 = @rmr2(rmr, cmr)
-        cim = @cim(rmr2)
+        lbm = utils.roundFloat @lbm(@weight, @bfp), 1
+        rmr = utils.roundFloat @rmr(lbm), 1
+        cmr = utils.roundFloat @cmr(rmr), 1
+        rmr2 = utils.roundFloat @rmr2(rmr, cmr), 1
+        cim = utils.roundFloat @cim(rmr2), 1
 
         if @phase is 'build'
-            rawCals = @build(@bfp, cim)
+            rawCals = utils.roundFloat @build(@bfp, cim), 1
         else
-            rawCals = @beast(@bfp, cim)
+            rawCals = utils.roundFloat @beast(@bfp, cim), 1
         cals = @roundCalsToBracket(rawCals, @phase)
 
         {lbm, rmr, cmr, rmr2, cim, rawCals, cals}

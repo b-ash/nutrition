@@ -292,8 +292,11 @@ window.require.define({"lib/utils": function(exports, require, module) {
   };
 
   module.exports = {
-    roundFloat: function(percentage) {
-      return Math.round(percentage * 100) / 100;
+    roundFloat: function(percentage, precision) {
+      if (precision == null) {
+        precision = 100;
+      }
+      return Math.round(percentage * precision) / precision;
     },
     pluralize: function(word, quantity) {
       if (quantity > 1) {
@@ -1138,9 +1141,9 @@ window.require.define({"models/foods/beast/all_macros": function(exports, requir
     fruits: 'Fruits',
     proteins: 'Proteins',
     fats: 'Fats',
-    liquid_protein: 'Protein Liquids',
-    liquid_balanced: 'Balanced Liquids',
-    liquid_carb: 'Carb Liquids'
+    liquid_protein: 'Protein Liquids (Legume)',
+    liquid_balanced: 'Balanced Liquids (Veggie)',
+    liquid_carb: 'Carb Liquids (Fruit)'
   };
   
 }});
@@ -2242,10 +2245,12 @@ window.require.define({"models/local_storage_model": function(exports, require, 
 }});
 
 window.require.define({"models/stats": function(exports, require, module) {
-  var BeastBrackets, Stats,
+  var BeastBrackets, Stats, utils,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
   BeastBrackets = require('./calorie_brackets/beast_brackets');
+
+  utils = require('lib/utils');
 
   Stats = (function() {
 
@@ -2265,15 +2270,15 @@ window.require.define({"models/stats": function(exports, require, module) {
 
     Stats.prototype.getCalorieBracket = function() {
       var cals, cim, cmr, lbm, rawCals, rmr, rmr2;
-      lbm = this.lbm(this.weight, this.bfp);
-      rmr = this.rmr(lbm);
-      cmr = this.cmr(rmr);
-      rmr2 = this.rmr2(rmr, cmr);
-      cim = this.cim(rmr2);
+      lbm = utils.roundFloat(this.lbm(this.weight, this.bfp), 1);
+      rmr = utils.roundFloat(this.rmr(lbm), 1);
+      cmr = utils.roundFloat(this.cmr(rmr), 1);
+      rmr2 = utils.roundFloat(this.rmr2(rmr, cmr), 1);
+      cim = utils.roundFloat(this.cim(rmr2), 1);
       if (this.phase === 'build') {
-        rawCals = this.build(this.bfp, cim);
+        rawCals = utils.roundFloat(this.build(this.bfp, cim), 1);
       } else {
-        rawCals = this.beast(this.bfp, cim);
+        rawCals = utils.roundFloat(this.beast(this.bfp, cim), 1);
       }
       cals = this.roundCalsToBracket(rawCals, this.phase);
       return {
