@@ -22,8 +22,10 @@ class BaseMacrosModel extends LocalStorageModel
         macros = @get('macros')
 
         newCount = Math.max (macros[macro].count + parseFloat(amt)), 0
-        cals = new BeastFoods(macro).get('cals')
-        @totalCals += (amt * cals)
+
+        if macro isnt 'shake'
+            cals = new BeastFoods(macro).get('cals')
+            @totalCals += (amt * cals)
 
         macros[macro].count = newCount
         @save('macros', macros)
@@ -38,7 +40,7 @@ class BaseMacrosModel extends LocalStorageModel
         @totalCals
 
     calculateTotalCals: =>
-        for name, macro of @get('macros')
+        for name, macro of @get('macros') when name isnt 'shake'
             cals = new BeastFoods(name).get('cals')
             if cals?
                 @totalCals += (macro.count * cals)
