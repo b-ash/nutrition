@@ -494,6 +494,7 @@ window.require.define({"models/base_macros_model": function(exports, require, mo
 
     BaseMacrosModel.prototype.clear = function() {
       this.save(this.defaults());
+      this.totalCals = 0;
       return this.trigger('cleared');
     };
 
@@ -1133,23 +1134,6 @@ window.require.define({"models/calorie_brackets/beast/build/4800c": function(exp
       veggies: 11,
       fruits: 15,
       proteins: 26,
-      fats: 11,
-      shake: 1
-    }
-  };
-  
-}});
-
-window.require.define({"models/calorie_brackets/beast/build/5000c": function(exports, require, module) {
-  
-  module.exports = {
-    cals: 5000,
-    goals: {
-      starches: 12,
-      legumes: 6,
-      veggies: 11,
-      fruits: 16,
-      proteins: 27,
       fats: 11,
       shake: 1
     }
@@ -2797,7 +2781,7 @@ window.require.define({"views/index": function(exports, require, module) {
 
     IndexView.prototype.events = {
       'click .percentage-bar': 'increment',
-      'click .btn-reset': 'resetMacro'
+      'click .btn-decrement': 'resetMacro'
     };
 
     IndexView.prototype.initialize = function() {
@@ -3335,7 +3319,7 @@ window.require.define({"views/templates/help": function(exports, require, module
     var foundHelper, self=this;
 
 
-    return "<header>\n    <h4>Help</h4>\n</header>\n\n<div class=\"help\">\n    <h5>Purpose</h5>\n    <p>The point of this is to create a quick way to track the basic macronutrients outlined in the Body Beast nutrition guide.</p>\n    <p>Forget about hassling with printout sheets or guesstimation. Your phone is with you all day; now your accountability is, too.</p>\n</div>\n\n<div class=\"help\">\n    <h5>How</h5>\n    <p>Click on the bars on the main page to increase your daily macro intake. If you're unsure of the nutrient value for a given food, use the \"Food\" tab to find the appropriate value.</p>\n    <p>If you make a mistake, there's a minus button at the end of the bars that allows you to decrease your counts for that macro.</p>\n    <p>If it's not in the \"Food\" section, it's not on the diet guide ;)</p>\n</div>\n\n<div class=\"help\">\n    <h5>Thoughts</h5>\n    <p>There is a ton of data in this diet guide. That being said, use your judgement. This is far from a \"one size fits all\" situation. Use the guide as just that:  a guide. Are you eating too much / little? Now you can figure that out. Plan out your goals and pick the plan that works best for you.</p>\n</div>\n\n<div class=\"help\">\n    <h5>Shakes</h5>\n    <p>In the diet guide, there is a section for mass-gain shakes that are made by combining different macros. However, the shake in this app is mainly a placeholder for \"take your supplements\".</p>\n    <p>The daily shake described is 2 scoops of the Beachbody fuel shot (5g whey protein, 200 cals) and 1 scoop of the Beachbody base shake (18g whey protein, 130 cals). Figure out your own personal shake requirements and get those calories in.</p>\n    <p>Don't forget your post-workout shake.</p>\n</div>\n\n<div class=\"help\">\n    <h5>Free condiments</h5>\n    <ul>\n        <li>Lemon and lime juice</li>\n        <li>Black pepper</li>\n        <li>Vinegar (any variety)</li>\n        <li>Mustard (any variety)</li>\n        <li>Herbs</li>\n        <li>Spices</li>\n        <li>Garlic and ginger</li>\n        <li>Hot sauce</li>\n        <li>Flavored extracts: vanilla, peppermint, almond, etc.</li>\n    </ul>\n</div>\n";});
+    return "<header>\n    <h4>Help</h4>\n</header>\n\n<div class=\"help\">\n    <h5>Purpose</h5>\n    <p>The point of this is to create a quick way to track the basic macronutrients outlined in the Body Beast nutrition guide.</p>\n    <p>Forget about hassling with printout sheets or guesstimation. Your phone is with you all day; now your accountability is, too.</p>\n</div>\n\n<div class=\"help\">\n    <h5>How</h5>\n    <p>Click on the bars on the main page to increase your daily macro intake. If you're unsure of the nutrient value for a given food, use the \"Food\" tab to find the appropriate value.</p>\n    <p>If you make a mistake, there's a minus button at the end of the bars that allows you to decrease your counts for that macro.</p>\n    <p>If it's not in the \"Food\" section, it's not on the diet guide ;)</p>\n</div>\n\n<div class=\"help\">\n    <h5>Caloric Values</h5>\n    <p>There is a listing of the caloric value for each macro on the main page and on each food listing. However, this won't be consistent across all foods within a given macro type; it's simply an estimated average caloric value.</p>\n    <p>While the total calories listed probably won't add up to your total calorie bracket, it can help to understand where the majority of your calories come from, which can differ from the number of servings consumed.</p>\n</div>\n\n<div class=\"help\">\n    <h5>Thoughts</h5>\n    <p>There is a ton of data in this diet guide. That being said, use your judgement. This is far from a \"one size fits all\" situation. Use the guide as just that:  a guide. Are you eating too much / little? Now you can figure that out. Plan out your goals and pick the plan that works best for you.</p>\n</div>\n\n<div class=\"help\">\n    <h5>Shakes</h5>\n    <p>In the diet guide, there is a section for mass-gain shakes that are made by combining different macros. However, the shake in this app is mainly a placeholder for \"take your supplements\".</p>\n    <p>The daily shake described is 2 scoops of the Beachbody fuel shot (5g whey protein, 200 cals) and 1 scoop of the Beachbody base shake (18g whey protein, 130 cals). Figure out your own personal shake requirements and get those calories in.</p>\n    <p>Don't forget your post-workout shake.</p>\n</div>\n\n<div class=\"help\">\n    <h5>Free condiments</h5>\n    <ul>\n        <li>Lemon and lime juice</li>\n        <li>Black pepper</li>\n        <li>Vinegar (any variety)</li>\n        <li>Mustard (any variety)</li>\n        <li>Herbs</li>\n        <li>Spices</li>\n        <li>Garlic and ginger</li>\n        <li>Hot sauce</li>\n        <li>Flavored extracts: vanilla, peppermint, almond, etc.</li>\n    </ul>\n</div>\n";});
 }});
 
 window.require.define({"views/templates/index": function(exports, require, module) {
@@ -3351,7 +3335,7 @@ window.require.define({"views/templates/index": function(exports, require, modul
     stack1 = foundHelper || depth0.key;
     if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
     else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "key", { hash: {} }); }
-    buffer += escapeExpression(stack1) + "\">\n            <div class=\"percentage-bar relative\">\n                <div class=\"btn-reset absolute\">\n                    <span class=\"ui-icon ui-icon-minusthick\"></span>\n                </div>\n                <div class=\"percentage-complete absolute ";
+    buffer += escapeExpression(stack1) + "\">\n            <div class=\"percentage-bar relative\">\n                <div class=\"btn-decrement absolute\">\n                    <span class=\"ui-icon ui-icon-minusthick\"></span>\n                </div>\n                <div class=\"percentage-complete absolute ";
     foundHelper = helpers.key;
     stack1 = foundHelper || depth0.key;
     if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }

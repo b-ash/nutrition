@@ -54,6 +54,7 @@ class BaseMacrosModel extends LocalStorageModel
 
     clear: =>
         @save @defaults()
+        @totalCals = 0
         @trigger('cleared')
 
 

@@ -6861,6 +6861,9 @@ div {
 .with-default-cursor {
   cursor: default;
 }
+.with-default-cursor:active {
+  cursor: default;
+}
 html {
   width: 100%;
   height: 450px;
@@ -6895,7 +6898,7 @@ html {
   text-align: center;
   padding: 15px 0;
 }
-.btn-reset {
+.btn-decrement {
   position: absolute;
   cursor: pointer;
   top: 0;
@@ -6904,7 +6907,7 @@ html {
   width: 60px;
   z-index: 10;
 }
-.btn-reset span {
+.btn-decrement span {
   margin: 7px 0 0 30px;
 }
 .list .list-item {
@@ -6924,6 +6927,10 @@ html {
   width: 100%;
   height: 30px;
   background-color: #ddd;
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -o-user-select: none;
 }
 .list .list-item .percentage-bar .percentage-complete {
   -webkit-border-radius: 4px;

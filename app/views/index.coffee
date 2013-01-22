@@ -8,7 +8,7 @@ class IndexView extends View
     template: require './templates/index'
     events: 
         'click .percentage-bar': 'increment'
-        'click .btn-reset': 'resetMacro'
+        'click .btn-decrement': 'resetMacro'
 
     initialize: =>
         @model.on('cleared', @render)
