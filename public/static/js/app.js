@@ -450,8 +450,10 @@ window.require.define({"models/base_macros_model": function(exports, require, mo
       var cals, macros, newCount;
       macros = this.get('macros');
       newCount = Math.max(macros[macro].count + parseFloat(amt), 0);
-      cals = new BeastFoods(macro).get('cals');
-      this.totalCals += amt * cals;
+      if (macro !== 'shake') {
+        cals = new BeastFoods(macro).get('cals');
+        this.totalCals += amt * cals;
+      }
       macros[macro].count = newCount;
       return this.save('macros', macros);
     };
@@ -473,6 +475,9 @@ window.require.define({"models/base_macros_model": function(exports, require, mo
       _ref = this.get('macros');
       for (name in _ref) {
         macro = _ref[name];
+        if (!(name !== 'shake')) {
+          continue;
+        }
         cals = new BeastFoods(name).get('cals');
         if (cals != null) {
           this.totalCals += macro.count * cals;
@@ -1134,6 +1139,23 @@ window.require.define({"models/calorie_brackets/beast/build/4800c": function(exp
       veggies: 11,
       fruits: 15,
       proteins: 26,
+      fats: 11,
+      shake: 1
+    }
+  };
+  
+}});
+
+window.require.define({"models/calorie_brackets/beast/build/5000c": function(exports, require, module) {
+  
+  module.exports = {
+    cals: 5000,
+    goals: {
+      starches: 12,
+      legumes: 6,
+      veggies: 11,
+      fruits: 16,
+      proteins: 27,
       fats: 11,
       shake: 1
     }
