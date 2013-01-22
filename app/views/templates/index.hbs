@@ -14,9 +14,15 @@
                         <span class="text_display with-default-cursor">{{val.display}}: </span>
                         <span class="text_count with-default-cursor">{{val.count}}</span>
                         <span class="text_total with-default-curser"> / {{getGoalForMacro key}}</span>
+                        <span class="text_cals with-default-cursor">{{getCalsDisplayForMacro key val.count}}</span>
                     </div>
                 </div>
             </div>
         </div>
     {{/keys}}
+</div>
+
+<div class="total">
+    <span>Approx. total calories: </span>
+    <span id="text_total_cals">{{getTotalCals macros}}</span>
 </div>

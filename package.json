@@ -2,7 +2,7 @@
   "author": "Bash Ash",
   "name": "nutrition",
   "description": "Macro Tracker",
-  "version": "0.2.8",
+  "version": "0.2.9",
   "homepage": "",
   "subdomain": "nutrition",
   "contributors": [
@@ -33,6 +33,5 @@
     "express": "~2.5.11",
     "mongodb": "~1.1.x"
   },
-  "devDependencies": {
-  }
+  "devDependencies": {}
 }

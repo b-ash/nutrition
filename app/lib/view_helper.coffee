@@ -1,5 +1,5 @@
 utils = require('./utils')
-
+BeastFoods = require('models/foods/beast_foods')
 
 Handlebars.registerHelper "debug", (optionalValue) ->
     console.log("Current Context")
@@ -24,6 +24,16 @@ Handlebars.registerHelper "getPercentageWidth", (macro) ->
 
 Handlebars.registerHelper "getGoalForMacro", (macro) ->
     return window.app.macros.getGoalForMacro(macro)
+
+Handlebars.registerHelper "getCalsDisplayForMacro", (macro, amt) ->
+    cals = new BeastFoods(macro).get('cals')
+    if cals?
+        return " - #{amt * cals} cals"
+    else
+        return ''
+
+Handlebars.registerHelper "getTotalCals", (macros) ->
+    return window.app.macros.getTotalCals()
 
 Handlebars.registerHelper "ifIsExceedingGoal", (macro, block) ->
     if window.app.macros.isExceedingGoal(macro)

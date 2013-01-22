@@ -310,9 +310,11 @@ window.require.define({"lib/utils": function(exports, require, module) {
 }});
 
 window.require.define({"lib/view_helper": function(exports, require, module) {
-  var utils;
+  var BeastFoods, utils;
 
   utils = require('./utils');
+
+  BeastFoods = require('models/foods/beast_foods');
 
   Handlebars.registerHelper("debug", function(optionalValue) {
     console.log("Current Context");
@@ -347,6 +349,20 @@ window.require.define({"lib/view_helper": function(exports, require, module) {
     return window.app.macros.getGoalForMacro(macro);
   });
 
+  Handlebars.registerHelper("getCalsDisplayForMacro", function(macro, amt) {
+    var cals;
+    cals = new BeastFoods(macro).get('cals');
+    if (cals != null) {
+      return " - " + (amt * cals) + " cals";
+    } else {
+      return '';
+    }
+  });
+
+  Handlebars.registerHelper("getTotalCals", function(macros) {
+    return window.app.macros.getTotalCals();
+  });
+
   Handlebars.registerHelper("ifIsExceedingGoal", function(macro, block) {
     if (window.app.macros.isExceedingGoal(macro)) {
       return block(this);
@@ -371,7 +387,7 @@ window.require.define({"lib/view_helper": function(exports, require, module) {
 }});
 
 window.require.define({"models/base_macros_model": function(exports, require, module) {
-  var BaseMacrosModel, LocalStorageModel, utils,
+  var BaseMacrosModel, BeastFoods, LocalStorageModel, utils,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -379,6 +395,8 @@ window.require.define({"models/base_macros_model": function(exports, require, mo
   utils = require('lib/utils');
 
   LocalStorageModel = require('./local_storage_model');
+
+  BeastFoods = require('./foods/beast_foods');
 
   BaseMacrosModel = (function(_super) {
 
@@ -390,6 +408,10 @@ window.require.define({"models/base_macros_model": function(exports, require, mo
       this.isExceedingGoal = __bind(this.isExceedingGoal, this);
 
       this.getGoalForMacro = __bind(this.getGoalForMacro, this);
+
+      this.calculateTotalCals = __bind(this.calculateTotalCals, this);
+
+      this.getTotalCals = __bind(this.getTotalCals, this);
 
       this.getMacroPercentage = __bind(this.getMacroPercentage, this);
 
@@ -403,28 +425,33 @@ window.require.define({"models/base_macros_model": function(exports, require, mo
       return BaseMacrosModel.__super__.constructor.apply(this, arguments);
     }
 
+    BaseMacrosModel.prototype.totalCals = 0;
+
     BaseMacrosModel.prototype.initialize = function() {
-      return this.fetch();
+      this.fetch();
+      return this.calculateTotalCals();
     };
 
     BaseMacrosModel.prototype.increment = function(macro, amt) {
       if (amt == null) {
-        amt = 1;
+        amt = 0.5;
       }
       return this.changeByAmount(macro, amt);
     };
 
     BaseMacrosModel.prototype.decrement = function(macro, amt) {
       if (amt == null) {
-        amt = -1;
+        amt = -0.5;
       }
       return this.changeByAmount(macro, amt);
     };
 
     BaseMacrosModel.prototype.changeByAmount = function(macro, amt) {
-      var macros, newCount;
+      var cals, macros, newCount;
       macros = this.get('macros');
       newCount = Math.max(macros[macro].count + parseFloat(amt), 0);
+      cals = new BeastFoods(macro).get('cals');
+      this.totalCals += amt * cals;
       macros[macro].count = newCount;
       return this.save('macros', macros);
     };
@@ -435,6 +462,23 @@ window.require.define({"models/base_macros_model": function(exports, require, mo
       macro = this.get('macros')[macro].count;
       percentage = (macro / goal) * 100;
       return Math.min(utils.roundFloat(percentage), 100);
+    };
+
+    BaseMacrosModel.prototype.getTotalCals = function() {
+      return this.totalCals;
+    };
+
+    BaseMacrosModel.prototype.calculateTotalCals = function() {
+      var cals, macro, name, _ref;
+      _ref = this.get('macros');
+      for (name in _ref) {
+        macro = _ref[name];
+        cals = new BeastFoods(name).get('cals');
+        if (cals != null) {
+          this.totalCals += macro.count * cals;
+        }
+      }
+      return this;
     };
 
     BaseMacrosModel.prototype.getGoalForMacro = function(macro) {
@@ -1153,7 +1197,7 @@ window.require.define({"models/foods/beast/fats": function(exports, require, mod
   module.exports = {
     macro: 'fats',
     display: 'Fats',
-    cal: 45,
+    cals: 45,
     foods: {
       avocado: {
         display: 'Avocado',
@@ -2185,6 +2229,8 @@ window.require.define({"models/foods/beast_foods": function(exports, require, mo
       var display;
       this.macro = macro;
       this.food = food;
+      this.get = __bind(this.get, this);
+
       this.toJSON = __bind(this.toJSON, this);
 
       for (macro in ALL_MACROS) {
@@ -2210,6 +2256,12 @@ window.require.define({"models/foods/beast_foods": function(exports, require, mo
         }
       } else {
         return ALL_MACROS;
+      }
+    };
+
+    BeastFoods.prototype.get = function(key) {
+      if (this.macro && this.macro !== 'shake') {
+        return this.macros[this.macro][key];
       }
     };
 
@@ -2709,12 +2761,14 @@ window.require.define({"views/help": function(exports, require, module) {
 }});
 
 window.require.define({"views/index": function(exports, require, module) {
-  var IndexView, View,
+  var BeastFoods, IndexView, View,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   View = require('./view');
+
+  BeastFoods = require('models/foods/beast_foods');
 
   IndexView = (function(_super) {
 
@@ -2773,14 +2827,22 @@ window.require.define({"views/index": function(exports, require, module) {
     };
 
     IndexView.prototype.changePercentBar = function($macro, macro) {
-      var $completionBar, $currentCount, $percentageText, $totalBar, macroPercentage, pixelPercentage;
+      var $completionBar, $currentCals, $currentCount, $currentTotalCals, $percentageText, $totalBar, cals, count, macroPercentage, pixelPercentage;
       $totalBar = $macro.find('.percentage-bar');
       $currentCount = $macro.find('.text_count');
+      $currentCals = $macro.find('.text_cals');
+      $currentTotalCals = this.$('#text_total_cals');
       $percentageText = $macro.find('.percentage-text');
       $completionBar = $macro.find('.percentage-complete');
       macroPercentage = this.model.getMacroPercentage(macro);
       pixelPercentage = macroPercentage / 100 * $totalBar.width();
-      $currentCount.text(this.model.get('macros')[macro].count);
+      count = this.model.get('macros')[macro].count;
+      $currentCount.text(count);
+      if (macro !== 'shake') {
+        cals = new BeastFoods(macro).get('cals');
+        $currentCals.text(" - " + (count * cals) + " cals");
+        $currentTotalCals.text(this.model.getTotalCals());
+      }
       $completionBar.css({
         width: "" + pixelPercentage + "px"
       });
@@ -3283,7 +3345,7 @@ window.require.define({"views/templates/index": function(exports, require, modul
 
   function program1(depth0,data) {
     
-    var buffer = "", stack1, stack2;
+    var buffer = "", stack1, stack2, stack3;
     buffer += "\n        <div class=\"list-item macro\" data-key=\"";
     foundHelper = helpers.key;
     stack1 = foundHelper || depth0.key;
@@ -3334,6 +3396,17 @@ window.require.define({"views/templates/index": function(exports, require, modul
     if(typeof stack2 === functionType) { stack1 = stack2.call(depth0, stack1, { hash: {} }); }
     else if(stack2=== undef) { stack1 = helperMissing.call(depth0, "getGoalForMacro", stack1, { hash: {} }); }
     else { stack1 = stack2; }
+    buffer += escapeExpression(stack1) + "</span>\n                        <span class=\"text_cals with-default-cursor\">";
+    foundHelper = helpers.val;
+    stack1 = foundHelper || depth0.val;
+    stack1 = (stack1 === null || stack1 === undefined || stack1 === false ? stack1 : stack1.count);
+    foundHelper = helpers.key;
+    stack2 = foundHelper || depth0.key;
+    foundHelper = helpers.getCalsDisplayForMacro;
+    stack3 = foundHelper || depth0.getCalsDisplayForMacro;
+    if(typeof stack3 === functionType) { stack1 = stack3.call(depth0, stack2, stack1, { hash: {} }); }
+    else if(stack3=== undef) { stack1 = helperMissing.call(depth0, "getCalsDisplayForMacro", stack2, stack1, { hash: {} }); }
+    else { stack1 = stack3; }
     buffer += escapeExpression(stack1) + "</span>\n                    </div>\n                </div>\n            </div>\n        </div>\n    ";
     return buffer;}
   function program2(depth0,data) {
@@ -3354,7 +3427,15 @@ window.require.define({"views/templates/index": function(exports, require, modul
     if(foundHelper && typeof stack3 === functionType) { stack1 = stack3.call(depth0, stack2, stack1, tmp1); }
     else { stack1 = blockHelperMissing.call(depth0, stack3, stack2, stack1, tmp1); }
     if(stack1 || stack1 === 0) { buffer += stack1; }
-    buffer += "\n</div>\n";
+    buffer += "\n</div>\n\n<div class=\"total\">\n    <span>Approx. total calories: </span>\n    <span id=\"text_total_cals\">";
+    foundHelper = helpers.macros;
+    stack1 = foundHelper || depth0.macros;
+    foundHelper = helpers.getTotalCals;
+    stack2 = foundHelper || depth0.getTotalCals;
+    if(typeof stack2 === functionType) { stack1 = stack2.call(depth0, stack1, { hash: {} }); }
+    else if(stack2=== undef) { stack1 = helperMissing.call(depth0, "getTotalCals", stack1, { hash: {} }); }
+    else { stack1 = stack2; }
+    buffer += escapeExpression(stack1) + "</span>\n</div>\n";
     return buffer;});
 }});
 

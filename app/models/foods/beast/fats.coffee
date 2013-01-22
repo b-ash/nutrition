@@ -1,7 +1,7 @@
 module.exports = {
     macro: 'fats'
     display: 'Fats'
-    cal: 45
+    cals: 45
     foods:
         avocado:
             display: 'Avocado'

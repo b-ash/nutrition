@@ -22,5 +22,9 @@ class BeastFoods
         else
             return ALL_MACROS
 
+    get: (key) =>
+        if @macro and @macro isnt 'shake'
+            @macros[@macro][key]
+
 
 module.exports = BeastFoods

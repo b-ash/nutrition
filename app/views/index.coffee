@@ -1,4 +1,5 @@
 View = require './view'
+BeastFoods = require 'models/foods/beast_foods'
 
 
 class IndexView extends View
@@ -34,13 +35,22 @@ class IndexView extends View
     changePercentBar: ($macro, macro) =>
         $totalBar = $macro.find('.percentage-bar')
         $currentCount = $macro.find('.text_count')
+        $currentCals = $macro.find('.text_cals')
+        $currentTotalCals = @$('#text_total_cals')
         $percentageText = $macro.find('.percentage-text')
         $completionBar = $macro.find('.percentage-complete')
 
         macroPercentage = @model.getMacroPercentage(macro)
         pixelPercentage = macroPercentage / 100 * $totalBar.width()
 
-        $currentCount.text @model.get('macros')[macro].count
+        count = @model.get('macros')[macro].count
+        $currentCount.text count
+
+        if macro isnt 'shake'
+            cals = new BeastFoods(macro).get('cals')
+            $currentCals.text " - #{count * cals} cals"
+            $currentTotalCals.text @model.getTotalCals()
+
         $completionBar.css {width: "#{pixelPercentage}px"}
 
         if @model.isExceedingGoal(macro)
