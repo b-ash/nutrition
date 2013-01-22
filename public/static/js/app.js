@@ -3372,7 +3372,7 @@ window.require.define({"views/templates/index": function(exports, require, modul
     stack1 = (stack1 === null || stack1 === undefined || stack1 === false ? stack1 : stack1.count);
     if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
     else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "val.count", { hash: {} }); }
-    buffer += escapeExpression(stack1) + "</span>\n                        <span class=\"text_total with-default-curser\"> / ";
+    buffer += escapeExpression(stack1) + "</span>\n                        <span class=\"text_total with-default-cursor\"> / ";
     foundHelper = helpers.key;
     stack1 = foundHelper || depth0.key;
     foundHelper = helpers.getGoalForMacro;
