@@ -8,9 +8,9 @@ views =
     help: require('views/help')
     about: require('views/about')
     configure: require('views/configure')
-    foodAll:  require('views/food_all_macros')
-    foodMacro: require('views/food_macro')
-    food: require ('views/food')
+    foodAll:  require('views/food_list/food_all_macros')
+    foodMacro: require('views/food_list/food_macro')
+    food: require ('views/food_list/food')
 
 
 module.exports = class Router extends Backbone.Router

@@ -1,5 +1,6 @@
-utils = require('./utils')
+utils = require('lib/utils')
 BeastFoods = require('models/foods/beast_foods')
+
 
 Handlebars.registerHelper "debug", (optionalValue) ->
     console.log("Current Context")

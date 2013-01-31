@@ -3,6 +3,7 @@ module.exports = {
     display: 'Protein Liquids'
     macroOverride: 'legumes'
     macroOverrideDisplay: 'legume'
+    cals: 125
     foods:
         milk:
             display: 'Cow\'s Milk'

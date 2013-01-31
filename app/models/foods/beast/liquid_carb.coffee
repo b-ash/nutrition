@@ -3,6 +3,7 @@ module.exports = {
     display: 'Carb Liquids'
     macroOverride: 'fruits'
     macroOverrideDisplay: 'fruit'
+    cals: 60
     foods:
         apple:
             display: 'Apple Juice'

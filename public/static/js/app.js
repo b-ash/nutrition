@@ -146,9 +146,9 @@ window.require.define({"lib/router": function(exports, require, module) {
     help: require('views/help'),
     about: require('views/about'),
     configure: require('views/configure'),
-    foodAll: require('views/food_all_macros'),
-    foodMacro: require('views/food_macro'),
-    food: require('views/food')
+    foodAll: require('views/food_list/food_all_macros'),
+    foodMacro: require('views/food_list/food_macro'),
+    food: require('views/food_list/food')
   };
 
   module.exports = Router = (function(_super) {
@@ -312,7 +312,7 @@ window.require.define({"lib/utils": function(exports, require, module) {
 window.require.define({"lib/view_helper": function(exports, require, module) {
   var BeastFoods, utils;
 
-  utils = require('./utils');
+  utils = require('lib/utils');
 
   BeastFoods = require('models/foods/beast_foods');
 
@@ -394,9 +394,9 @@ window.require.define({"models/base_macros_model": function(exports, require, mo
 
   utils = require('lib/utils');
 
-  LocalStorageModel = require('./local_storage_model');
+  LocalStorageModel = require('models/local_storage_model');
 
-  BeastFoods = require('./foods/beast_foods');
+  BeastFoods = require('models/foods/beast_foods');
 
   BaseMacrosModel = (function(_super) {
 
@@ -517,7 +517,7 @@ window.require.define({"models/beast_macro_counts": function(exports, require, m
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  BaseMacrosModel = require('./base_macros_model');
+  BaseMacrosModel = require('models/base_macros_model');
 
   BeastMacros = (function(_super) {
 
@@ -584,7 +584,7 @@ window.require.define({"models/beast_user": function(exports, require, module) {
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  LocalStorageModel = require('./local_storage_model');
+  LocalStorageModel = require('models/local_storage_model');
 
   BeastUserConfig = (function(_super) {
 
@@ -1559,6 +1559,7 @@ window.require.define({"models/foods/beast/liquid_balanced": function(exports, r
     display: 'Balanced Liquid',
     macroOverride: 'veggies',
     macroOverrideDisplay: 'veggie',
+    cals: 30,
     foods: {
       almond_milk: {
         display: 'Almond Milk',
@@ -1608,6 +1609,7 @@ window.require.define({"models/foods/beast/liquid_carb": function(exports, requi
     display: 'Carb Liquids',
     macroOverride: 'fruits',
     macroOverrideDisplay: 'fruit',
+    cals: 60,
     foods: {
       apple: {
         display: 'Apple Juice',
@@ -1651,6 +1653,7 @@ window.require.define({"models/foods/beast/liquid_protein": function(exports, re
     display: 'Protein Liquids',
     macroOverride: 'legumes',
     macroOverrideDisplay: 'legume',
+    cals: 125,
     foods: {
       milk: {
         display: 'Cow\'s Milk',
@@ -2306,7 +2309,7 @@ window.require.define({"models/stats": function(exports, require, module) {
   var BeastBrackets, Stats, utils,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
-  BeastBrackets = require('./calorie_brackets/beast_brackets');
+  BeastBrackets = require('models/calorie_brackets/beast_brackets');
 
   utils = require('lib/utils');
 
@@ -2568,7 +2571,7 @@ window.require.define({"views/configure": function(exports, require, module) {
   
 }});
 
-window.require.define({"views/food": function(exports, require, module) {
+window.require.define({"views/food_list/food": function(exports, require, module) {
   var BeastFoods, FoodMacroView, View, app,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
@@ -2576,7 +2579,7 @@ window.require.define({"views/food": function(exports, require, module) {
 
   app = require('application');
 
-  View = require('./view');
+  View = require('views/view');
 
   BeastFoods = require('models/foods/beast_foods');
 
@@ -2601,7 +2604,7 @@ window.require.define({"views/food": function(exports, require, module) {
 
     FoodMacroView.prototype.className = 'content';
 
-    FoodMacroView.prototype.template = require('./templates/food');
+    FoodMacroView.prototype.template = require('views/templates/food');
 
     FoodMacroView.prototype.events = {
       'click a': 'routeEvent',
@@ -2643,13 +2646,13 @@ window.require.define({"views/food": function(exports, require, module) {
   
 }});
 
-window.require.define({"views/food_all_macros": function(exports, require, module) {
+window.require.define({"views/food_list/food_all_macros": function(exports, require, module) {
   var BeastFoods, FoodAllMacrosView, View,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  View = require('./view');
+  View = require('views/view');
 
   BeastFoods = require('models/foods/beast_foods');
 
@@ -2668,7 +2671,7 @@ window.require.define({"views/food_all_macros": function(exports, require, modul
 
     FoodAllMacrosView.prototype.className = 'content';
 
-    FoodAllMacrosView.prototype.template = require('./templates/food_all_macros');
+    FoodAllMacrosView.prototype.template = require('views/templates/food_all_macros');
 
     FoodAllMacrosView.prototype.events = {
       'click a': 'routeEvent'
@@ -2690,13 +2693,13 @@ window.require.define({"views/food_all_macros": function(exports, require, modul
   
 }});
 
-window.require.define({"views/food_macro": function(exports, require, module) {
+window.require.define({"views/food_list/food_macro": function(exports, require, module) {
   var BeastFoods, FoodMacroView, View,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  View = require('./view');
+  View = require('views/view');
 
   BeastFoods = require('models/foods/beast_foods');
 
@@ -2715,7 +2718,7 @@ window.require.define({"views/food_macro": function(exports, require, module) {
 
     FoodMacroView.prototype.className = 'content';
 
-    FoodMacroView.prototype.template = require('./templates/food_macro');
+    FoodMacroView.prototype.template = require('views/templates/food_macro');
 
     FoodMacroView.prototype.events = {
       'click a': 'routeEvent'
@@ -2767,27 +2770,23 @@ window.require.define({"views/help": function(exports, require, module) {
 }});
 
 window.require.define({"views/index": function(exports, require, module) {
-  var BeastFoods, IndexView, View,
+  var IndexView, MacroBarFactory, View,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   View = require('./view');
 
-  BeastFoods = require('models/foods/beast_foods');
+  MacroBarFactory = require('views/macro_bars/macro_bar_factory');
 
   IndexView = (function(_super) {
 
     __extends(IndexView, _super);
 
     function IndexView() {
-      this.onClose = __bind(this.onClose, this);
+      this.updateTotalCalories = __bind(this.updateTotalCalories, this);
 
-      this.changePercentBar = __bind(this.changePercentBar, this);
-
-      this.resetMacro = __bind(this.resetMacro, this);
-
-      this.increment = __bind(this.increment, this);
+      this.afterRender = __bind(this.afterRender, this);
 
       this.getRenderData = __bind(this.getRenderData, this);
 
@@ -2801,66 +2800,38 @@ window.require.define({"views/index": function(exports, require, module) {
 
     IndexView.prototype.template = require('./templates/index');
 
-    IndexView.prototype.events = {
-      'click .percentage-bar': 'increment',
-      'click .btn-decrement': 'resetMacro'
-    };
-
     IndexView.prototype.initialize = function() {
-      return this.model.on('cleared', this.render);
+      var claxx, macro, view, _results;
+      _results = [];
+      for (macro in this.model.get('macros')) {
+        claxx = new MacroBarFactory.get(macro);
+        view = new claxx({
+          model: this.model,
+          macro: macro
+        });
+        view.on('update', this.updateTotalCalories);
+        _results.push(this.views[macro] = view);
+      }
+      return _results;
     };
 
     IndexView.prototype.getRenderData = function() {
       return this.model.toJSON();
     };
 
-    IndexView.prototype.increment = function(event) {
-      var $macro, macro;
-      event.stopPropagation();
-      $macro = $(event.currentTarget).parents('.macro');
-      macro = $macro.attr('data-key');
-      this.model.increment(macro);
-      return this.changePercentBar($macro, macro);
-    };
-
-    IndexView.prototype.resetMacro = function(event) {
-      var $macro, macro;
-      event.stopPropagation();
-      $macro = $(event.currentTarget).parents('.macro');
-      macro = $macro.attr('data-key');
-      this.model.decrement(macro);
-      return this.changePercentBar($macro, macro);
-    };
-
-    IndexView.prototype.changePercentBar = function($macro, macro) {
-      var $completionBar, $currentCals, $currentCount, $currentTotalCals, $percentageText, $totalBar, cals, count, macroPercentage, pixelPercentage;
-      $totalBar = $macro.find('.percentage-bar');
-      $currentCount = $macro.find('.text_count');
-      $currentCals = $macro.find('.text_cals');
-      $currentTotalCals = this.$('#text_total_cals');
-      $percentageText = $macro.find('.percentage-text');
-      $completionBar = $macro.find('.percentage-complete');
-      macroPercentage = this.model.getMacroPercentage(macro);
-      pixelPercentage = macroPercentage / 100 * $totalBar.width();
-      count = this.model.get('macros')[macro].count;
-      $currentCount.text(count);
-      if (macro !== 'shake') {
-        cals = new BeastFoods(macro).get('cals');
-        $currentCals.text(" - " + (count * cals) + " cals");
-        $currentTotalCals.text(this.model.getTotalCals());
+    IndexView.prototype.afterRender = function() {
+      var macro, view, _ref, _results;
+      _ref = this.views;
+      _results = [];
+      for (macro in _ref) {
+        view = _ref[macro];
+        _results.push(this.$('.list.macros').append(view.render().el));
       }
-      $completionBar.css({
-        width: "" + pixelPercentage + "px"
-      });
-      if (this.model.isExceedingGoal(macro)) {
-        return $percentageText.addClass('exceeding');
-      } else {
-        return $percentageText.removeClass('exceeding');
-      }
+      return _results;
     };
 
-    IndexView.prototype.onClose = function() {
-      return this.model.off('cleared', this.render);
+    IndexView.prototype.updateTotalCalories = function() {
+      return this.$('#text_total_cals').text(this.model.getTotalCals());
     };
 
     return IndexView;
@@ -2868,6 +2839,159 @@ window.require.define({"views/index": function(exports, require, module) {
   })(View);
 
   module.exports = IndexView;
+  
+}});
+
+window.require.define({"views/macro_bars/base_macro_bar": function(exports, require, module) {
+  var BaseMacroView, BeastFoods, View,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  View = require('views/view');
+
+  BeastFoods = require('models/foods/beast_foods');
+
+  BaseMacroView = (function(_super) {
+
+    __extends(BaseMacroView, _super);
+
+    function BaseMacroView() {
+      this.clear = __bind(this.clear, this);
+
+      this.changeCurrentCals = __bind(this.changeCurrentCals, this);
+
+      this.changePercentText = __bind(this.changePercentText, this);
+
+      this.changePercentBar = __bind(this.changePercentBar, this);
+
+      this.animateRender = __bind(this.animateRender, this);
+
+      this.decrement = __bind(this.decrement, this);
+
+      this.increment = __bind(this.increment, this);
+
+      this.getRenderData = __bind(this.getRenderData, this);
+
+      this.onClose = __bind(this.onClose, this);
+
+      this.initialize = __bind(this.initialize, this);
+      return BaseMacroView.__super__.constructor.apply(this, arguments);
+    }
+
+    BaseMacroView.prototype.tagName = 'div';
+
+    BaseMacroView.prototype.className = 'list-item macro';
+
+    BaseMacroView.prototype.template = require('views/templates/macro_bar');
+
+    BaseMacroView.prototype.events = {
+      'click .percentage-bar': 'increment',
+      'click .btn-decrement': 'decrement'
+    };
+
+    BaseMacroView.prototype.initialize = function() {
+      return this.model.on('cleared', this.clear);
+    };
+
+    BaseMacroView.prototype.onClose = function() {
+      return this.model.off('cleared', this.clear);
+    };
+
+    BaseMacroView.prototype.getRenderData = function() {
+      var data;
+      data = this.model.get('macros')[this.options.macro];
+      return {
+        macro: this.options.macro,
+        count: data.count,
+        display: data.display
+      };
+    };
+
+    BaseMacroView.prototype.increment = function(event) {
+      event.stopPropagation();
+      this.model.increment(this.options.macro);
+      this.animateRender();
+      return this.trigger('update');
+    };
+
+    BaseMacroView.prototype.decrement = function(event) {
+      event.stopPropagation();
+      this.model.decrement(this.options.macro);
+      this.animateRender();
+      return this.trigger('update');
+    };
+
+    BaseMacroView.prototype.animateRender = function() {
+      this.changePercentBar();
+      this.changePercentText();
+      return this.changeCurrentCals();
+    };
+
+    BaseMacroView.prototype.changePercentBar = function($macro, macro) {
+      var macroPercentage, pixelPercentage;
+      macroPercentage = this.model.getMacroPercentage(this.options.macro);
+      pixelPercentage = macroPercentage / 100 * this.$('.percentage-bar').width();
+      return this.$('.percentage-complete').css({
+        width: "" + pixelPercentage + "px"
+      });
+    };
+
+    BaseMacroView.prototype.changePercentText = function() {
+      var count;
+      count = this.model.get('macros')[this.options.macro].count;
+      this.$('.text_count').text(count);
+      if (this.model.isExceedingGoal(this.options.macro)) {
+        return this.$('.percentage-text').addClass('exceeding');
+      } else {
+        return this.$('.percentage-text').removeClass('exceeding');
+      }
+    };
+
+    BaseMacroView.prototype.changeCurrentCals = function() {
+      var cals, count;
+      if (this.options.macro !== 'shake') {
+        count = this.model.get('macros')[this.options.macro].count;
+        cals = new BeastFoods(this.options.macro).get('cals');
+        return this.$('.text_cals').text(" - " + (count * cals) + " cals");
+      }
+    };
+
+    BaseMacroView.prototype.clear = function() {
+      this.render();
+      return this.trigger('update');
+    };
+
+    return BaseMacroView;
+
+  })(View);
+
+  module.exports = BaseMacroView;
+  
+}});
+
+window.require.define({"views/macro_bars/macro_bar_factory": function(exports, require, module) {
+  var BaseBar, MacroBarFactory, OVERRIDES;
+
+  BaseBar = require('models/macro_bars/base_macro_bar');
+
+  OVERRIDES = {
+    shake: BaseBar
+  };
+
+  MacroBarFactory = (function() {
+
+    function MacroBarFactory() {}
+
+    MacroBarFactory.get = function(macro) {
+      return OVERRIDES[macro] || BaseBar;
+    };
+
+    return MacroBarFactory;
+
+  })();
+
+  module.exports = MacroBarFactory;
   
 }});
 
@@ -3347,93 +3471,10 @@ window.require.define({"views/templates/help": function(exports, require, module
 window.require.define({"views/templates/index": function(exports, require, module) {
   module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
     helpers = helpers || Handlebars.helpers;
-    var buffer = "", stack1, stack2, stack3, foundHelper, tmp1, self=this, functionType="function", helperMissing=helpers.helperMissing, undef=void 0, escapeExpression=this.escapeExpression, blockHelperMissing=helpers.blockHelperMissing;
+    var buffer = "", stack1, stack2, foundHelper, self=this, functionType="function", helperMissing=helpers.helperMissing, undef=void 0, escapeExpression=this.escapeExpression;
 
-  function program1(depth0,data) {
-    
-    var buffer = "", stack1, stack2, stack3;
-    buffer += "\n        <div class=\"list-item macro\" data-key=\"";
-    foundHelper = helpers.key;
-    stack1 = foundHelper || depth0.key;
-    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
-    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "key", { hash: {} }); }
-    buffer += escapeExpression(stack1) + "\">\n            <div class=\"percentage-bar relative\">\n                <div class=\"btn-decrement absolute\">\n                    <span class=\"ui-icon ui-icon-minusthick\"></span>\n                </div>\n                <div class=\"percentage-complete absolute ";
-    foundHelper = helpers.key;
-    stack1 = foundHelper || depth0.key;
-    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
-    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "key", { hash: {} }); }
-    buffer += escapeExpression(stack1) + "\" style=\"width: ";
-    foundHelper = helpers.key;
-    stack1 = foundHelper || depth0.key;
-    foundHelper = helpers.getPercentageWidth;
-    stack2 = foundHelper || depth0.getPercentageWidth;
-    if(typeof stack2 === functionType) { stack1 = stack2.call(depth0, stack1, { hash: {} }); }
-    else if(stack2=== undef) { stack1 = helperMissing.call(depth0, "getPercentageWidth", stack1, { hash: {} }); }
-    else { stack1 = stack2; }
-    buffer += escapeExpression(stack1) + "%;\">\n                    <div class=\"percentage-text absolute ";
-    foundHelper = helpers.key;
-    stack1 = foundHelper || depth0.key;
-    foundHelper = helpers.ifIsExceedingGoal;
-    stack2 = foundHelper || depth0.ifIsExceedingGoal;
-    tmp1 = self.program(2, program2, data);
-    tmp1.hash = {};
-    tmp1.fn = tmp1;
-    tmp1.inverse = self.noop;
-    if(foundHelper && typeof stack2 === functionType) { stack1 = stack2.call(depth0, stack1, tmp1); }
-    else { stack1 = blockHelperMissing.call(depth0, stack2, stack1, tmp1); }
-    if(stack1 || stack1 === 0) { buffer += stack1; }
-    buffer += "\">\n                        <span class=\"text_display with-default-cursor\">";
-    foundHelper = helpers.val;
-    stack1 = foundHelper || depth0.val;
-    stack1 = (stack1 === null || stack1 === undefined || stack1 === false ? stack1 : stack1.display);
-    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
-    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "val.display", { hash: {} }); }
-    buffer += escapeExpression(stack1) + ": </span>\n                        <span class=\"text_count with-default-cursor\">";
-    foundHelper = helpers.val;
-    stack1 = foundHelper || depth0.val;
-    stack1 = (stack1 === null || stack1 === undefined || stack1 === false ? stack1 : stack1.count);
-    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
-    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "val.count", { hash: {} }); }
-    buffer += escapeExpression(stack1) + "</span>\n                        <span class=\"text_total with-default-cursor\"> / ";
-    foundHelper = helpers.key;
-    stack1 = foundHelper || depth0.key;
-    foundHelper = helpers.getGoalForMacro;
-    stack2 = foundHelper || depth0.getGoalForMacro;
-    if(typeof stack2 === functionType) { stack1 = stack2.call(depth0, stack1, { hash: {} }); }
-    else if(stack2=== undef) { stack1 = helperMissing.call(depth0, "getGoalForMacro", stack1, { hash: {} }); }
-    else { stack1 = stack2; }
-    buffer += escapeExpression(stack1) + "</span>\n                        <span class=\"text_cals with-default-cursor\">";
-    foundHelper = helpers.val;
-    stack1 = foundHelper || depth0.val;
-    stack1 = (stack1 === null || stack1 === undefined || stack1 === false ? stack1 : stack1.count);
-    foundHelper = helpers.key;
-    stack2 = foundHelper || depth0.key;
-    foundHelper = helpers.getCalsDisplayForMacro;
-    stack3 = foundHelper || depth0.getCalsDisplayForMacro;
-    if(typeof stack3 === functionType) { stack1 = stack3.call(depth0, stack2, stack1, { hash: {} }); }
-    else if(stack3=== undef) { stack1 = helperMissing.call(depth0, "getCalsDisplayForMacro", stack2, stack1, { hash: {} }); }
-    else { stack1 = stack3; }
-    buffer += escapeExpression(stack1) + "</span>\n                    </div>\n                </div>\n            </div>\n        </div>\n    ";
-    return buffer;}
-  function program2(depth0,data) {
-    
-    
-    return "exceeding";}
 
-    buffer += "<header>\n    <h4>Current Macros</h4>\n</header>\n\n<div class=\"list macros\">\n    ";
-    stack1 = depth0;
-    foundHelper = helpers.macros;
-    stack2 = foundHelper || depth0.macros;
-    foundHelper = helpers.keys;
-    stack3 = foundHelper || depth0.keys;
-    tmp1 = self.program(1, program1, data);
-    tmp1.hash = {};
-    tmp1.fn = tmp1;
-    tmp1.inverse = self.noop;
-    if(foundHelper && typeof stack3 === functionType) { stack1 = stack3.call(depth0, stack2, stack1, tmp1); }
-    else { stack1 = blockHelperMissing.call(depth0, stack3, stack2, stack1, tmp1); }
-    if(stack1 || stack1 === 0) { buffer += stack1; }
-    buffer += "\n</div>\n\n<div class=\"total\">\n    <span>Approx. total calories: </span>\n    <span id=\"text_total_cals\">";
+    buffer += "<header>\n    <h4>Current Macros</h4>\n</header>\n\n<div class=\"list macros\"></div>\n<div class=\"total\">\n    <span>Approx. total calories: </span>\n    <span id=\"text_total_cals\">";
     foundHelper = helpers.macros;
     stack1 = foundHelper || depth0.macros;
     foundHelper = helpers.getTotalCals;
@@ -3442,6 +3483,73 @@ window.require.define({"views/templates/index": function(exports, require, modul
     else if(stack2=== undef) { stack1 = helperMissing.call(depth0, "getTotalCals", stack1, { hash: {} }); }
     else { stack1 = stack2; }
     buffer += escapeExpression(stack1) + "</span>\n</div>\n";
+    return buffer;});
+}});
+
+window.require.define({"views/templates/macro_bar": function(exports, require, module) {
+  module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
+    helpers = helpers || Handlebars.helpers;
+    var buffer = "", stack1, stack2, stack3, foundHelper, tmp1, self=this, functionType="function", helperMissing=helpers.helperMissing, undef=void 0, escapeExpression=this.escapeExpression, blockHelperMissing=helpers.blockHelperMissing;
+
+  function program1(depth0,data) {
+    
+    
+    return "exceeding";}
+
+    buffer += "<div class=\"percentage-bar relative\">\n    <div class=\"btn-decrement absolute\">\n        <span class=\"ui-icon ui-icon-minusthick\"></span>\n    </div>\n    <div class=\"percentage-complete absolute ";
+    foundHelper = helpers.macro;
+    stack1 = foundHelper || depth0.macro;
+    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
+    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "macro", { hash: {} }); }
+    buffer += escapeExpression(stack1) + "\" style=\"width: ";
+    foundHelper = helpers.macro;
+    stack1 = foundHelper || depth0.macro;
+    foundHelper = helpers.getPercentageWidth;
+    stack2 = foundHelper || depth0.getPercentageWidth;
+    if(typeof stack2 === functionType) { stack1 = stack2.call(depth0, stack1, { hash: {} }); }
+    else if(stack2=== undef) { stack1 = helperMissing.call(depth0, "getPercentageWidth", stack1, { hash: {} }); }
+    else { stack1 = stack2; }
+    buffer += escapeExpression(stack1) + "%;\">\n        <div class=\"percentage-text absolute ";
+    foundHelper = helpers.macro;
+    stack1 = foundHelper || depth0.macro;
+    foundHelper = helpers.ifIsExceedingGoal;
+    stack2 = foundHelper || depth0.ifIsExceedingGoal;
+    tmp1 = self.program(1, program1, data);
+    tmp1.hash = {};
+    tmp1.fn = tmp1;
+    tmp1.inverse = self.noop;
+    if(foundHelper && typeof stack2 === functionType) { stack1 = stack2.call(depth0, stack1, tmp1); }
+    else { stack1 = blockHelperMissing.call(depth0, stack2, stack1, tmp1); }
+    if(stack1 || stack1 === 0) { buffer += stack1; }
+    buffer += "\">\n            <span class=\"text_display with-default-cursor\">";
+    foundHelper = helpers.display;
+    stack1 = foundHelper || depth0.display;
+    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
+    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "display", { hash: {} }); }
+    buffer += escapeExpression(stack1) + ": </span>\n            <span class=\"text_count with-default-cursor\">";
+    foundHelper = helpers.count;
+    stack1 = foundHelper || depth0.count;
+    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
+    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "count", { hash: {} }); }
+    buffer += escapeExpression(stack1) + "</span>\n            <span class=\"text_total with-default-cursor\"> / ";
+    foundHelper = helpers.macro;
+    stack1 = foundHelper || depth0.macro;
+    foundHelper = helpers.getGoalForMacro;
+    stack2 = foundHelper || depth0.getGoalForMacro;
+    if(typeof stack2 === functionType) { stack1 = stack2.call(depth0, stack1, { hash: {} }); }
+    else if(stack2=== undef) { stack1 = helperMissing.call(depth0, "getGoalForMacro", stack1, { hash: {} }); }
+    else { stack1 = stack2; }
+    buffer += escapeExpression(stack1) + "</span>\n            <span class=\"text_cals with-default-cursor\">";
+    foundHelper = helpers.count;
+    stack1 = foundHelper || depth0.count;
+    foundHelper = helpers.macro;
+    stack2 = foundHelper || depth0.macro;
+    foundHelper = helpers.getCalsDisplayForMacro;
+    stack3 = foundHelper || depth0.getCalsDisplayForMacro;
+    if(typeof stack3 === functionType) { stack1 = stack3.call(depth0, stack2, stack1, { hash: {} }); }
+    else if(stack3=== undef) { stack1 = helperMissing.call(depth0, "getCalsDisplayForMacro", stack2, stack1, { hash: {} }); }
+    else { stack1 = stack3; }
+    buffer += escapeExpression(stack1) + "</span>\n        </div>\n    </div>\n</div>";
     return buffer;});
 }});
 

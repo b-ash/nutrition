@@ -1,4 +1,4 @@
-BaseMacrosModel = require('./base_macros_model')
+BaseMacrosModel = require('models/base_macros_model')
 
 
 # Body Beast nutrition macro requirements

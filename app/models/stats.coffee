@@ -1,4 +1,4 @@
-BeastBrackets = require('./calorie_brackets/beast_brackets')
+BeastBrackets = require('models/calorie_brackets/beast_brackets')
 utils = require('lib/utils')
 
 

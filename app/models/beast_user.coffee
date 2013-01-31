@@ -1,4 +1,4 @@
-LocalStorageModel = require('./local_storage_model')
+LocalStorageModel = require('models/local_storage_model')
 
 # Body Beast Use Configuration
 class BeastUserConfig extends LocalStorageModel

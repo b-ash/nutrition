@@ -2,26 +2,7 @@
     <h4>Current Macros</h4>
 </header>
 
-<div class="list macros">
-    {{#keys macros this}}
-        <div class="list-item macro" data-key="{{key}}">
-            <div class="percentage-bar relative">
-                <div class="btn-decrement absolute">
-                    <span class="ui-icon ui-icon-minusthick"></span>
-                </div>
-                <div class="percentage-complete absolute {{key}}" style="width: {{getPercentageWidth key}}%;">
-                    <div class="percentage-text absolute {{#ifIsExceedingGoal key}}exceeding{{/ifIsExceedingGoal}}">
-                        <span class="text_display with-default-cursor">{{val.display}}: </span>
-                        <span class="text_count with-default-cursor">{{val.count}}</span>
-                        <span class="text_total with-default-cursor"> / {{getGoalForMacro key}}</span>
-                        <span class="text_cals with-default-cursor">{{getCalsDisplayForMacro key val.count}}</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    {{/keys}}
-</div>
-
+<div class="list macros"></div>
 <div class="total">
     <span>Approx. total calories: </span>
     <span id="text_total_cals">{{getTotalCals macros}}</span>

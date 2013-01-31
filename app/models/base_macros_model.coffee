@@ -1,6 +1,6 @@
 utils = require('lib/utils')
-LocalStorageModel = require('./local_storage_model')
-BeastFoods = require('./foods/beast_foods')
+LocalStorageModel = require('models/local_storage_model')
+BeastFoods = require('models/foods/beast_foods')
 
 
 # Body Beast nutrition macro requirements to be extended

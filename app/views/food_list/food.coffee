@@ -1,12 +1,12 @@
 app = require 'application'
-View = require './view'
+View = require 'views/view'
 BeastFoods = require 'models/foods/beast_foods'
 
 
 class FoodMacroView extends View
     tagName: 'div'
     className: 'content'
-    template: require './templates/food'
+    template: require('views/templates/food')
     events:
         'click a': 'routeEvent'
         'click #submit_and_route': 'submitAndRoute'
