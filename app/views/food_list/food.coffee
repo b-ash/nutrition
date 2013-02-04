@@ -1,6 +1,5 @@
 app = require 'application'
 View = require 'views/view'
-BaseFoods = require 'models/foods/base_foods'
 
 
 class FoodMacroView extends View

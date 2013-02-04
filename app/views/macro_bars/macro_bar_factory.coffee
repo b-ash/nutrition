@@ -1,4 +1,4 @@
-BaseBar = require('models/macro_bars/base_macro_bar')
+BaseBar = require('./base_macro_bar')
 
 OVERRIDES =
     shake: BaseBar

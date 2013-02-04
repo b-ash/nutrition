@@ -1,17 +1,16 @@
-app = require('application')
 utils = require('lib/utils')
 LocalStorageModel = require('models/local_storage_model')
-Foods = require('models/foods/beast_foods')
+Foods = require('models/foods/foods')
 
 
-# Body Beast nutrition macro requirements to be extended
+# Base nutrition macro requirements to be extended
 class BaseMacrosModel extends LocalStorageModel
 
     totalCals: 0
-    foods: new Foods(app.program)
 
     initialize: =>
         @fetch()
+        @foods = new Foods(app.user)
         @calculateTotalCals()
 
     increment: (macro, amt=0.5) =>

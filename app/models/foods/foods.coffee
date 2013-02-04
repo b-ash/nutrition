@@ -1,10 +1,11 @@
-class BaseFoods
+class Foods
     macros: {}
 
-    constructor: (@program, @macro, @food) ->
-        @ALL_MACROS = require("./#{@program.program}/all_macros")
-        for macro, display of @ALL_MACROS
-            @macros[macro] = require("./#{@program}/#{macro}")
+    constructor: (@user, @macro, @food) ->
+        if @user.isConfigured()
+            @ALL_MACROS = require("./#{@user.getProgram()}/all_macros")
+            for macro, display of @ALL_MACROS
+                @macros[macro] = require("./#{@user.getProgram()}/#{macro}")
 
     toJSON: () =>
         if @macro?
@@ -25,4 +26,4 @@ class BaseFoods
         @macros[macro]['cals']
 
 
-module.exports = BaseFoods
+module.exports = Foods

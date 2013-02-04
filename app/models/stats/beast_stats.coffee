@@ -3,13 +3,14 @@ utils = require('lib/utils')
 
 
 class BeastStats
-    program: 'beast'
-
+    
     constructor: (user) ->
         @weight = user.get('weight')
         @bfp = user.get('bfp')
-        @phase = user.get('phase')
+        @phase = user.getPhase()
+        @program = user.get('program')
         @calorieBracket = @getCalorieBracket()
+        @calories = @getCalories()
 
     getCalorieBracket: =>
         lbm = utils.roundFloat @lbm(@weight, @bfp), 1
@@ -100,4 +101,4 @@ class BeastStats
             cals
 
 
-module.exports = Stats
+module.exports = BeastStats

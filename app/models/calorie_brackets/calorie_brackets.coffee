@@ -1,7 +1,7 @@
-class CalorieBrackets
+class CalorieBracketsFactory
 
     @getBracket: (stats) ->
-        require("./#{stats.program}/#{stats.phase}/#{stats.calories}c")
+        require("./#{stats.program}/#{stats.calories}c")
 
 
-module.exports = CalorieBrackets
+module.exports = CalorieBracketsFactory

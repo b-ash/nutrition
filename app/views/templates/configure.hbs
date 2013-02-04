@@ -7,6 +7,8 @@
     {{/configured}}
 </header>
 
+<div id="error_msg" class="alert error" style="display: none;">All fields are required</div>
+
 <div>
     <input id="name" type="text" placeholder="My name is..." {{#if name}} value="{{name}}"{{/if}} />
 </div>
@@ -17,9 +19,17 @@
 </div>
 
 <div>
-    <select id="phase">
-        <option value="build">Build / Bulk (phases 1 &amp; 2)</option>
-        <option value="beast">Beast (phase 3)</option>
+    <select id="program" placeholder="No program selected">
+        <option value="">No program selected</option>
+        <optgroup label="Body Beast">
+            <option value="beast/build">Build / Bulk (phases 1 &amp; 2)</option>
+            <option value="beast/beast">Beast (phase 3)</option>
+        </optgroup>
+        <optgroup label="P90X2">
+            <option value="x2/energy_booster">Energy Booster (standard)</option>
+            <option value="x2/fat_shredder">Fat Shredder</option>
+            <option value="x2/endurance_maximizer">Endurance Maximizer</option>
+        </optgroup>
     </select>
 </div>
 

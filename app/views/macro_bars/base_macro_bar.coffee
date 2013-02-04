@@ -1,6 +1,6 @@
 app = require('application')
 View = require('views/view')
-Foods = require('models/foods/base_foods')
+Foods = require('models/foods/foods')
 
 
 class BaseMacroView extends View
@@ -13,7 +13,7 @@ class BaseMacroView extends View
 
     initialize: =>
         @model.on('cleared', @clear)
-        @foods = new Foods(app.program, @options.macro)
+        @foods = new Foods(app.user, @options.macro)
 
     onClose: =>
         @model.off('cleared', @clear)

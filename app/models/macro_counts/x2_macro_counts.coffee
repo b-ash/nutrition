@@ -1,19 +1,19 @@
 BaseMacrosModel = require('./base_macros_model')
 
 
-# Body Beast nutrition macro requirements
-class BeastMacros extends BaseMacrosModel
+# X2 nutrition macro requirements
+class X2Macros extends BaseMacrosModel
 
     initialize: (stats) =>
-        @id = "macro-counts"
+        @id = "x2-#{stats.getCalories()}c"
         @goals = stats.getGoals()
 
         super
 
     defaults: ->
         macros:
-            starches:
-                display: 'Starches', count: 0
+            grains:
+                display: 'Grains', count: 0
             legumes:
                 display: 'Legumes', count: 0
             veggies:
@@ -27,4 +27,4 @@ class BeastMacros extends BaseMacrosModel
         timestamp: new moment().format('MM-DD-YY')
 
 
-module.exports = BeastMacros
+module.exports = X2Macros
