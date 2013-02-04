@@ -1,8 +1,9 @@
-BeastBrackets = require('models/calorie_brackets/beast_brackets')
+CalorieBrackets = require('models/calorie_brackets/calorie_brackets')
 utils = require('lib/utils')
 
 
-class Stats
+class X2Stats
+    program: 'x2'
 
     constructor: (user) ->
         @weight = user.get('weight')
@@ -29,7 +30,7 @@ class Stats
         @calorieBracket.cals
 
     getGoals: =>
-        goals = BeastBrackets.getBracket(@getCalories(), @phase)
+        goals = CalorieBrackets.getBracket(@)
         goals.goals
 
     getMacroBreakdown: =>

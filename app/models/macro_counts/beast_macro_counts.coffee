@@ -24,8 +24,6 @@ class BeastMacros extends BaseMacrosModel
                 display: 'Proteins', count: 0
             fats:
                 display: 'Fats', count: 0
-            shake:
-                display: 'Shake', count: 0
         timestamp: new moment().format('MM-DD-YY')
 
 

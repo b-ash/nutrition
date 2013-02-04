@@ -1,13 +1,12 @@
-ALL_MACROS = require('./beast/all_macros')
-
-class BeastFoods
+class BaseFoods
     macros: {}
 
-    constructor: (@macro, @food) ->
-        for macro, display of ALL_MACROS
-            @macros[macro] = require("./beast/#{macro}")
+    constructor: (@program, @macro, @food) ->
+        @ALL_MACROS = require("./#{@program.program}/all_macros")
+        for macro, display of @ALL_MACROS
+            @macros[macro] = require("./#{@program}/#{macro}")
 
-    toJSON: =>
+    toJSON: () =>
         if @macro?
             macro = @macros[@macro] or {food: {}}
 
@@ -20,11 +19,10 @@ class BeastFoods
             else
                 return macro
         else
-            return ALL_MACROS
+            return @ALL_MACROS
 
-    get: (key) =>
-        if @macro and @macro isnt 'shake'
-            @macros[@macro][key]
+    getCalories: (macro=@macro) =>
+        @macros[macro]['cals']
 
 
-module.exports = BeastFoods
+module.exports = BaseFoods

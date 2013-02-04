@@ -1,6 +1,8 @@
 app = require 'application'
 utils = require 'lib/utils'
 
+Foods = require('models/foods/base_foods')
+
 NavView = require('views/nav')
 views =
     index: require('views/index')
@@ -45,13 +47,13 @@ module.exports = class Router extends Backbone.Router
         @setupView('settings', 'configure', {model: app.user})
 
     foodAllMacros: =>
-        @setupView('food', 'foodAll')
+        @setupView('food', 'foodAll', {model: new Foods()})
 
     foodMacro: (macro) =>
-        @setupView('food', 'foodMacro', {macro})
+        @setupView('food', 'foodMacro', {model: new Foods(app.program, macro)})
 
     food: (macro, food) =>
-        @setupView('food', 'food', {macro, food})
+        @setupView('food', 'food', {model: new Foods(app.program, macro, food)})
 
     setupView: (navItem, claxx, params={}) =>
         @navSetup(navItem)

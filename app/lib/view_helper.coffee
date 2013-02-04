@@ -1,5 +1,5 @@
 utils = require('lib/utils')
-BeastFoods = require('models/foods/beast_foods')
+Foods = require('models/foods/base_foods')
 
 
 Handlebars.registerHelper "debug", (optionalValue) ->
@@ -27,7 +27,7 @@ Handlebars.registerHelper "getGoalForMacro", (macro) ->
     return window.app.macros.getGoalForMacro(macro)
 
 Handlebars.registerHelper "getCalsDisplayForMacro", (macro, amt) ->
-    cals = new BeastFoods(macro).get('cals')
+    cals = new Foods(window.app.program).getCalories(macro)
     if cals?
         return " - #{amt * cals} cals"
     else

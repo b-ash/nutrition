@@ -1,5 +1,6 @@
+app = require('application')
 View = require('views/view')
-BeastFoods = require('models/foods/beast_foods')
+Foods = require('models/foods/base_foods')
 
 
 class BaseMacroView extends View
@@ -12,6 +13,7 @@ class BaseMacroView extends View
 
     initialize: =>
         @model.on('cleared', @clear)
+        @foods = new Foods(app.program, @options.macro)
 
     onClose: =>
         @model.off('cleared', @clear)
@@ -55,10 +57,9 @@ class BaseMacroView extends View
             @$('.percentage-text').removeClass('exceeding')
 
     changeCurrentCals: =>
-        if @options.macro isnt 'shake'
-            count = @model.get('macros')[@options.macro].count
-            cals = new BeastFoods(@options.macro).get('cals')
-            @$('.text_cals').text " - #{count * cals} cals"
+        count = @model.get('macros')[@options.macro].count
+        cals = @foods.getCalories(@options.macro)
+        @$('.text_cals').text " - #{count * cals} cals"
 
     clear: =>
         @render()
