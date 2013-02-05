@@ -3102,7 +3102,7 @@ window.require.define({"models/macro_counts/base_macros_model": function(exports
       macros = this.get('macros');
       newCount = Math.max(macros[macro].count + parseFloat(amt), 0);
       cals = this.foods.getCalories(macro);
-      this.totalCals += amt * cals;
+      this.totalCals = Math.max(this.totalCals + (amt * cals), 0);
       macros[macro].count = newCount;
       return this.save('macros', macros);
     };

@@ -26,7 +26,7 @@ class BaseMacrosModel extends LocalStorageModel
 
         newCount = Math.max (macros[macro].count + parseFloat(amt)), 0
         cals = @foods.getCalories(macro)
-        @totalCals += (amt * cals)
+        @totalCals = Math.max (@totalCals + (amt * cals)), 0
 
         macros[macro].count = newCount
         @save('macros', macros)
