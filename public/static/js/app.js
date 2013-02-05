@@ -4560,7 +4560,7 @@ window.require.define({"views/templates/configure": function(exports, require, m
     tmp1.inverse = self.noop;
     stack1 = stack2.call(depth0, stack1, tmp1);
     if(stack1 || stack1 === 0) { buffer += stack1; }
-    buffer += " />\n\n    <span class=\"aside\">Current weight</span>\n    <input id=\"weight\" type=\"number\" placeholder=\"My weight is...\" ";
+    buffer += " />\n\n    <span class=\"aside\">Current weight</span>\n    <input id=\"weight\" type=\"number\" pattern=\"\\d*\" placeholder=\"My weight is...\" ";
     foundHelper = helpers.weight;
     stack1 = foundHelper || depth0.weight;
     stack2 = helpers['if'];
@@ -4590,7 +4590,7 @@ window.require.define({"views/templates/configure_beast": function(exports, requ
     buffer += escapeExpression(stack1) + "\"";
     return buffer;}
 
-    buffer += "<span class=\"aside\">Body fat percentage</span>\n<input id=\"bfp\" type=\"number\" placeholder=\"Example: 15\" ";
+    buffer += "<span class=\"aside\">Body fat percentage</span>\n<input id=\"bfp\" type=\"number\" pattern=\"\\d*\" placeholder=\"Example: 15\" ";
     foundHelper = helpers.bfp;
     stack1 = foundHelper || depth0.bfp;
     stack2 = helpers['if'];
@@ -4631,7 +4631,7 @@ window.require.define({"views/templates/configure_x2": function(exports, require
     buffer += escapeExpression(stack1) + "\"";
     return buffer;}
 
-    buffer += "<span class=\"aside\">Activity levels outside X2.</span>\n<select id=\"dab\">\n    <option value=\"\"></option>\n    <option value=\"0.1\">Sedetary</option>\n    <option value=\"0.2\">Moderatley Active</option>\n    <option value=\"0.3\">Very Active</option>\n</select>\n\n<span class=\"aside italic\">Daily exercise calories. Varies, but 650 is the X2 average.</span>\n<input id=\"de\" type=\"number\" placeholder=\"Example: 650\" ";
+    buffer += "<span class=\"aside\">Activity levels outside X2.</span>\n<select id=\"dab\">\n    <option value=\"\"></option>\n    <option value=\"0.1\">Sedetary</option>\n    <option value=\"0.2\">Moderatley Active</option>\n    <option value=\"0.3\">Very Active</option>\n</select>\n\n<span class=\"aside italic\">Daily exercise calories. Varies, but 650 is the X2 average.</span>\n<input id=\"de\" type=\"number\" pattern=\"\\d*\" placeholder=\"Example: 650\" ";
     foundHelper = helpers.de;
     stack1 = foundHelper || depth0.de;
     stack2 = helpers['if'];

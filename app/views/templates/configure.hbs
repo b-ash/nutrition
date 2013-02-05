@@ -14,7 +14,7 @@
     <input id="name" type="text" placeholder="My name is..." {{#if name}} value="{{name}}"{{/if}} />
 
     <span class="aside">Current weight</span>
-    <input id="weight" type="number" placeholder="My weight is..." {{#if weight}} value="{{weight}}"{{/if}} />
+    <input id="weight" type="number" pattern="\d*" placeholder="My weight is..." {{#if weight}} value="{{weight}}"{{/if}} />
 </div>
 
 <div>
