@@ -34,7 +34,13 @@ class ConfigureView extends View
         @$('#program_config').html @views.program.render().el
 
     isValid: =>
-        @$('#program').val().length isnt 0
+        name =  @$('#name').val()
+        weight =   @$('#weight').val()
+        program = @$('#program').val()
+
+        name.length and
+        program.length and
+        weight.length and parseInt(weight) isnt NaN
 
     configure: =>
         unless @isValid() and (@views.program?.isValid())

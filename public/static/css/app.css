@@ -7026,6 +7026,12 @@ html {
 .total {
   font-style: italic;
 }
+.aside {
+  display: block;
+  font-style: italic;
+  font-size: 10px;
+  color: #aaa;
+}
 .portion-controls {
   margin-top: 20px;
   margin-bottom: 50px;

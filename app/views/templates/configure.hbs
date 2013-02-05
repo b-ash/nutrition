@@ -7,22 +7,26 @@
     {{/configured}}
 </header>
 
-<div id="error_msg" class="alert error" style="display: none;">All fields are required</div>
+<div id="error_msg" class="alert error" style="display: none;">Whoa there cowpoke, fill in the blanks.</div>
 
 <div>
+    <span class="aside">Your name</span>
     <input id="name" type="text" placeholder="My name is..." {{#if name}} value="{{name}}"{{/if}} />
-    <input id="weight" type="number" placeholder="Weight" {{#if weight}} value="{{weight}}"{{/if}} />
+
+    <span class="aside">Current weight</span>
+    <input id="weight" type="number" placeholder="My weight is..." {{#if weight}} value="{{weight}}"{{/if}} />
 </div>
 
 <div>
-    <select id="program" placeholder="No program selected">
-        <option value="">No program selected</option>
+    <span class="aside">Beachbody Diet Program</span>
+    <select id="program">
+        <option value=""></option>
         <optgroup label="Body Beast">
             <option value="beast/build">Build / Bulk (phases 1 &amp; 2)</option>
             <option value="beast/beast">Beast (phase 3)</option>
         </optgroup>
         <optgroup label="P90X2">
-            <option value="x2/energy_booster">Energy Booster (standard)</option>
+            <option value="x2/energy_booster">Energy Booster (balanced)</option>
             <option value="x2/fat_shredder">Fat Shredder</option>
             <option value="x2/endurance_maximizer">Endurance Maximizer</option>
         </optgroup>

@@ -2094,7 +2094,7 @@ window.require.define({"models/foods/beast/veggies": function(exports, require, 
         measurement: 'cup',
         description: 'Cooked, or 1 cup raw'
       },
-      Okra: {
+      okra: {
         display: 'Okra',
         portion: 0.5,
         measurement: 'cup',
@@ -2249,10 +2249,28 @@ window.require.define({"models/foods/x2/condiments": function(exports, require, 
     display: 'Condiments',
     cals: 50,
     foods: {
-      NAME: {
-        display: '???',
-        portion: 1,
-        measurement: 'oz',
+      marinades: {
+        display: 'BBQ / sauces / marinades',
+        portion: 50,
+        measurement: 'calorie',
+        description: ''
+      },
+      mustard: {
+        display: 'Mustard',
+        portion: 50,
+        measurement: 'calorie',
+        description: ''
+      },
+      honey: {
+        display: 'Honey',
+        portion: 50,
+        measurement: 'calorie',
+        description: ''
+      },
+      jam: {
+        display: 'Pure Fruit Jams',
+        portion: 50,
+        measurement: 'calorie',
         description: ''
       }
     }
@@ -2267,11 +2285,65 @@ window.require.define({"models/foods/x2/dairy": function(exports, require, modul
     display: 'Dairy',
     cals: 120,
     foods: {
-      NAME: {
-        display: '???',
-        portion: 1,
+      cheese: {
+        display: 'Cheese',
+        portion: 2,
+        measurement: 'oz',
+        description: 'Low-fat'
+      },
+      cottage: {
+        display: 'Cottage Cheese',
+        portion: 0.75,
+        measurement: 'cup',
+        description: '1%'
+      },
+      feta: {
+        display: 'Feta Cheese',
+        portion: 1.5,
         measurement: 'oz',
         description: ''
+      },
+      goat: {
+        display: 'Goat Cheese',
+        portion: 1.5,
+        measurement: 'oz',
+        description: 'Semisoft'
+      },
+      mozzarella: {
+        display: 'Mozzarella Cheese',
+        portion: 1.5,
+        measurement: 'oz',
+        description: 'Part skim'
+      },
+      parmesan: {
+        display: 'Parmesan Cheese',
+        portion: 2,
+        measurement: 'tbsp',
+        description: ''
+      },
+      milk: {
+        display: 'Skim Milk',
+        portion: 8,
+        measurement: 'oz',
+        description: ''
+      },
+      soy_cheese: {
+        display: 'Organic Soy Cheese',
+        portion: 1.5,
+        measurement: 'oz',
+        description: ''
+      },
+      soy_milk: {
+        display: 'Organic Soy Milk',
+        portion: 1,
+        measurement: 'cup',
+        description: ''
+      },
+      yogurt: {
+        display: 'Yogurt',
+        portion: 1,
+        measurement: 'cup',
+        description: 'Nonfat plain'
       }
     }
   };
@@ -2285,10 +2357,64 @@ window.require.define({"models/foods/x2/fats": function(exports, require, module
     display: 'Fats',
     cals: 120,
     foods: {
-      NAME: {
-        display: '???',
+      avocado: {
+        display: 'Avocado',
+        portion: 3,
+        measurement: 'oz',
+        description: ''
+      },
+      olive_oil: {
+        display: 'Olive Oil',
+        portion: 1,
+        measurement: 'tbsp',
+        description: ''
+      },
+      olives: {
+        display: 'Olives',
+        portion: 4,
+        measurement: 'oz',
+        description: ''
+      },
+      nuts: {
+        display: 'Raw Nuts',
         portion: 1,
         measurement: 'oz',
+        description: ''
+      },
+      flaxseed: {
+        display: 'Flaxseed (ground)',
+        portion: 3,
+        measurement: 'tbsp',
+        description: ''
+      },
+      flaxseed_oil: {
+        display: 'Flaxseed Oil',
+        portion: 1,
+        measurement: 'tbsp',
+        description: ''
+      },
+      pumpkin_oil: {
+        display: 'Pumpkin Seed Oil',
+        portion: 1,
+        measurement: 'tbsp',
+        description: ''
+      },
+      walnut_oil: {
+        display: 'Walnut Oil',
+        portion: 1,
+        measurement: 'tbsp',
+        description: ''
+      },
+      canola_oil: {
+        display: 'Canola Oil',
+        portion: 1,
+        measurement: 'tbsp',
+        description: ''
+      },
+      chia_oil: {
+        display: 'Chia Oil',
+        portion: 1,
+        measurement: 'tbsp',
         description: ''
       }
     }
@@ -2303,11 +2429,125 @@ window.require.define({"models/foods/x2/fruits": function(exports, require, modu
     display: 'Fruits',
     cals: 100,
     foods: {
-      NAME: {
-        display: '???',
+      apple: {
+        display: 'Apple',
+        portion: 1,
+        measurement: 'apple',
+        description: 'Medium'
+      },
+      apricots: {
+        display: 'Apricots',
+        portion: 1,
+        measurement: 'cup',
+        description: ''
+      },
+      banana: {
+        display: 'Banana',
+        portion: 1,
+        measurement: 'banana',
+        description: 'Medium'
+      },
+      cherries: {
+        display: 'Cherries',
+        portion: 1,
+        measurement: 'cup',
+        description: ''
+      },
+      dried_fruits: {
+        display: 'Dried Fruits',
         portion: 1,
         measurement: 'oz',
         description: ''
+      },
+      figs: {
+        display: 'Figs',
+        portion: 2,
+        measurement: 'fig',
+        description: 'Large'
+      },
+      grapefruit: {
+        display: 'Grapefruit',
+        portion: 1,
+        measurement: 'grapefruit',
+        description: 'Medium'
+      },
+      grapes: {
+        display: 'Grapes',
+        portion: 1,
+        measurement: 'cup',
+        description: ''
+      },
+      kiwi: {
+        display: 'Kiwi',
+        portion: 2,
+        measurement: 'kiwi',
+        description: ''
+      },
+      mango: {
+        display: 'Mango',
+        portion: 0.5,
+        measurement: 'mango',
+        description: 'Medium'
+      },
+      melon: {
+        display: 'Melon',
+        portion: 1,
+        measurement: 'cup',
+        description: ''
+      },
+      nectarine: {
+        display: 'Nectarine',
+        portion: 1,
+        measurement: 'nectarine',
+        description: 'Medium'
+      },
+      orange: {
+        display: 'Orange',
+        portion: 1,
+        measurement: 'orange',
+        description: 'Large'
+      },
+      papaya: {
+        display: 'Papaya',
+        portion: 0.5,
+        measurement: 'papaya',
+        description: 'Medium'
+      },
+      peach: {
+        display: 'Peach',
+        portion: 1,
+        measurement: 'peach',
+        description: 'Large'
+      },
+      pear: {
+        display: 'Pear',
+        portion: 1,
+        measurement: 'pear',
+        description: 'medium'
+      },
+      pineapple: {
+        display: 'Pineapple',
+        portion: 1,
+        measurement: 'cup',
+        description: ''
+      },
+      raspberries: {
+        display: 'Rasp-, Black-, Blueberries',
+        portion: 1,
+        measurement: 'cup',
+        description: ''
+      },
+      strawberries: {
+        display: 'Strawberries',
+        portion: 2,
+        measurement: 'cup',
+        description: 'Sliced'
+      },
+      tangerines: {
+        display: 'Tangerines',
+        portion: 1,
+        measurement: 'tangerine',
+        description: 'Medium'
       }
     }
   };
@@ -2321,10 +2561,88 @@ window.require.define({"models/foods/x2/grains": function(exports, require, modu
     display: 'Grains',
     cals: 200,
     foods: {
-      NAME: {
-        display: '???',
+      amaranth: {
+        display: 'Amaranth',
         portion: 1,
-        measurement: 'oz',
+        measurement: 'cup',
+        description: ''
+      },
+      bagel: {
+        display: 'Whole-grain Bagel',
+        portion: 1,
+        measurement: 'bagel',
+        description: 'Medium'
+      },
+      bread: {
+        display: 'Whole-grain Bread',
+        portion: 2,
+        measurement: 'slice',
+        description: ''
+      },
+      cereal: {
+        display: 'Whole-grain Cereal',
+        portion: 1,
+        measurement: 'cup',
+        description: ''
+      },
+      couscous: {
+        display: 'Whole-grain Couscous',
+        portion: 1,
+        measurement: 'cup',
+        description: ''
+      },
+      crackers: {
+        display: 'Whole-grain Crackers',
+        portion: 12,
+        measurement: 'cracker',
+        description: ''
+      },
+      english_muffin: {
+        display: 'Whole-grain English Muffin',
+        portion: 2,
+        measurement: 'half',
+        description: ''
+      },
+      oatmeal: {
+        display: 'Oatmeal',
+        portion: 1,
+        measurement: 'cup',
+        description: ''
+      },
+      pancakes: {
+        display: 'Whole-grain Pancakes',
+        portion: 3,
+        measurement: 'pancake',
+        description: '3.6oz each'
+      },
+      pasta: {
+        display: 'Whole-grain Pasta',
+        portion: 1,
+        measurement: 'cup',
+        description: ''
+      },
+      rice: {
+        display: 'Rice (brown or wild)',
+        portion: 1,
+        measurement: 'cup',
+        description: ''
+      },
+      tortilla: {
+        display: 'Whole-grain Tortilla',
+        portion: 1,
+        measurement: 'tortilla',
+        description: 'Large (10")'
+      },
+      waffles: {
+        display: 'Whole-grain Waffles',
+        portion: 2,
+        measurement: 'waffle',
+        description: ''
+      },
+      wheat_berries: {
+        display: 'Wheat Berries',
+        portion: 1,
+        measurement: 'cup',
         description: ''
       }
     }
@@ -2339,11 +2657,77 @@ window.require.define({"models/foods/x2/legumes": function(exports, require, mod
     display: 'Legumes',
     cals: 200,
     foods: {
-      NAME: {
-        display: '???',
+      baked_beans: {
+        display: 'Baked Beans',
+        portion: 1,
+        measurement: 'cup',
+        description: ''
+      },
+      beans: {
+        display: 'Beans (kidney, black, etc)',
+        portion: 1,
+        measurement: 'cup',
+        description: ''
+      },
+      edamame: {
+        display: 'Edamame',
+        portion: 1,
+        measurement: 'cup',
+        description: 'Shelled'
+      },
+      hummus: {
+        display: 'Hummus',
+        portion: 0.5,
+        measurement: 'oz',
+        description: ''
+      },
+      lentils: {
+        display: 'Lentils',
+        portion: 1,
+        measurement: 'cup',
+        description: ''
+      },
+      peanuts: {
+        display: 'Peanuts (raw or home roasted)',
         portion: 1,
         measurement: 'oz',
         description: ''
+      },
+      peas: {
+        display: 'Peas',
+        portion: 0.5,
+        measurement: 'cup',
+        description: ''
+      },
+      potato: {
+        display: 'Potato',
+        portion: 1,
+        measurement: 'potato',
+        description: 'medium'
+      },
+      quinoa: {
+        display: 'Quinoa',
+        portion: 1,
+        measurement: 'cup',
+        description: ''
+      },
+      refried_beans: {
+        display: 'Refried Beans (nonfat)',
+        portion: 1,
+        measurement: 'cup',
+        description: ''
+      },
+      sweet_potato: {
+        display: 'Sweet Potato',
+        portion: 1,
+        measurement: 'potato',
+        description: 'Large'
+      },
+      yam: {
+        display: 'Yam',
+        portion: 1,
+        measurement: 'potato',
+        description: 'Medium'
       }
     }
   };
@@ -2357,11 +2741,95 @@ window.require.define({"models/foods/x2/proteins": function(exports, require, mo
     display: 'Proteins',
     cals: 100,
     foods: {
-      NAME: {
-        display: '???',
-        portion: 1,
+      chicken: {
+        display: 'Chicken / Turkey',
+        portion: 3,
+        measurement: 'oz',
+        description: 'Boneless, skinless'
+      },
+      egg_whites: {
+        display: 'Egg Whites',
+        portion: 6,
+        measurement: 'white',
+        description: ''
+      },
+      fish: {
+        display: 'Fish / Shellfish',
+        portion: 3,
         measurement: 'oz',
         description: ''
+      },
+      ham: {
+        display: 'Ham',
+        portion: 3,
+        measurement: 'oz',
+        description: 'Low sodium, fat free'
+      },
+      hemp_powder: {
+        display: 'Hemp Protein Powder',
+        portion: 100,
+        measurement: 'calorie',
+        description: 'Depending on brand'
+      },
+      pork: {
+        display: 'Pork Tenderloin',
+        portion: 3,
+        measurement: 'oz',
+        description: ''
+      },
+      red_meat: {
+        display: 'Red Meat',
+        portion: 3,
+        measurement: 'oz',
+        description: 'Lean'
+      },
+      rice_powder: {
+        display: 'Rice Protein Powder',
+        portion: 100,
+        measurement: 'calorie',
+        description: 'Depending on brand'
+      },
+      seitan: {
+        display: 'Seitan',
+        portion: 3,
+        measurement: 'oz',
+        description: ''
+      },
+      tempeh: {
+        display: 'Tempeh',
+        portion: 2,
+        measurement: 'oz',
+        description: ''
+      },
+      tofu: {
+        display: 'Tofu',
+        portion: 3,
+        measurement: 'oz',
+        description: ''
+      },
+      tuna: {
+        display: 'Tuna',
+        portion: 3,
+        measurement: 'oz',
+        description: ''
+      },
+      turkey_bacon: {
+        display: 'Turkey Bacon',
+        portion: 2,
+        measurement: 'slice',
+        description: ''
+      },
+      veggie_burger: {
+        display: 'Veggie Burger',
+        portion: 1,
+        measurement: 'burger',
+        description: ''
+      },
+      whey: {
+        display: 'Whey Protein Powder',
+        portion: 100,
+        measurement: 'calorie',
+        description: 'Depending on brand'
       }
     }
   };
@@ -2375,11 +2843,167 @@ window.require.define({"models/foods/x2/veggies": function(exports, require, mod
     display: 'Veggies',
     cals: 50,
     foods: {
-      NAME: {
-        display: '???',
+      cooked: {
+        display: 'Cooked Veggies',
         portion: 1,
-        measurement: 'oz',
+        measurement: 'cup',
         description: ''
+      },
+      leafy: {
+        display: 'Leafy Greens',
+        portion: 2,
+        measurement: 'cup',
+        description: 'Lightly packed'
+      },
+      asparagus: {
+        display: 'Asparagus',
+        portion: 1,
+        measurement: 'cup',
+        description: 'Cooked, or 2 cups raw'
+      },
+      beets: {
+        display: 'Beets',
+        portion: 0.75,
+        measurement: 'cup',
+        description: 'Cooked'
+      },
+      bok_choy: {
+        display: 'Bok Choy',
+        portion: 0.5,
+        measurement: 'cup',
+        description: 'Cooked, or 2 cups raw'
+      },
+      broccoli: {
+        display: 'Broccoli',
+        portion: 1,
+        measurement: 'cup',
+        description: 'Cooked, or 2 cups raw'
+      },
+      brussels_sprouts: {
+        display: 'Brussels Sprouts',
+        portion: 1,
+        measurement: 'cup',
+        description: 'Cooked'
+      },
+      cabbage: {
+        display: 'Cabbage',
+        portion: 1.5,
+        measurement: 'cup',
+        description: 'Cooked, or 2 cups raw'
+      },
+      carrots: {
+        display: 'Carrots',
+        portion: 1,
+        measurement: 'cup',
+        description: 'Cooked or raw'
+      },
+      cauliflower: {
+        display: 'Cauliflower',
+        portion: 1.5,
+        measurement: 'cup',
+        description: 'Cooked, or 2 cups raw'
+      },
+      celery: {
+        display: 'Celery',
+        portion: 2,
+        measurement: 'cup',
+        description: 'Cooked, 2.5 cups raw'
+      },
+      collard_greens: {
+        display: 'Collard Greens',
+        portion: 1,
+        measurement: 'cup',
+        description: 'Cooked, 4 cups raw'
+      },
+      cucumber: {
+        display: 'Cucumber',
+        portion: 3,
+        measurement: 'cup',
+        description: 'Raw'
+      },
+      eggplant: {
+        display: 'Eggplant',
+        portion: 2,
+        measurement: 'cup',
+        description: 'Cooked'
+      },
+      kale: {
+        display: 'Kale',
+        portion: 1.5,
+        measurement: 'cup',
+        description: 'Cooked, or 2 cups raw'
+      },
+      lettuce: {
+        display: 'Lettuce',
+        portion: 6,
+        measurement: 'cup',
+        description: 'Raw (NOT iceberg)'
+      },
+      marinara: {
+        display: 'Marinara Sauce',
+        portion: 0.75,
+        measurement: 'cup',
+        description: ''
+      },
+      mushrooms: {
+        display: 'Mushrooms',
+        portion: 1,
+        measurement: 'cup',
+        description: 'Cooked, or 2.5 cups raw'
+      },
+      peppers: {
+        display: 'Peppers',
+        portion: 1.5,
+        measurement: 'cup',
+        description: 'Cooked, or 2 cups raw'
+      },
+      radishes: {
+        display: 'Radishes',
+        portion: 2,
+        measurement: 'cup',
+        description: 'Raw'
+      },
+      salsa: {
+        display: 'Salsa',
+        portion: 0.5,
+        measurement: 'cup',
+        description: ''
+      },
+      soup: {
+        display: 'Veggie Soup',
+        portion: 1,
+        measurement: 'cup',
+        description: ''
+      },
+      spinach: {
+        display: 'Spinach',
+        portion: 1,
+        measurement: 'cup',
+        description: 'Cooked, or 6 cups raw'
+      },
+      sprouts: {
+        display: 'Sprouts',
+        portion: 5,
+        measurement: 'cup',
+        description: 'Raw'
+      },
+      squash: {
+        display: 'Squash (Summer / Winter)',
+        portion: 1,
+        measurement: 'cup',
+        description: 'Cooked, or 2 cups raw'
+      },
+      string_beans: {
+        display: 'String Beans',
+        portion: 1,
+        measurement: 'cup',
+        description: 'Cooked, or 1.5 cups raw'
+      },
+      tomato: {
+        display: 'Tomato',
+        portion: 1,
+        measurement: 'cup',
+        description: 'Cooked, or 2 cup raw'
       }
     }
   };
@@ -3252,7 +3876,11 @@ window.require.define({"views/configuration/configure": function(exports, requir
     };
 
     ConfigureView.prototype.isValid = function() {
-      return this.$('#program').val().length !== 0;
+      var name, program, weight;
+      name = this.$('#name').val();
+      weight = this.$('#weight').val();
+      program = this.$('#program').val();
+      return name.length && program.length && weight.length && parseInt(weight) !== NaN;
     };
 
     ConfigureView.prototype.configure = function() {
@@ -3919,7 +4547,7 @@ window.require.define({"views/templates/configure": function(exports, require, m
     if(foundHelper && typeof stack1 === functionType) { stack1 = stack1.call(depth0, tmp1); }
     else { stack1 = blockHelperMissing.call(depth0, stack1, tmp1); }
     if(stack1 || stack1 === 0) { buffer += stack1; }
-    buffer += "\n</header>\n\n<div id=\"error_msg\" class=\"alert error\" style=\"display: none;\">All fields are required</div>\n\n<div>\n    <input id=\"name\" type=\"text\" placeholder=\"My name is...\" ";
+    buffer += "\n</header>\n\n<div id=\"error_msg\" class=\"alert error\" style=\"display: none;\">Whoa there cowpoke, fill in the blanks.</div>\n\n<div>\n    <span class=\"aside\">Your name</span>\n    <input id=\"name\" type=\"text\" placeholder=\"My name is...\" ";
     foundHelper = helpers.name;
     stack1 = foundHelper || depth0.name;
     stack2 = helpers['if'];
@@ -3929,7 +4557,7 @@ window.require.define({"views/templates/configure": function(exports, require, m
     tmp1.inverse = self.noop;
     stack1 = stack2.call(depth0, stack1, tmp1);
     if(stack1 || stack1 === 0) { buffer += stack1; }
-    buffer += " />\n    <input id=\"weight\" type=\"number\" placeholder=\"Weight\" ";
+    buffer += " />\n\n    <span class=\"aside\">Current weight</span>\n    <input id=\"weight\" type=\"number\" placeholder=\"My weight is...\" ";
     foundHelper = helpers.weight;
     stack1 = foundHelper || depth0.weight;
     stack2 = helpers['if'];
@@ -3939,7 +4567,7 @@ window.require.define({"views/templates/configure": function(exports, require, m
     tmp1.inverse = self.noop;
     stack1 = stack2.call(depth0, stack1, tmp1);
     if(stack1 || stack1 === 0) { buffer += stack1; }
-    buffer += " />\n</div>\n\n<div>\n    <select id=\"program\" placeholder=\"No program selected\">\n        <option value=\"\">No program selected</option>\n        <optgroup label=\"Body Beast\">\n            <option value=\"beast/build\">Build / Bulk (phases 1 &amp; 2)</option>\n            <option value=\"beast/beast\">Beast (phase 3)</option>\n        </optgroup>\n        <optgroup label=\"P90X2\">\n            <option value=\"x2/energy_booster\">Energy Booster (standard)</option>\n            <option value=\"x2/fat_shredder\">Fat Shredder</option>\n            <option value=\"x2/endurance_maximizer\">Endurance Maximizer</option>\n        </optgroup>\n    </select>\n</div>\n\n<div id=\"program_config\"></div>\n\n<div class=\"configure-actions\">\n    <a id=\"configure\" class=\"btn btn-primary dont-route\">Configure</a>\n</div>\n";
+    buffer += " />\n</div>\n\n<div>\n    <span class=\"aside\">Beachbody Diet Program</span>\n    <select id=\"program\">\n        <option value=\"\"></option>\n        <optgroup label=\"Body Beast\">\n            <option value=\"beast/build\">Build / Bulk (phases 1 &amp; 2)</option>\n            <option value=\"beast/beast\">Beast (phase 3)</option>\n        </optgroup>\n        <optgroup label=\"P90X2\">\n            <option value=\"x2/energy_booster\">Energy Booster (balanced)</option>\n            <option value=\"x2/fat_shredder\">Fat Shredder</option>\n            <option value=\"x2/endurance_maximizer\">Endurance Maximizer</option>\n        </optgroup>\n    </select>\n</div>\n\n<div id=\"program_config\"></div>\n\n<div class=\"configure-actions\">\n    <a id=\"configure\" class=\"btn btn-primary dont-route\">Configure</a>\n</div>\n";
     return buffer;});
 }});
 
@@ -3959,7 +4587,7 @@ window.require.define({"views/templates/configure_beast": function(exports, requ
     buffer += escapeExpression(stack1) + "\"";
     return buffer;}
 
-    buffer += "<input id=\"bfp\" type=\"number\" placeholder=\"Body Fat Percentage\" ";
+    buffer += "<span class=\"aside\">Body fat percentage</span>\n<input id=\"bfp\" type=\"number\" placeholder=\"Example: 15\" ";
     foundHelper = helpers.bfp;
     stack1 = foundHelper || depth0.bfp;
     stack2 = helpers['if'];
@@ -4000,7 +4628,7 @@ window.require.define({"views/templates/configure_x2": function(exports, require
     buffer += escapeExpression(stack1) + "\"";
     return buffer;}
 
-    buffer += "<select id=\"dab\">\n    <option value=\"\">Daily Activity Burn</option>\n    <option value=\"0.1\">Sedetary</option>\n    <option value=\"0.2\">Moderate</option>\n    <option value=\"0.3\">High</option>\n</select>\n<input id=\"de\" type=\"number\" placeholder=\"Daily Exercise\" ";
+    buffer += "<span class=\"aside\">Activity levels outside X2.</span>\n<select id=\"dab\">\n    <option value=\"\"></option>\n    <option value=\"0.1\">Sedetary</option>\n    <option value=\"0.2\">Moderatley Active</option>\n    <option value=\"0.3\">Very Active</option>\n</select>\n\n<span class=\"aside italic\">Daily exercise calories. Varies, but 650 is the X2 average.</span>\n<input id=\"de\" type=\"number\" placeholder=\"Example: 650\" ";
     foundHelper = helpers.de;
     stack1 = foundHelper || depth0.de;
     stack2 = helpers['if'];
@@ -4010,7 +4638,7 @@ window.require.define({"views/templates/configure_x2": function(exports, require
     tmp1.inverse = self.noop;
     stack1 = stack2.call(depth0, stack1, tmp1);
     if(stack1 || stack1 === 0) { buffer += stack1; }
-    buffer += " />\n<input id=\"sway\" type=\"number\" placeholder=\"Caloric Surplus/Deficit\" ";
+    buffer += " />\n\n<span class=\"aside italic\">Calories to add (negative to subtract). 500 ~ 1lb/week.</span>\n<input id=\"sway\" type=\"number\" placeholder=\"Example: -500\" ";
     foundHelper = helpers.sway;
     stack1 = foundHelper || depth0.sway;
     stack2 = helpers['if'];
@@ -4283,7 +4911,7 @@ window.require.define({"views/templates/help": function(exports, require, module
     var foundHelper, self=this;
 
 
-    return "<header>\n    <h4>Help</h4>\n</header>\n\n<div class=\"help\">\n    <h5>Purpose</h5>\n    <p>The point of this is to create a quick way to track the basic macronutrients outlined in the nutrition guides for Beachbody's programs Body Beast and P90X2.</p>\n    <p>Forget about hassling with printout sheets or guesstimation. Your phone is with you all day; now your accountability is, too.</p>\n</div>\n\n<div class=\"help\">\n    <h5>How</h5>\n    <p>Click on the bars on the main page to increase your daily macro intake. If you're unsure of the nutrient value for a given food, use the \"Food\" tab to find the appropriate value.</p>\n    <p>If you make a mistake, there's a minus button at the end of the bars that allows you to decrease your counts for that macro.</p>\n    <p>If it's not in the \"Food\" section, it's not on the diet guide ;)</p>\n</div>\n\n<div class=\"help\">\n    <h5>Caloric Values</h5>\n    <p>There is a listing of the caloric value for each macro on the main page and on each food listing. However, this won't be consistent across all foods within a given macro type; it's simply an estimated average caloric value.</p>\n    <p>While the total calories listed probably won't add up to your total calorie bracket, it can help to understand where the majority of your calories come from, which can differ from the number of servings consumed.</p>\n</div>\n\n<div class=\"help\">\n    <h5>Thoughts</h5>\n    <p>There is a ton of data in this diet guide. That being said, use your judgement. This is far from a \"one size fits all\" situation. Use the guide as just that:  a guide. Are you eating too much / little? Now you can figure that out. Plan out your goals and pick the plan that works best for you.</p>\n</div>\n\n<div class=\"help\">\n    <h5>Shakes</h5>\n    <p>In the diet guide, there is a section for mass-gain shakes that are made by combining different macros. However, the shake in this app is mainly a placeholder for \"take your supplements\".</p>\n    <p>The daily shake described is 2 scoops of the Beachbody fuel shot (5g whey protein, 200 cals) and 1 scoop of the Beachbody base shake (18g whey protein, 130 cals). Figure out your own personal shake requirements and get those calories in.</p>\n    <p>Don't forget your post-workout shake.</p>\n</div>\n\n<div class=\"help\">\n    <h5>Free condiments</h5>\n    <ul>\n        <li>Lemon and lime juice</li>\n        <li>Black pepper</li>\n        <li>Vinegar (any variety)</li>\n        <li>Mustard (any variety)</li>\n        <li>Herbs</li>\n        <li>Spices</li>\n        <li>Garlic and ginger</li>\n        <li>Hot sauce</li>\n        <li>Flavored extracts: vanilla, peppermint, almond, etc.</li>\n    </ul>\n</div>\n";});
+    return "<header>\n    <h4>Help</h4>\n</header>\n\n<div class=\"help\">\n    <h5>Purpose</h5>\n    <p>The point of this is to create a quick way to track the basic macronutrients outlined in the nutrition guides for Beachbody's programs Body Beast and P90X2.</p>\n    <p>Forget about hassling with printout sheets or guesstimation. Your phone is with you all day; now your accountability is, too.</p>\n</div>\n\n<div class=\"help\">\n    <h5>How</h5>\n    <p>Click on the bars on the main page to increase your daily macro intake. If you're unsure of the nutrient value for a given food, use the \"Food\" tab to find the appropriate value.</p>\n    <p>If you make a mistake, there's a minus button at the end of the bars that allows you to decrease your counts for that macro.</p>\n    <p>If it's not in the \"Food\" section, it's not on the diet guide ;)</p>\n</div>\n\n<div class=\"help\">\n    <h5>Caloric Values</h5>\n    <p>There is a listing of the caloric value for each macro on the main page and on each food listing. However, this won't be consistent across all foods within a given macro type; it's simply an estimated average caloric value.</p>\n    <p>While the total calories listed probably won't add up to your total calorie bracket, it can help to understand where the majority of your calories come from, which can differ from the number of servings consumed.</p>\n</div>\n\n<div class=\"help\">\n    <h5>Thoughts</h5>\n    <p>There is a ton of data in this diet guide. That being said, use your judgement. This is far from a \"one size fits all\" situation. Use the guide as just that:  a guide. Are you eating too much / little? Now you can figure that out. Plan out your goals and pick the plan that works best for you.</p>\n</div>\n\n<div class=\"help\">\n    <h5>Shakes</h5>\n    <p>In the diet guide, there is a section for mass-gain shakes that are made by combining different macros. However, the shake in this app is mainly a placeholder for \"take your supplements\".</p>\n    <p>The daily shake described is 2 scoops of the Beachbody fuel shot (5g whey protein, 200 cals) and 1 scoop of the Beachbody base shake (18g whey protein, 130 cals). Figure out your own personal shake requirements and get those calories in.</p>\n    <p>Don't forget your post-workout shake.</p>\n</div>\n\n<div class=\"help\">\n    <h5>Free condiments</h5>\n    <ul>\n        <li>Lemon and lime juice</li>\n        <li>Black pepper</li>\n        <li>Vinegar (any variety)</li>\n        <li>Mustard (any variety)</li>\n        <li>Herbs</li>\n        <li>Spices</li>\n        <li>Garlic and ginger</li>\n        <li>Hot sauce</li>\n        <li>Flavored extracts: vanilla, peppermint, almond, etc.</li>\n    </ul>\n</div>\n\n<div class=\"help\">\n    <h5>Single Snacks</h5>\n    <ul>\n        <li>Cottage cheese - 1 cup</li>\n        <li>Dried fruit - 1 oz</li>\n        <li>Frozen fruit bar - 1</li>\n        <li>Fruit - 1 medium piece</li>\n        <li>Rice cake - 2</li>\n        <li>Peanut Butter (with celery) - 1 tbsp</li>\n        <li>Popcorn (air popped) - 3 cups</li>\n        <li>Seaweed - 10 oz</li>\n        <li>Shakeology - 2/3 serving</li>\n        <li>Yogurt (nonfat, plain) - 1 cup</li>\n    </ul>\n\n    <h5>Double Snacks</h5>\n    <ul>\n        <li>Bean dip - 4 tbsp</li>\n        <li>^^^ with corn chips - 1 oz</li>\n        <li>Hummus with carrots - 1 oz</li>\n        <li>Pumpkin seeds - 2 oz</li>\n        <li>Raw Nuts - 1 oz</li>\n    </ul>\n</div>\n";});
 }});
 
 window.require.define({"views/templates/index": function(exports, require, module) {
