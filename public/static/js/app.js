@@ -101,7 +101,10 @@ window.require.define({"application": function(exports, require, module) {
       }
     },
     onConfigure: function() {
-      this.macros.destroy();
+      var _ref;
+      if ((_ref = this.macros) != null) {
+        _ref.destroy();
+      }
       this.stats = StatsFactory.getStats(this.user);
       return this.macros = MacroCountsFactory.getMacroCounts(this.user, this.stats);
     },
