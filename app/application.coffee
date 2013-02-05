@@ -22,7 +22,7 @@ Application =
             onSuccess()
 
     onConfigure: ->
-        @macros.destroy()
+        @macros?.destroy()
         @stats = StatsFactory.getStats @user
         @macros = MacroCountsFactory.getMacroCounts @user, @stats
 
