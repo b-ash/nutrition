@@ -9,7 +9,7 @@ views =
     stats: require('views/stats')
     help: require('views/help')
     about: require('views/about')
-    configure: require('views/configure')
+    configure: require('views/configuration/configure')
     foodAll:  require('views/food_list/food_all_macros')
     foodMacro: require('views/food_list/food_macro')
     food: require ('views/food_list/food')
@@ -77,4 +77,4 @@ module.exports = class Router extends Backbone.Router
 
     setCurrentView: (view) =>
         @currentView = view
-        $('#main_page').append view.render().$el
+        $('#main_page').html view.render().$el

@@ -22,8 +22,8 @@ Application =
             onSuccess()
 
     onConfigure: ->
-        @afterConfiguration()
         @macros.destroy()
+        @stats = StatsFactory.getStats @user
         @macros = MacroCountsFactory.getMacroCounts @user, @stats
 
     afterConfiguration: ->

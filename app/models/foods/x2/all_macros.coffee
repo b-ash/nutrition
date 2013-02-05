@@ -1,8 +1,10 @@
 module.exports = {
-    # grains: 'Grains'
-    # legumes: 'Legumes'
-    # veggies: 'Veggies'
-    # fruits: 'Fruits'
-    # proteins: 'Proteins'
-    # fats: 'Fats'
+    proteins: 'Proteins'
+    dairy: 'Dairy'
+    fruits: 'Fruits'
+    veggies: 'Veggies'
+    fats: 'Fats'
+    grains: 'Grains'
+    legumes: 'Legumes'
+    condiments: 'Condiments'
 }

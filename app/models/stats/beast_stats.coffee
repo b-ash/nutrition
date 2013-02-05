@@ -1,14 +1,15 @@
-CalorieBrackets = require('models/calorie_brackets/calorie_brackets')
+BaseStats = require('./base_stats')
 utils = require('lib/utils')
 
 
-class BeastStats
+class BeastStats extends BaseStats
     
     constructor: (user) ->
         @weight = user.get('weight')
         @bfp = user.get('bfp')
         @phase = user.getPhase()
         @program = user.get('program')
+
         @calorieBracket = @getCalorieBracket()
         @calories = @getCalories()
 
@@ -27,23 +28,16 @@ class BeastStats
 
         {lbm, rmr, cmr, rmr2, cim, rawCals, cals}
 
-    getCalories: =>
-        @calorieBracket.cals
-
-    getGoals: =>
-        goals = CalorieBrackets.getBracket(@)
-        goals.goals
-
     getMacroBreakdown: =>
         if @phase is 'build'
             '25/50/25'
         else
             '40/30/30'
 
-    toJSON: ->
-        return stats: [
+    getDisplayStats: =>
+        [
             {display: 'Phase', val: @phase.capitalize()}
-            {display: 'Macro Breakdown', val: @getMacroBreakdown()}
+            {display: 'Macro Breakdown (P/C/F)', val: @getMacroBreakdown()}
             {display: 'Lean Body Mass', val: @calorieBracket.lbm}
             {display: 'Resting Metabolic Rate', val: @calorieBracket.rmr}
             {display: 'Caloric Modification for Recovery', val: @calorieBracket.cmr}

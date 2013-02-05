@@ -17,27 +17,30 @@ class User extends LocalStorageModel
     getPhase: ->
         program = @get('program')
         if not program?
-            return ''
+            return null
         
         slash = program.indexOf('/')
         if slash is -1
-            return ''
+            return null
 
         return program.substring(slash+1, program.length)
 
     getProgram: ->
         program = @get('program')
-        if not program?
-            return ''
+        User.parseProgram(program)
+
+    isConfigured: ->
+        @get('configured') and @get('program')? and @get('program').length
+
+    @parseProgram: (program) ->
+        if not program? or program.length is 0
+            return null
         else if program.indexOf('beast') is 0
             return 'beast'
         else if program.indexOf('x2') is 0
             return 'x2'
         else
             return program
-
-    isConfigured: ->
-        @get('configured') and @get('program')? and @get('program').length
 
 
 module.exports = User

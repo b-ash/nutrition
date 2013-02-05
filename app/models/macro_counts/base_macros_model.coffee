@@ -6,10 +6,12 @@ Foods = require('models/foods/foods')
 # Base nutrition macro requirements to be extended
 class BaseMacrosModel extends LocalStorageModel
 
+    id: 'macro-counts'
     totalCals: 0
 
-    initialize: =>
+    initialize: (stats) =>
         @fetch()
+        @goals = stats.getGoals()
         @foods = new Foods(app.user)
         @calculateTotalCals()
 

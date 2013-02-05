@@ -101,8 +101,8 @@ window.require.define({"application": function(exports, require, module) {
       }
     },
     onConfigure: function() {
-      this.afterConfiguration();
       this.macros.destroy();
+      this.stats = StatsFactory.getStats(this.user);
       return this.macros = MacroCountsFactory.getMacroCounts(this.user, this.stats);
     },
     afterConfiguration: function() {
@@ -149,7 +149,7 @@ window.require.define({"lib/router": function(exports, require, module) {
     stats: require('views/stats'),
     help: require('views/help'),
     about: require('views/about'),
-    configure: require('views/configure'),
+    configure: require('views/configuration/configure'),
     foodAll: require('views/food_list/food_all_macros'),
     foodMacro: require('views/food_list/food_macro'),
     food: require('views/food_list/food')
@@ -284,7 +284,7 @@ window.require.define({"lib/router": function(exports, require, module) {
 
     Router.prototype.setCurrentView = function(view) {
       this.currentView = view;
-      return $('#main_page').append(view.render().$el);
+      return $('#main_page').html(view.render().$el);
     };
 
     return Router;
@@ -297,6 +297,10 @@ window.require.define({"lib/utils": function(exports, require, module) {
   
   String.prototype.capitalize = function() {
     return this.charAt(0).toUpperCase() + this.slice(1);
+  };
+
+  String.prototype.toDisplay = function() {
+    return this.replace('_', ' ').capitalize();
   };
 
   module.exports = {
@@ -964,7 +968,7 @@ window.require.define({"models/calorie_brackets/x2/endurance_maximizer/1800c": f
     goals: {
       proteins: 2,
       dairy: 1,
-      fruit: 2,
+      fruits: 2,
       veggies: 2,
       fats: 1,
       grains: 1,
@@ -982,7 +986,7 @@ window.require.define({"models/calorie_brackets/x2/endurance_maximizer/2400c": f
     goals: {
       proteins: 3,
       dairy: 1,
-      fruit: 3,
+      fruits: 3,
       veggies: 3,
       fats: 1,
       grains: 2,
@@ -1000,7 +1004,7 @@ window.require.define({"models/calorie_brackets/x2/endurance_maximizer/3000c": f
     goals: {
       proteins: 4,
       dairy: 1,
-      fruit: 3,
+      fruits: 3,
       veggies: 5,
       fats: 1,
       grains: 2.5,
@@ -1018,7 +1022,7 @@ window.require.define({"models/calorie_brackets/x2/energy_booster/1800c": functi
     goals: {
       proteins: 4,
       dairy: 2,
-      fruit: 1,
+      fruits: 1,
       veggies: 4,
       fats: 1,
       grains: 0.5,
@@ -1036,7 +1040,7 @@ window.require.define({"models/calorie_brackets/x2/energy_booster/2400c": functi
     goals: {
       proteins: 6,
       dairy: 2,
-      fruit: 1,
+      fruits: 1,
       veggies: 3,
       fats: 1,
       grains: 1.5,
@@ -1054,7 +1058,7 @@ window.require.define({"models/calorie_brackets/x2/energy_booster/3000c": functi
     goals: {
       proteins: 8,
       dairy: 2,
-      fruit: 2,
+      fruits: 2,
       veggies: 3,
       fats: 1,
       grains: 1.5,
@@ -1072,7 +1076,7 @@ window.require.define({"models/calorie_brackets/x2/fat_shredder/1800c": function
     goals: {
       proteins: 5,
       dairy: 2,
-      fruit: 1,
+      fruits: 1,
       veggies: 2,
       fats: 1,
       grains: 0.5,
@@ -1090,7 +1094,7 @@ window.require.define({"models/calorie_brackets/x2/fat_shredder/2400c": function
     goals: {
       proteins: 7,
       dairy: 3,
-      fruit: 1,
+      fruits: 1,
       veggies: 4,
       fats: 1,
       grains: 0.5,
@@ -1108,7 +1112,7 @@ window.require.define({"models/calorie_brackets/x2/fat_shredder/3000c": function
     goals: {
       proteins: 9,
       dairy: 4,
-      fruit: 2,
+      fruits: 2,
       veggies: 4,
       fats: 1,
       grains: 1,
@@ -2225,7 +2229,160 @@ window.require.define({"models/foods/foods": function(exports, require, module) 
 
 window.require.define({"models/foods/x2/all_macros": function(exports, require, module) {
   
-  module.exports = {};
+  module.exports = {
+    proteins: 'Proteins',
+    dairy: 'Dairy',
+    fruits: 'Fruits',
+    veggies: 'Veggies',
+    fats: 'Fats',
+    grains: 'Grains',
+    legumes: 'Legumes',
+    condiments: 'Condiments'
+  };
+  
+}});
+
+window.require.define({"models/foods/x2/condiments": function(exports, require, module) {
+  
+  module.exports = {
+    macro: 'condiments',
+    display: 'Condiments',
+    cals: 50,
+    foods: {
+      NAME: {
+        display: '???',
+        portion: 1,
+        measurement: 'oz',
+        description: ''
+      }
+    }
+  };
+  
+}});
+
+window.require.define({"models/foods/x2/dairy": function(exports, require, module) {
+  
+  module.exports = {
+    macro: 'dairy',
+    display: 'Dairy',
+    cals: 120,
+    foods: {
+      NAME: {
+        display: '???',
+        portion: 1,
+        measurement: 'oz',
+        description: ''
+      }
+    }
+  };
+  
+}});
+
+window.require.define({"models/foods/x2/fats": function(exports, require, module) {
+  
+  module.exports = {
+    macro: 'fats',
+    display: 'Fats',
+    cals: 120,
+    foods: {
+      NAME: {
+        display: '???',
+        portion: 1,
+        measurement: 'oz',
+        description: ''
+      }
+    }
+  };
+  
+}});
+
+window.require.define({"models/foods/x2/fruits": function(exports, require, module) {
+  
+  module.exports = {
+    macro: 'fruits',
+    display: 'Fruits',
+    cals: 100,
+    foods: {
+      NAME: {
+        display: '???',
+        portion: 1,
+        measurement: 'oz',
+        description: ''
+      }
+    }
+  };
+  
+}});
+
+window.require.define({"models/foods/x2/grains": function(exports, require, module) {
+  
+  module.exports = {
+    macro: 'grains',
+    display: 'Grains',
+    cals: 200,
+    foods: {
+      NAME: {
+        display: '???',
+        portion: 1,
+        measurement: 'oz',
+        description: ''
+      }
+    }
+  };
+  
+}});
+
+window.require.define({"models/foods/x2/legumes": function(exports, require, module) {
+  
+  module.exports = {
+    macro: 'legumes',
+    display: 'Legumes',
+    cals: 200,
+    foods: {
+      NAME: {
+        display: '???',
+        portion: 1,
+        measurement: 'oz',
+        description: ''
+      }
+    }
+  };
+  
+}});
+
+window.require.define({"models/foods/x2/proteins": function(exports, require, module) {
+  
+  module.exports = {
+    macro: 'proteins',
+    display: 'Proteins',
+    cals: 100,
+    foods: {
+      NAME: {
+        display: '???',
+        portion: 1,
+        measurement: 'oz',
+        description: ''
+      }
+    }
+  };
+  
+}});
+
+window.require.define({"models/foods/x2/veggies": function(exports, require, module) {
+  
+  module.exports = {
+    macro: 'veggies',
+    display: 'Veggies',
+    cals: 50,
+    foods: {
+      NAME: {
+        display: '???',
+        portion: 1,
+        measurement: 'oz',
+        description: ''
+      }
+    }
+  };
   
 }});
 
@@ -2291,10 +2448,13 @@ window.require.define({"models/macro_counts/base_macros_model": function(exports
       return BaseMacrosModel.__super__.constructor.apply(this, arguments);
     }
 
+    BaseMacrosModel.prototype.id = 'macro-counts';
+
     BaseMacrosModel.prototype.totalCals = 0;
 
-    BaseMacrosModel.prototype.initialize = function() {
+    BaseMacrosModel.prototype.initialize = function(stats) {
       this.fetch();
+      this.goals = stats.getGoals();
       this.foods = new Foods(app.user);
       return this.calculateTotalCals();
     };
@@ -2375,7 +2535,6 @@ window.require.define({"models/macro_counts/base_macros_model": function(exports
 
 window.require.define({"models/macro_counts/beast_macro_counts": function(exports, require, module) {
   var BaseMacrosModel, BeastMacros,
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -2386,15 +2545,8 @@ window.require.define({"models/macro_counts/beast_macro_counts": function(export
     __extends(BeastMacros, _super);
 
     function BeastMacros() {
-      this.initialize = __bind(this.initialize, this);
       return BeastMacros.__super__.constructor.apply(this, arguments);
     }
-
-    BeastMacros.prototype.initialize = function(stats) {
-      this.id = "macro-counts";
-      this.goals = stats.getGoals();
-      return BeastMacros.__super__.initialize.apply(this, arguments);
-    };
 
     BeastMacros.prototype.defaults = function() {
       return {
@@ -2462,7 +2614,6 @@ window.require.define({"models/macro_counts/macro_counts_factory": function(expo
 
 window.require.define({"models/macro_counts/x2_macro_counts": function(exports, require, module) {
   var BaseMacrosModel, X2Macros,
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -2473,19 +2624,32 @@ window.require.define({"models/macro_counts/x2_macro_counts": function(exports, 
     __extends(X2Macros, _super);
 
     function X2Macros() {
-      this.initialize = __bind(this.initialize, this);
       return X2Macros.__super__.constructor.apply(this, arguments);
     }
-
-    X2Macros.prototype.initialize = function(stats) {
-      this.id = "x2-" + (stats.getCalories()) + "c";
-      this.goals = stats.getGoals();
-      return X2Macros.__super__.initialize.apply(this, arguments);
-    };
 
     X2Macros.prototype.defaults = function() {
       return {
         macros: {
+          proteins: {
+            display: 'Proteins',
+            count: 0
+          },
+          dairy: {
+            display: 'Dairy',
+            count: 0
+          },
+          fruits: {
+            display: 'Fruits',
+            count: 0
+          },
+          veggies: {
+            display: 'Veggies',
+            count: 0
+          },
+          fats: {
+            display: 'Fats',
+            count: 0
+          },
           grains: {
             display: 'Grains',
             count: 0
@@ -2494,20 +2658,8 @@ window.require.define({"models/macro_counts/x2_macro_counts": function(exports, 
             display: 'Legumes',
             count: 0
           },
-          veggies: {
-            display: 'Veggies',
-            count: 0
-          },
-          fruits: {
-            display: 'Fruits',
-            count: 0
-          },
-          proteins: {
-            display: 'Proteins',
-            count: 0
-          },
-          fats: {
-            display: 'Fats',
+          condiments: {
+            display: 'Condiments',
             count: 0
           }
         },
@@ -2523,22 +2675,63 @@ window.require.define({"models/macro_counts/x2_macro_counts": function(exports, 
   
 }});
 
-window.require.define({"models/stats/beast_stats": function(exports, require, module) {
-  var BeastStats, CalorieBrackets, utils,
+window.require.define({"models/stats/base_stats": function(exports, require, module) {
+  var BaseStats, CalorieBrackets,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
   CalorieBrackets = require('models/calorie_brackets/calorie_brackets');
 
-  utils = require('lib/utils');
+  BaseStats = (function() {
 
-  BeastStats = (function() {
-
-    function BeastStats(user) {
-      this.getMacroBreakdown = __bind(this.getMacroBreakdown, this);
+    function BaseStats() {
+      this.getCalories = __bind(this.getCalories, this);
 
       this.getGoals = __bind(this.getGoals, this);
 
-      this.getCalories = __bind(this.getCalories, this);
+    }
+
+    BaseStats.prototype.getGoals = function() {
+      var goals;
+      goals = CalorieBrackets.getBracket(this);
+      return goals.goals;
+    };
+
+    BaseStats.prototype.getCalories = function() {
+      return this.calorieBracket.cals;
+    };
+
+    BaseStats.prototype.toJSON = function() {
+      return {
+        stats: this.getDisplayStats()
+      };
+    };
+
+    return BaseStats;
+
+  })();
+
+  module.exports = BaseStats;
+  
+}});
+
+window.require.define({"models/stats/beast_stats": function(exports, require, module) {
+  var BaseStats, BeastStats, utils,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  BaseStats = require('./base_stats');
+
+  utils = require('lib/utils');
+
+  BeastStats = (function(_super) {
+
+    __extends(BeastStats, _super);
+
+    function BeastStats(user) {
+      this.getDisplayStats = __bind(this.getDisplayStats, this);
+
+      this.getMacroBreakdown = __bind(this.getMacroBreakdown, this);
 
       this.getCalorieBracket = __bind(this.getCalorieBracket, this);
       this.weight = user.get('weight');
@@ -2573,16 +2766,6 @@ window.require.define({"models/stats/beast_stats": function(exports, require, mo
       };
     };
 
-    BeastStats.prototype.getCalories = function() {
-      return this.calorieBracket.cals;
-    };
-
-    BeastStats.prototype.getGoals = function() {
-      var goals;
-      goals = CalorieBrackets.getBracket(this);
-      return goals.goals;
-    };
-
     BeastStats.prototype.getMacroBreakdown = function() {
       if (this.phase === 'build') {
         return '25/50/25';
@@ -2591,39 +2774,37 @@ window.require.define({"models/stats/beast_stats": function(exports, require, mo
       }
     };
 
-    BeastStats.prototype.toJSON = function() {
-      return {
-        stats: [
-          {
-            display: 'Phase',
-            val: this.phase.capitalize()
-          }, {
-            display: 'Macro Breakdown',
-            val: this.getMacroBreakdown()
-          }, {
-            display: 'Lean Body Mass',
-            val: this.calorieBracket.lbm
-          }, {
-            display: 'Resting Metabolic Rate',
-            val: this.calorieBracket.rmr
-          }, {
-            display: 'Caloric Modification for Recovery',
-            val: this.calorieBracket.cmr
-          }, {
-            display: 'RMR Modified for Recovery',
-            val: this.calorieBracket.rmr2
-          }, {
-            display: 'Calorie Intake to Maintain Weight',
-            val: this.calorieBracket.cim
-          }, {
-            display: "Calories needed to " + this.phase,
-            val: this.calorieBracket.rawCals
-          }, {
-            display: 'Calorie Bracket',
-            val: this.calorieBracket.cals
-          }
-        ]
-      };
+    BeastStats.prototype.getDisplayStats = function() {
+      return [
+        {
+          display: 'Phase',
+          val: this.phase.capitalize()
+        }, {
+          display: 'Macro Breakdown (P/C/F)',
+          val: this.getMacroBreakdown()
+        }, {
+          display: 'Lean Body Mass',
+          val: this.calorieBracket.lbm
+        }, {
+          display: 'Resting Metabolic Rate',
+          val: this.calorieBracket.rmr
+        }, {
+          display: 'Caloric Modification for Recovery',
+          val: this.calorieBracket.cmr
+        }, {
+          display: 'RMR Modified for Recovery',
+          val: this.calorieBracket.rmr2
+        }, {
+          display: 'Calorie Intake to Maintain Weight',
+          val: this.calorieBracket.cim
+        }, {
+          display: "Calories needed to " + this.phase,
+          val: this.calorieBracket.rawCals
+        }, {
+          display: 'Calorie Bracket',
+          val: this.calorieBracket.cals
+        }
+      ];
     };
 
     BeastStats.prototype.lbm = function(weight, bfp) {
@@ -2689,7 +2870,7 @@ window.require.define({"models/stats/beast_stats": function(exports, require, mo
 
     return BeastStats;
 
-  })();
+  })(BaseStats);
 
   module.exports = BeastStats;
   
@@ -2722,172 +2903,116 @@ window.require.define({"models/stats/stats_factory": function(exports, require, 
 }});
 
 window.require.define({"models/stats/x2_stats": function(exports, require, module) {
-  var CalorieBrackets, X2Stats, utils,
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+  var BaseStats, X2Stats, utils,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  CalorieBrackets = require('models/calorie_brackets/calorie_brackets');
+  BaseStats = require('./base_stats');
 
   utils = require('lib/utils');
 
-  X2Stats = (function() {
+  X2Stats = (function(_super) {
+
+    __extends(X2Stats, _super);
 
     function X2Stats(user) {
+      this.getDisplayStats = __bind(this.getDisplayStats, this);
+
       this.getMacroBreakdown = __bind(this.getMacroBreakdown, this);
-
-      this.getGoals = __bind(this.getGoals, this);
-
-      this.getCalories = __bind(this.getCalories, this);
 
       this.getCalorieBracket = __bind(this.getCalorieBracket, this);
       this.weight = user.get('weight');
-      this.bfp = user.get('bfp');
       this.phase = user.getPhase();
       this.program = user.get('program');
+      this.dab = user.get('dab');
+      this.de = user.get('de');
+      this.sway = user.get('sway');
       this.calorieBracket = this.getCalorieBracket();
       this.calories = this.getCalories();
     }
 
     X2Stats.prototype.getCalorieBracket = function() {
-      var cals, cim, cmr, lbm, rawCals, rmr, rmr2;
-      lbm = utils.roundFloat(this.lbm(this.weight, this.bfp), 1);
-      rmr = utils.roundFloat(this.rmr(lbm), 1);
-      cmr = utils.roundFloat(this.cmr(rmr), 1);
-      rmr2 = utils.roundFloat(this.rmr2(rmr, cmr), 1);
-      cim = utils.roundFloat(this.cim(rmr2), 1);
-      if (this.phase === 'build') {
-        rawCals = utils.roundFloat(this.build(this.bfp, cim), 1);
-      } else {
-        rawCals = utils.roundFloat(this.beast(this.bfp, cim), 1);
-      }
-      cals = this.roundCalsToBracket(rawCals, this.phase);
+      var cals, dab, rawCals, rmr;
+      rmr = utils.roundFloat(this.calcRMR(this.weight), 1);
+      dab = utils.roundFloat(this.calcDAB(rmr, this.dab), 1);
+      rawCals = utils.roundFloat(this.calcRawCals(rmr, dab, this.de, this.sway), 1);
+      cals = this.roundCalsToBracket(rawCals);
       return {
-        lbm: lbm,
         rmr: rmr,
-        cmr: cmr,
-        rmr2: rmr2,
-        cim: cim,
+        dab: dab,
+        de: this.de,
+        sway: this.sway,
         rawCals: rawCals,
         cals: cals
       };
     };
 
-    X2Stats.prototype.getCalories = function() {
-      return this.calorieBracket.cals;
-    };
-
-    X2Stats.prototype.getGoals = function() {
-      var goals;
-      goals = CalorieBrackets.getBracket(this);
-      return goals.goals;
-    };
-
     X2Stats.prototype.getMacroBreakdown = function() {
-      if (this.phase === 'build') {
+      if (this.phase === 'energy_booster') {
+        return '30/40/30';
+      } else if (this.phase === 'endurance_maximizer') {
         return '25/50/25';
       } else {
-        return '40/30/30';
+        return '50/25/25';
       }
     };
 
-    X2Stats.prototype.toJSON = function() {
-      return {
-        stats: [
-          {
-            display: 'Phase',
-            val: this.phase.capitalize()
-          }, {
-            display: 'Macro Breakdown',
-            val: this.getMacroBreakdown()
-          }, {
-            display: 'Lean Body Mass',
-            val: this.calorieBracket.lbm
-          }, {
-            display: 'Resting Metabolic Rate',
-            val: this.calorieBracket.rmr
-          }, {
-            display: 'Caloric Modification for Recovery',
-            val: this.calorieBracket.cmr
-          }, {
-            display: 'RMR Modified for Recovery',
-            val: this.calorieBracket.rmr2
-          }, {
-            display: 'Calorie Intake to Maintain Weight',
-            val: this.calorieBracket.cim
-          }, {
-            display: "Calories needed to " + this.phase,
-            val: this.calorieBracket.rawCals
-          }, {
-            display: 'Calorie Bracket',
-            val: this.calorieBracket.cals
-          }
-        ]
-      };
+    X2Stats.prototype.getDisplayStats = function() {
+      return [
+        {
+          display: 'Phase',
+          val: this.phase.toDisplay()
+        }, {
+          display: 'Macro Breakdown (P/C/F)',
+          val: this.getMacroBreakdown()
+        }, {
+          display: 'Resting Metabolic Rate',
+          val: this.calorieBracket.rmr
+        }, {
+          display: 'Daily Activity Burn',
+          val: this.calorieBracket.dab
+        }, {
+          display: 'Daily Exercise',
+          val: this.calorieBracket.de
+        }, {
+          display: 'Caloric Surplus / Deficit',
+          val: this.calorieBracket.sway
+        }, {
+          display: 'Calories needed',
+          val: this.calorieBracket.rawCals
+        }, {
+          display: 'Calorie Bracket',
+          val: this.calorieBracket.cals
+        }
+      ];
     };
 
-    X2Stats.prototype.lbm = function(weight, bfp) {
-      return (100 - bfp) / 100 * weight;
-    };
-
-    X2Stats.prototype.rmr = function(lbm) {
+    X2Stats.prototype.calcRMR = function(lbm) {
       return lbm * 10;
     };
 
-    X2Stats.prototype.cmr = function(rmr) {
-      return rmr * 0.3;
+    X2Stats.prototype.calcDAB = function(rmr, dab) {
+      return rmr * dab;
     };
 
-    X2Stats.prototype.rmr2 = function(rmr, cmr) {
-      return rmr + cmr;
+    X2Stats.prototype.calcRawCals = function(rmr, dab, de, sway) {
+      return rmr + dab + de + sway;
     };
 
-    X2Stats.prototype.cim = function(rmr2) {
-      return rmr2 + 600;
-    };
-
-    X2Stats.prototype.build = function(bfp, cim) {
-      if (bfp > 20) {
-        return cim + (cim * 0.1);
-      } else if (bfp > 10) {
-        return cim + (cim * 0.15);
+    X2Stats.prototype.roundCalsToBracket = function(rawCals) {
+      if (rawCals < 2400) {
+        return 1800;
+      } else if (rawCals < 3000) {
+        return 2400;
       } else {
-        return cim + (cim * 0.2);
-      }
-    };
-
-    X2Stats.prototype.beast = function(bfp, cim) {
-      if (bfp > 20) {
-        return cim - (cim * 0.2);
-      } else if (bfp > 10) {
-        return cim - (cim * 0.15);
-      } else {
-        return cim - (cim * 0.1);
-      }
-    };
-
-    X2Stats.prototype.roundCalsToBracket = function(rawCals, phase) {
-      var cals;
-      if (phase === 'build') {
-        cals = Math.ceil(rawCals / 200) * 200;
-        return this.getCalsBetweenValues(cals, 2000, 5000);
-      } else {
-        cals = Math.floor(rawCals / 200) * 200;
-        return this.getCalsBetweenValues(cals, 1800, 4800);
-      }
-    };
-
-    X2Stats.prototype.getCalsBetweenValues = function(cals, lowerBound, upperBound) {
-      if (cals < lowerBound) {
-        return lowerBound;
-      } else if (cals > upperBound) {
-        return upperBound;
-      } else {
-        return cals;
+        return 3000;
       }
     };
 
     return X2Stats;
 
-  })();
+  })(BaseStats);
 
   module.exports = X2Stats;
   
@@ -2930,11 +3055,11 @@ window.require.define({"models/users/user": function(exports, require, module) {
       var program, slash;
       program = this.get('program');
       if (!(program != null)) {
-        return '';
+        return null;
       }
       slash = program.indexOf('/');
       if (slash === -1) {
-        return '';
+        return null;
       }
       return program.substring(slash + 1, program.length);
     };
@@ -2942,8 +3067,16 @@ window.require.define({"models/users/user": function(exports, require, module) {
     User.prototype.getProgram = function() {
       var program;
       program = this.get('program');
-      if (!(program != null)) {
-        return '';
+      return User.parseProgram(program);
+    };
+
+    User.prototype.isConfigured = function() {
+      return this.get('configured') && (this.get('program') != null) && this.get('program').length;
+    };
+
+    User.parseProgram = function(program) {
+      if (!(program != null) || program.length === 0) {
+        return null;
       } else if (program.indexOf('beast') === 0) {
         return 'beast';
       } else if (program.indexOf('x2') === 0) {
@@ -2951,10 +3084,6 @@ window.require.define({"models/users/user": function(exports, require, module) {
       } else {
         return program;
       }
-    };
-
-    User.prototype.isConfigured = function() {
-      return this.get('configured') && (this.get('program') != null) && this.get('program').length;
     };
 
     return User;
@@ -2994,24 +3123,88 @@ window.require.define({"views/about": function(exports, require, module) {
   
 }});
 
-window.require.define({"views/configure": function(exports, require, module) {
-  var ConfigureView, View, app,
+window.require.define({"views/configuration/beast_config": function(exports, require, module) {
+  var BeastConfigureView, View,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  View = require('views/view');
+
+  BeastConfigureView = (function(_super) {
+
+    __extends(BeastConfigureView, _super);
+
+    function BeastConfigureView() {
+      this.isValid = __bind(this.isValid, this);
+
+      this.getInputData = __bind(this.getInputData, this);
+
+      this.getRenderData = __bind(this.getRenderData, this);
+      return BeastConfigureView.__super__.constructor.apply(this, arguments);
+    }
+
+    BeastConfigureView.prototype.tagName = 'div';
+
+    BeastConfigureView.prototype.className = 'extra-config';
+
+    BeastConfigureView.prototype.template = require('views/templates/configure_beast');
+
+    BeastConfigureView.prototype.getRenderData = function() {
+      return this.model.toJSON();
+    };
+
+    BeastConfigureView.prototype.getInputData = function() {
+      return {
+        bfp: parseInt(this.$('#bfp').val() || 0)
+      };
+    };
+
+    BeastConfigureView.prototype.isValid = function() {
+      var bfp;
+      bfp = this.$('#bfp').val();
+      return bfp.length !== 0 && parseInt(bfp) !== NaN;
+    };
+
+    return BeastConfigureView;
+
+  })(View);
+
+  module.exports = BeastConfigureView;
+  
+}});
+
+window.require.define({"views/configuration/configure": function(exports, require, module) {
+  var ConfigureView, PROGRAM_CONFIG, User, View, app,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   app = require('application');
 
-  View = require('./view');
+  View = require('views/view');
+
+  User = require('models/users/user');
+
+  PROGRAM_CONFIG = {
+    beast: require('./beast_config'),
+    x2: require('./x2_config')
+  };
 
   ConfigureView = (function(_super) {
 
     __extends(ConfigureView, _super);
 
     function ConfigureView() {
+      this.onClose = __bind(this.onClose, this);
+
       this.onError = __bind(this.onError, this);
 
       this.configure = __bind(this.configure, this);
+
+      this.isValid = __bind(this.isValid, this);
+
+      this.renderProgramConfig = __bind(this.renderProgramConfig, this);
 
       this.afterRender = __bind(this.afterRender, this);
 
@@ -3023,10 +3216,11 @@ window.require.define({"views/configure": function(exports, require, module) {
 
     ConfigureView.prototype.className = 'content';
 
-    ConfigureView.prototype.template = require('./templates/configure');
+    ConfigureView.prototype.template = require('views/templates/configure');
 
     ConfigureView.prototype.events = {
-      'click #configure': 'configure'
+      'click #configure': 'configure',
+      'change #program': 'renderProgramConfig'
     };
 
     ConfigureView.prototype.getRenderData = function() {
@@ -3034,27 +3228,48 @@ window.require.define({"views/configure": function(exports, require, module) {
     };
 
     ConfigureView.prototype.afterRender = function() {
-      return this.$("#program option[value='" + (this.model.get('program')) + "']").attr('selected', 'selected');
+      var program;
+      program = this.model.get('program');
+      if (program != null) {
+        this.$("#program option[value='" + program + "']").attr('selected', 'selected');
+        return this.renderProgramConfig();
+      }
+    };
+
+    ConfigureView.prototype.renderProgramConfig = function() {
+      var program, _ref;
+      program = User.parseProgram(this.$('#program').val());
+      if (!(program != null)) {
+        if ((_ref = this.views.program) != null) {
+          _ref.remove();
+        }
+        return;
+      }
+      this.views.program = new PROGRAM_CONFIG[program]({
+        model: this.model
+      });
+      return this.$('#program_config').html(this.views.program.render().el);
+    };
+
+    ConfigureView.prototype.isValid = function() {
+      return this.$('#program').val().length !== 0;
     };
 
     ConfigureView.prototype.configure = function() {
-      var bfp, name, program, weight;
-      name = this.$('#name').val() || null;
-      weight = this.$('#weight').val() || 0;
-      bfp = this.$('#bfp').val() || 0;
-      program = this.$('#program').val();
-      if (!program.length) {
+      var config, programConfig, _ref;
+      if (!(this.isValid() && ((_ref = this.views.program) != null ? _ref.isValid() : void 0))) {
         return this.onError();
       }
-      this.model.save({
-        name: name,
-        weight: parseInt(weight),
-        bfp: parseInt(bfp),
-        program: program,
+      config = {
+        name: this.$('#name').val() || null,
+        weight: parseInt(this.$('#weight').val() || 0),
+        program: this.$('#program').val()
+      };
+      programConfig = this.views.program.getInputData();
+      this.model.save($.extend({
         configured: true
-      });
+      }, config, programConfig));
       app.onConfigure();
-      app.afterConfiguration();
       return app.router.navigate('', true);
     };
 
@@ -3062,11 +3277,81 @@ window.require.define({"views/configure": function(exports, require, module) {
       return this.$('#error_msg').show();
     };
 
+    ConfigureView.prototype.onClose = function() {
+      this.views.program.remove();
+      return delete this.views.program;
+    };
+
     return ConfigureView;
 
   })(View);
 
   module.exports = ConfigureView;
+  
+}});
+
+window.require.define({"views/configuration/x2_config": function(exports, require, module) {
+  var View, X2ConfigureView,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  View = require('views/view');
+
+  X2ConfigureView = (function(_super) {
+
+    __extends(X2ConfigureView, _super);
+
+    function X2ConfigureView() {
+      this.isValid = __bind(this.isValid, this);
+
+      this.getInputData = __bind(this.getInputData, this);
+
+      this.afterRender = __bind(this.afterRender, this);
+
+      this.getRenderData = __bind(this.getRenderData, this);
+      return X2ConfigureView.__super__.constructor.apply(this, arguments);
+    }
+
+    X2ConfigureView.prototype.tagName = 'div';
+
+    X2ConfigureView.prototype.className = 'extra-config';
+
+    X2ConfigureView.prototype.template = require('views/templates/configure_x2');
+
+    X2ConfigureView.prototype.getRenderData = function() {
+      return this.model.toJSON();
+    };
+
+    X2ConfigureView.prototype.afterRender = function() {
+      var dab;
+      dab = this.model.get('dab');
+      if (dab != null) {
+        return this.$("#dab option[value='" + dab + "']").attr('selected', 'selected');
+      }
+    };
+
+    X2ConfigureView.prototype.getInputData = function() {
+      return {
+        dab: parseFloat(this.$('#dab').val()),
+        de: parseFloat(this.$('#de').val()),
+        sway: parseFloat(this.$('#sway').val())
+      };
+    };
+
+    X2ConfigureView.prototype.isValid = function() {
+      var dab, de, sway;
+      dab = this.$('#dab').val();
+      de = this.$('#de').val();
+      sway = this.$('#sway').val();
+      return dab.length && parseFloat(dab) !== NaN && de.length && parseFloat(de) !== NaN && sway.length && parseFloat(sway) !== NaN;
+    };
+
+    return X2ConfigureView;
+
+  })(View);
+
+  module.exports = X2ConfigureView;
   
 }});
 
@@ -3277,6 +3562,7 @@ window.require.define({"views/index": function(exports, require, module) {
 
     IndexView.prototype.initialize = function() {
       var claxx, macro, view, _results;
+      this.views = {};
       _results = [];
       for (macro in this.model.get('macros')) {
         claxx = new MacroBarFactory.get(macro);
@@ -3406,7 +3692,7 @@ window.require.define({"views/macro_bars/base_macro_bar": function(exports, requ
       return this.changeCurrentCals();
     };
 
-    BaseMacroView.prototype.changePercentBar = function($macro, macro) {
+    BaseMacroView.prototype.changePercentBar = function() {
       var macroPercentage, pixelPercentage;
       macroPercentage = this.model.getMacroPercentage(this.options.macro);
       pixelPercentage = macroPercentage / 100 * this.$('.percentage-bar').width();
@@ -3573,7 +3859,7 @@ window.require.define({"views/templates/about": function(exports, require, modul
     var foundHelper, self=this;
 
 
-    return "<header>\n    <h4>About</h4>\n</header>\n\n<div class=\"about\">\n    <h5>Who is Bash?</h5>\n    <p>Bash is a developer who is obsessed with health and fitness. He lives in Boston and writes software for a startup called <a href=\"http://www.hubspot.com/\" target=\"_blank\">HubSpot</a>.</p>\n    <p>When he's not lifting or getting his nutrition needs, he's tinkering with gadgets and hopefully developing the next big thing.</p>\n</div>\n\n<div class=\"about\">\n    <h5>Credits</h5>\n    <p><b>All</b> credit regarding the macronutrient levels and nutrition data found in this app belongs to <a href=\"http://www.beachbody.com/\" target=\"_blank\">Beachbody</a> from their new at-home workout program <a href=\"http://www.beachbody.com/product/fitness_programs/body-beast-workout.do\" target=\"_blank\">Body Beast</a>. If you dig the information in here, go support them and buy the program - they're a great company with a great mission.</p>\n</div>\n\n<div class=\"about\">\n    <h5>Contributing</h5>\n    <p>If you'd like to contribute, feel free to head over to <a href=\"https://github.com/b-ash/nutrition\" target=\"_blank\">github</a> and take a look. Pull requests are appreciated.</p>\n</div>\n";});
+    return "<header>\n    <h4>About</h4>\n</header>\n\n<div class=\"about\">\n    <h5>Who is Bash?</h5>\n    <p>Bash is a developer who is obsessed with health and fitness. He lives in Boston and writes software for a startup called <a href=\"http://www.hubspot.com/\" target=\"_blank\">HubSpot</a>.</p>\n    <p>When he's not lifting or getting his nutrition needs, he's tinkering with gadgets and hopefully developing the next big thing.</p>\n</div>\n\n<div class=\"about\">\n    <h5>Credits</h5>\n    <p><b>All</b> credit regarding the macronutrient levels and nutrition data found in this app belongs to <a href=\"http://www.beachbody.com/\" target=\"_blank\">Beachbody</a> from their at-home workout programs <a href=\"http://www.beachbody.com/product/fitness_programs/body-beast-workout.do\" target=\"_blank\">Body Beast</a> and <a href=\"http://www.beachbody.com/product/fitness_programs/p90x2-workout-the-next-p90x.do\" target=\"_blank\">P90X2</a>. If you dig the information in here, go support them and buy the programs - they're a great company with a great mission.</p>\n</div>\n\n<div class=\"about\">\n    <h5>Contributing</h5>\n    <p>If you'd like to contribute, feel free to head over to <a href=\"https://github.com/b-ash/nutrition\" target=\"_blank\">github</a> and take a look. Pull requests are appreciated.</p>\n</div>\n";});
 }});
 
 window.require.define({"views/templates/configure": function(exports, require, module) {
@@ -3613,17 +3899,6 @@ window.require.define({"views/templates/configure": function(exports, require, m
     buffer += escapeExpression(stack1) + "\"";
     return buffer;}
 
-  function program9(depth0,data) {
-    
-    var buffer = "", stack1;
-    buffer += " value=\"";
-    foundHelper = helpers.bfp;
-    stack1 = foundHelper || depth0.bfp;
-    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
-    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "bfp", { hash: {} }); }
-    buffer += escapeExpression(stack1) + "\"";
-    return buffer;}
-
     buffer += "<header>\n    ";
     foundHelper = helpers.configured;
     stack1 = foundHelper || depth0.configured;
@@ -3654,7 +3929,7 @@ window.require.define({"views/templates/configure": function(exports, require, m
     tmp1.inverse = self.noop;
     stack1 = stack2.call(depth0, stack1, tmp1);
     if(stack1 || stack1 === 0) { buffer += stack1; }
-    buffer += " />\n</div>\n\n<div>\n    <input id=\"weight\" type=\"number\" placeholder=\"Weight\" ";
+    buffer += " />\n    <input id=\"weight\" type=\"number\" placeholder=\"Weight\" ";
     foundHelper = helpers.weight;
     stack1 = foundHelper || depth0.weight;
     stack2 = helpers['if'];
@@ -3664,17 +3939,88 @@ window.require.define({"views/templates/configure": function(exports, require, m
     tmp1.inverse = self.noop;
     stack1 = stack2.call(depth0, stack1, tmp1);
     if(stack1 || stack1 === 0) { buffer += stack1; }
-    buffer += " />\n    <input id=\"bfp\" type=\"number\" placeholder=\"Body Fat Percentage\" ";
+    buffer += " />\n</div>\n\n<div>\n    <select id=\"program\" placeholder=\"No program selected\">\n        <option value=\"\">No program selected</option>\n        <optgroup label=\"Body Beast\">\n            <option value=\"beast/build\">Build / Bulk (phases 1 &amp; 2)</option>\n            <option value=\"beast/beast\">Beast (phase 3)</option>\n        </optgroup>\n        <optgroup label=\"P90X2\">\n            <option value=\"x2/energy_booster\">Energy Booster (standard)</option>\n            <option value=\"x2/fat_shredder\">Fat Shredder</option>\n            <option value=\"x2/endurance_maximizer\">Endurance Maximizer</option>\n        </optgroup>\n    </select>\n</div>\n\n<div id=\"program_config\"></div>\n\n<div class=\"configure-actions\">\n    <a id=\"configure\" class=\"btn btn-primary dont-route\">Configure</a>\n</div>\n";
+    return buffer;});
+}});
+
+window.require.define({"views/templates/configure_beast": function(exports, require, module) {
+  module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
+    helpers = helpers || Handlebars.helpers;
+    var buffer = "", stack1, stack2, foundHelper, tmp1, self=this, functionType="function", helperMissing=helpers.helperMissing, undef=void 0, escapeExpression=this.escapeExpression;
+
+  function program1(depth0,data) {
+    
+    var buffer = "", stack1;
+    buffer += " value=\"";
+    foundHelper = helpers.bfp;
+    stack1 = foundHelper || depth0.bfp;
+    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
+    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "bfp", { hash: {} }); }
+    buffer += escapeExpression(stack1) + "\"";
+    return buffer;}
+
+    buffer += "<input id=\"bfp\" type=\"number\" placeholder=\"Body Fat Percentage\" ";
     foundHelper = helpers.bfp;
     stack1 = foundHelper || depth0.bfp;
     stack2 = helpers['if'];
-    tmp1 = self.program(9, program9, data);
+    tmp1 = self.program(1, program1, data);
     tmp1.hash = {};
     tmp1.fn = tmp1;
     tmp1.inverse = self.noop;
     stack1 = stack2.call(depth0, stack1, tmp1);
     if(stack1 || stack1 === 0) { buffer += stack1; }
-    buffer += " />\n</div>\n\n<div>\n    <select id=\"program\" placeholder=\"No program selected\">\n        <option value=\"\">No program selected</option>\n        <optgroup label=\"Body Beast\">\n            <option value=\"beast/build\">Build / Bulk (phases 1 &amp; 2)</option>\n            <option value=\"beast/beast\">Beast (phase 3)</option>\n        </optgroup>\n        <optgroup label=\"P90X2\">\n            <option value=\"x2/energy_booster\">Energy Booster (standard)</option>\n            <option value=\"x2/fat_shredder\">Fat Shredder</option>\n            <option value=\"x2/endurance_maximizer\">Endurance Maximizer</option>\n        </optgroup>\n    </select>\n</div>\n\n<div class=\"configure-actions\">\n    <a id=\"configure\" class=\"btn btn-primary dont-route\">Configure</a>\n</div>\n";
+    buffer += " />\n";
+    return buffer;});
+}});
+
+window.require.define({"views/templates/configure_x2": function(exports, require, module) {
+  module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
+    helpers = helpers || Handlebars.helpers;
+    var buffer = "", stack1, stack2, foundHelper, tmp1, self=this, functionType="function", helperMissing=helpers.helperMissing, undef=void 0, escapeExpression=this.escapeExpression;
+
+  function program1(depth0,data) {
+    
+    var buffer = "", stack1;
+    buffer += " value=\"";
+    foundHelper = helpers.de;
+    stack1 = foundHelper || depth0.de;
+    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
+    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "de", { hash: {} }); }
+    buffer += escapeExpression(stack1) + "\"";
+    return buffer;}
+
+  function program3(depth0,data) {
+    
+    var buffer = "", stack1;
+    buffer += " value=\"";
+    foundHelper = helpers.sway;
+    stack1 = foundHelper || depth0.sway;
+    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
+    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "sway", { hash: {} }); }
+    buffer += escapeExpression(stack1) + "\"";
+    return buffer;}
+
+    buffer += "<select id=\"dab\">\n    <option value=\"\">Daily Activity Burn</option>\n    <option value=\"0.1\">Sedetary</option>\n    <option value=\"0.2\">Moderate</option>\n    <option value=\"0.3\">High</option>\n</select>\n<input id=\"de\" type=\"number\" placeholder=\"Daily Exercise\" ";
+    foundHelper = helpers.de;
+    stack1 = foundHelper || depth0.de;
+    stack2 = helpers['if'];
+    tmp1 = self.program(1, program1, data);
+    tmp1.hash = {};
+    tmp1.fn = tmp1;
+    tmp1.inverse = self.noop;
+    stack1 = stack2.call(depth0, stack1, tmp1);
+    if(stack1 || stack1 === 0) { buffer += stack1; }
+    buffer += " />\n<input id=\"sway\" type=\"number\" placeholder=\"Caloric Surplus/Deficit\" ";
+    foundHelper = helpers.sway;
+    stack1 = foundHelper || depth0.sway;
+    stack2 = helpers['if'];
+    tmp1 = self.program(3, program3, data);
+    tmp1.hash = {};
+    tmp1.fn = tmp1;
+    tmp1.inverse = self.noop;
+    stack1 = stack2.call(depth0, stack1, tmp1);
+    if(stack1 || stack1 === 0) { buffer += stack1; }
+    buffer += " />";
     return buffer;});
 }});
 
@@ -3937,7 +4283,7 @@ window.require.define({"views/templates/help": function(exports, require, module
     var foundHelper, self=this;
 
 
-    return "<header>\n    <h4>Help</h4>\n</header>\n\n<div class=\"help\">\n    <h5>Purpose</h5>\n    <p>The point of this is to create a quick way to track the basic macronutrients outlined in the Body Beast nutrition guide.</p>\n    <p>Forget about hassling with printout sheets or guesstimation. Your phone is with you all day; now your accountability is, too.</p>\n</div>\n\n<div class=\"help\">\n    <h5>How</h5>\n    <p>Click on the bars on the main page to increase your daily macro intake. If you're unsure of the nutrient value for a given food, use the \"Food\" tab to find the appropriate value.</p>\n    <p>If you make a mistake, there's a minus button at the end of the bars that allows you to decrease your counts for that macro.</p>\n    <p>If it's not in the \"Food\" section, it's not on the diet guide ;)</p>\n</div>\n\n<div class=\"help\">\n    <h5>Caloric Values</h5>\n    <p>There is a listing of the caloric value for each macro on the main page and on each food listing. However, this won't be consistent across all foods within a given macro type; it's simply an estimated average caloric value.</p>\n    <p>While the total calories listed probably won't add up to your total calorie bracket, it can help to understand where the majority of your calories come from, which can differ from the number of servings consumed.</p>\n</div>\n\n<div class=\"help\">\n    <h5>Thoughts</h5>\n    <p>There is a ton of data in this diet guide. That being said, use your judgement. This is far from a \"one size fits all\" situation. Use the guide as just that:  a guide. Are you eating too much / little? Now you can figure that out. Plan out your goals and pick the plan that works best for you.</p>\n</div>\n\n<div class=\"help\">\n    <h5>Shakes</h5>\n    <p>In the diet guide, there is a section for mass-gain shakes that are made by combining different macros. However, the shake in this app is mainly a placeholder for \"take your supplements\".</p>\n    <p>The daily shake described is 2 scoops of the Beachbody fuel shot (5g whey protein, 200 cals) and 1 scoop of the Beachbody base shake (18g whey protein, 130 cals). Figure out your own personal shake requirements and get those calories in.</p>\n    <p>Don't forget your post-workout shake.</p>\n</div>\n\n<div class=\"help\">\n    <h5>Free condiments</h5>\n    <ul>\n        <li>Lemon and lime juice</li>\n        <li>Black pepper</li>\n        <li>Vinegar (any variety)</li>\n        <li>Mustard (any variety)</li>\n        <li>Herbs</li>\n        <li>Spices</li>\n        <li>Garlic and ginger</li>\n        <li>Hot sauce</li>\n        <li>Flavored extracts: vanilla, peppermint, almond, etc.</li>\n    </ul>\n</div>\n";});
+    return "<header>\n    <h4>Help</h4>\n</header>\n\n<div class=\"help\">\n    <h5>Purpose</h5>\n    <p>The point of this is to create a quick way to track the basic macronutrients outlined in the nutrition guides for Beachbody's programs Body Beast and P90X2.</p>\n    <p>Forget about hassling with printout sheets or guesstimation. Your phone is with you all day; now your accountability is, too.</p>\n</div>\n\n<div class=\"help\">\n    <h5>How</h5>\n    <p>Click on the bars on the main page to increase your daily macro intake. If you're unsure of the nutrient value for a given food, use the \"Food\" tab to find the appropriate value.</p>\n    <p>If you make a mistake, there's a minus button at the end of the bars that allows you to decrease your counts for that macro.</p>\n    <p>If it's not in the \"Food\" section, it's not on the diet guide ;)</p>\n</div>\n\n<div class=\"help\">\n    <h5>Caloric Values</h5>\n    <p>There is a listing of the caloric value for each macro on the main page and on each food listing. However, this won't be consistent across all foods within a given macro type; it's simply an estimated average caloric value.</p>\n    <p>While the total calories listed probably won't add up to your total calorie bracket, it can help to understand where the majority of your calories come from, which can differ from the number of servings consumed.</p>\n</div>\n\n<div class=\"help\">\n    <h5>Thoughts</h5>\n    <p>There is a ton of data in this diet guide. That being said, use your judgement. This is far from a \"one size fits all\" situation. Use the guide as just that:  a guide. Are you eating too much / little? Now you can figure that out. Plan out your goals and pick the plan that works best for you.</p>\n</div>\n\n<div class=\"help\">\n    <h5>Shakes</h5>\n    <p>In the diet guide, there is a section for mass-gain shakes that are made by combining different macros. However, the shake in this app is mainly a placeholder for \"take your supplements\".</p>\n    <p>The daily shake described is 2 scoops of the Beachbody fuel shot (5g whey protein, 200 cals) and 1 scoop of the Beachbody base shake (18g whey protein, 130 cals). Figure out your own personal shake requirements and get those calories in.</p>\n    <p>Don't forget your post-workout shake.</p>\n</div>\n\n<div class=\"help\">\n    <h5>Free condiments</h5>\n    <ul>\n        <li>Lemon and lime juice</li>\n        <li>Black pepper</li>\n        <li>Vinegar (any variety)</li>\n        <li>Mustard (any variety)</li>\n        <li>Herbs</li>\n        <li>Spices</li>\n        <li>Garlic and ginger</li>\n        <li>Hot sauce</li>\n        <li>Flavored extracts: vanilla, peppermint, almond, etc.</li>\n    </ul>\n</div>\n";});
 }});
 
 window.require.define({"views/templates/index": function(exports, require, module) {

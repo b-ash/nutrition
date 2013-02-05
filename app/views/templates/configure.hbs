@@ -11,11 +11,7 @@
 
 <div>
     <input id="name" type="text" placeholder="My name is..." {{#if name}} value="{{name}}"{{/if}} />
-</div>
-
-<div>
     <input id="weight" type="number" placeholder="Weight" {{#if weight}} value="{{weight}}"{{/if}} />
-    <input id="bfp" type="number" placeholder="Body Fat Percentage" {{#if bfp}} value="{{bfp}}"{{/if}} />
 </div>
 
 <div>
@@ -32,6 +28,8 @@
         </optgroup>
     </select>
 </div>
+
+<div id="program_config"></div>
 
 <div class="configure-actions">
     <a id="configure" class="btn btn-primary dont-route">Configure</a>

@@ -3,7 +3,7 @@ module.exports = {
     goals:
         proteins: 4
         dairy: 1
-        fruit: 3
+        fruits: 3
         veggies: 5
         fats: 1
         grains: 2.5

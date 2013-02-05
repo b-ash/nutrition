@@ -8,6 +8,7 @@ class IndexView extends View
     template: require './templates/index'
 
     initialize: =>
+        @views = {}
         for macro of @model.get('macros')
             claxx = new MacroBarFactory.get(macro)
             view = new claxx {model: @model, macro}

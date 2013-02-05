@@ -42,7 +42,7 @@ class BaseMacroView extends View
         @changePercentText()
         @changeCurrentCals()
 
-    changePercentBar: ($macro, macro) =>
+    changePercentBar: =>
         macroPercentage = @model.getMacroPercentage(@options.macro)
         pixelPercentage = macroPercentage / 100 * @$('.percentage-bar').width()
         @$('.percentage-complete').css {width: "#{pixelPercentage}px"}
