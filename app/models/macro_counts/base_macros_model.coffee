@@ -1,15 +1,18 @@
 utils = require('lib/utils')
-LocalStorageModel = require('./local_storage_model')
-BeastFoods = require('./foods/beast_foods')
+LocalStorageModel = require('models/local_storage_model')
+Foods = require('models/foods/foods')
 
 
-# Body Beast nutrition macro requirements to be extended
+# Base nutrition macro requirements to be extended
 class BaseMacrosModel extends LocalStorageModel
 
+    id: 'macro-counts'
     totalCals: 0
 
-    initialize: =>
+    initialize: (stats) =>
         @fetch()
+        @goals = stats.getGoals()
+        @foods = new Foods(app.user)
         @calculateTotalCals()
 
     increment: (macro, amt=0.5) =>
@@ -22,10 +25,8 @@ class BaseMacrosModel extends LocalStorageModel
         macros = @get('macros')
 
         newCount = Math.max (macros[macro].count + parseFloat(amt)), 0
-
-        if macro isnt 'shake'
-            cals = new BeastFoods(macro).get('cals')
-            @totalCals += (amt * cals)
+        cals = @foods.getCalories(macro)
+        @totalCals = Math.max (@totalCals + (amt * cals)), 0
 
         macros[macro].count = newCount
         @save('macros', macros)
@@ -40,8 +41,8 @@ class BaseMacrosModel extends LocalStorageModel
         @totalCals
 
     calculateTotalCals: =>
-        for name, macro of @get('macros') when name isnt 'shake'
-            cals = new BeastFoods(name).get('cals')
+        for name, macro of @get('macros')
+            cals = @foods.getCalories(name)
             if cals?
                 @totalCals += (macro.count * cals)
         @

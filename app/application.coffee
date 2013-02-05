@@ -1,6 +1,6 @@
-BeastUser = require 'models/beast_user'
-BeastMacros = require 'models/beast_macro_counts'
-Stats = require 'models/stats'
+User = require 'models/users/user'
+MacroCountsFactory = require 'models/macro_counts/macro_counts_factory'
+StatsFactory = require 'models/stats/stats_factory'
 
 
 Application =
@@ -9,9 +9,9 @@ Application =
 
         @views = {}
         @router = new Router()
-        @user = new BeastUser()
+        @user = new User()
 
-        if not @user.get('configured') and window.location.pathname isnt '/configure'
+        if not @user.isConfigured() and window.location.pathname isnt '/configure'
             window.location.href = '/configure'
         else
             @afterConfiguration()
@@ -22,13 +22,14 @@ Application =
             onSuccess()
 
     onConfigure: ->
-        @afterConfiguration()
         @macros.destroy()
-        @macros = new BeastMacros @stats, @user
+        @stats = StatsFactory.getStats @user
+        @macros = MacroCountsFactory.getMacroCounts @user, @stats
 
     afterConfiguration: ->
-        @stats = new Stats @user
-        @macros = new BeastMacros @stats, @user
+        if @user.isConfigured()
+            @stats = StatsFactory.getStats @user
+            @macros = MacroCountsFactory.getMacroCounts @user, @stats
     
 
 module.exports = Application

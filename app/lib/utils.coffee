@@ -1,6 +1,9 @@
 String.prototype.capitalize = ->
     this.charAt(0).toUpperCase() + this.slice(1)
 
+String.prototype.toDisplay = ->
+    this.replace('_', ' ').capitalize()
+
 
 module.exports =
     roundFloat: (percentage, precision=100) ->

@@ -3,6 +3,7 @@ module.exports = {
     display: 'Balanced Liquid'
     macroOverride: 'veggies'
     macroOverrideDisplay: 'veggie'
+    cals: 30
     foods:
         almond_milk:
             display: 'Almond Milk'

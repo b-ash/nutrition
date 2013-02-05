@@ -25,7 +25,6 @@ The default settings bind it to localhost:3333
 ## TODO
 
 * Searching for an item
+* User-defined supplements
 * User-defined "meals" (collection of macros to add at once)
     - List approximate caloric value of a meal or shake
-* Some form of a current calorie count
-    - Careful with this, as the numbers may not always sum exactly to the caloric intake expected

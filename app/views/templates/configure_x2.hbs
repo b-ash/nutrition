@@ -1,0 +1,13 @@
+<span class="aside">Activity levels outside X2.</span>
+<select id="dab">
+    <option value=""></option>
+    <option value="0.1">Sedetary</option>
+    <option value="0.2">Moderatley Active</option>
+    <option value="0.3">Very Active</option>
+</select>
+
+<span class="aside italic">Daily exercise calories. Varies, but 650 is the X2 average.</span>
+<input id="de" type="number" placeholder="Example: 650" {{#if de}} value="{{de}}"{{/if}} />
+
+<span class="aside italic">Calories to add (negative to subtract). 500 ~ 1lb/week.</span>
+<input id="sway" type="number" placeholder="Example: -500" {{#if sway}} value="{{sway}}"{{/if}} />

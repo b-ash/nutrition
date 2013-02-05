@@ -73,7 +73,7 @@ html
 
                 transition: width 0.4s
 
-                &.starches
+                &.starches, &.grains
                     background: linear-gradient(top, darken(#963, 15%), lighten(#964, 30%))
                 &.legumes
                     background: linear-gradient(top, #330, lighten(#330, 20%))
@@ -85,8 +85,10 @@ html
                     background: linear-gradient(top, #633, lighten(#633, 30%))
                 &.fats
                     background: linear-gradient(top, darken(#C66, 15%), lighten(#C66, 30%))
-                &.shake
+                &.shake, &.dairy
                     background: linear-gradient(top, darken(#39F, 15%), lighten(#39F, 30%))
+                &.condiments
+                    background: linear-gradient(top, darken(#FC6, 35%), lighten(#FC6, 10%))
 
                 .percentage-text
                     left: 5px
@@ -103,6 +105,12 @@ html
 
 .total
     font-style: italic
+
+.aside
+    display: block
+    font-style: italic
+    font-size: 10px
+    color: #AAA
 
 .portion-controls
     margin-top: 20px

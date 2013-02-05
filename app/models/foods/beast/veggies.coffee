@@ -103,7 +103,7 @@ module.exports = {
             portion: 0.5
             measurement: 'cup'
             description: 'Cooked, or 1 cup raw'
-        Okra:
+        okra:
             display: 'Okra'
             portion: 0.5
             measurement: 'cup'

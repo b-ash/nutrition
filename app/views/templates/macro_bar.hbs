@@ -1,0 +1,13 @@
+<div class="percentage-bar relative">
+    <div class="btn-decrement absolute">
+        <span class="ui-icon ui-icon-minusthick"></span>
+    </div>
+    <div class="percentage-complete absolute {{macro}}" style="width: {{getPercentageWidth macro}}%;">
+        <div class="percentage-text absolute {{#ifIsExceedingGoal macro}}exceeding{{/ifIsExceedingGoal}}">
+            <span class="text_display with-default-cursor">{{display}}: </span>
+            <span class="text_count with-default-cursor">{{count}}</span>
+            <span class="text_total with-default-cursor"> / {{getGoalForMacro macro}}</span>
+            <span class="text_cals with-default-cursor">{{getCalsDisplayForMacro macro count}}</span>
+        </div>
+    </div>
+</div>

@@ -1,19 +1,15 @@
 app = require 'application'
-View = require './view'
-BeastFoods = require 'models/foods/beast_foods'
+View = require 'views/view'
 
 
 class FoodMacroView extends View
     tagName: 'div'
     className: 'content'
-    template: require './templates/food'
+    template: require('views/templates/food')
     events:
         'click a': 'routeEvent'
         'click #submit_and_route': 'submitAndRoute'
         'click #submit_and_go_home': 'submitAndGoHome'
-
-    initialize: =>
-        @model = new BeastFoods(@options.macro, @options.food)
 
     getRenderData: =>
         @model.toJSON()

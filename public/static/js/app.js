@@ -75,13 +75,13 @@
 })();
 
 window.require.define({"application": function(exports, require, module) {
-  var Application, BeastMacros, BeastUser, Stats;
+  var Application, MacroCountsFactory, StatsFactory, User;
 
-  BeastUser = require('models/beast_user');
+  User = require('models/users/user');
 
-  BeastMacros = require('models/beast_macro_counts');
+  MacroCountsFactory = require('models/macro_counts/macro_counts_factory');
 
-  Stats = require('models/stats');
+  StatsFactory = require('models/stats/stats_factory');
 
   Application = {
     initialize: function(onSuccess) {
@@ -89,8 +89,8 @@ window.require.define({"application": function(exports, require, module) {
       Router = require('lib/router');
       this.views = {};
       this.router = new Router();
-      this.user = new BeastUser();
-      if (!this.user.get('configured') && window.location.pathname !== '/configure') {
+      this.user = new User();
+      if (!this.user.isConfigured() && window.location.pathname !== '/configure') {
         return window.location.href = '/configure';
       } else {
         this.afterConfiguration();
@@ -101,13 +101,15 @@ window.require.define({"application": function(exports, require, module) {
       }
     },
     onConfigure: function() {
-      this.afterConfiguration();
       this.macros.destroy();
-      return this.macros = new BeastMacros(this.stats, this.user);
+      this.stats = StatsFactory.getStats(this.user);
+      return this.macros = MacroCountsFactory.getMacroCounts(this.user, this.stats);
     },
     afterConfiguration: function() {
-      this.stats = new Stats(this.user);
-      return this.macros = new BeastMacros(this.stats, this.user);
+      if (this.user.isConfigured()) {
+        this.stats = StatsFactory.getStats(this.user);
+        return this.macros = MacroCountsFactory.getMacroCounts(this.user, this.stats);
+      }
     }
   };
 
@@ -129,7 +131,7 @@ window.require.define({"initialize": function(exports, require, module) {
 }});
 
 window.require.define({"lib/router": function(exports, require, module) {
-  var NavView, Router, app, utils, views,
+  var Foods, NavView, Router, app, utils, views,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -138,6 +140,8 @@ window.require.define({"lib/router": function(exports, require, module) {
 
   utils = require('lib/utils');
 
+  Foods = require('models/foods/foods');
+
   NavView = require('views/nav');
 
   views = {
@@ -145,10 +149,10 @@ window.require.define({"lib/router": function(exports, require, module) {
     stats: require('views/stats'),
     help: require('views/help'),
     about: require('views/about'),
-    configure: require('views/configure'),
-    foodAll: require('views/food_all_macros'),
-    foodMacro: require('views/food_macro'),
-    food: require('views/food')
+    configure: require('views/configuration/configure'),
+    foodAll: require('views/food_list/food_all_macros'),
+    foodMacro: require('views/food_list/food_macro'),
+    food: require('views/food_list/food')
   };
 
   module.exports = Router = (function(_super) {
@@ -231,19 +235,20 @@ window.require.define({"lib/router": function(exports, require, module) {
     };
 
     Router.prototype.foodAllMacros = function() {
-      return this.setupView('food', 'foodAll');
+      return this.setupView('food', 'foodAll', {
+        model: new Foods(app.user)
+      });
     };
 
     Router.prototype.foodMacro = function(macro) {
       return this.setupView('food', 'foodMacro', {
-        macro: macro
+        model: new Foods(app.user, macro)
       });
     };
 
     Router.prototype.food = function(macro, food) {
       return this.setupView('food', 'food', {
-        macro: macro,
-        food: food
+        model: new Foods(app.user, macro, food)
       });
     };
 
@@ -251,6 +256,9 @@ window.require.define({"lib/router": function(exports, require, module) {
       var view;
       if (params == null) {
         params = {};
+      }
+      if (!app.user.isConfigured() && claxx !== 'configure') {
+        return;
       }
       this.navSetup(navItem);
       view = app.views[claxx];
@@ -276,7 +284,7 @@ window.require.define({"lib/router": function(exports, require, module) {
 
     Router.prototype.setCurrentView = function(view) {
       this.currentView = view;
-      return $('#main_page').append(view.render().$el);
+      return $('#main_page').html(view.render().$el);
     };
 
     return Router;
@@ -289,6 +297,10 @@ window.require.define({"lib/utils": function(exports, require, module) {
   
   String.prototype.capitalize = function() {
     return this.charAt(0).toUpperCase() + this.slice(1);
+  };
+
+  String.prototype.toDisplay = function() {
+    return this.replace('_', ' ').capitalize();
   };
 
   module.exports = {
@@ -310,11 +322,11 @@ window.require.define({"lib/utils": function(exports, require, module) {
 }});
 
 window.require.define({"lib/view_helper": function(exports, require, module) {
-  var BeastFoods, utils;
+  var Foods, utils;
 
-  utils = require('./utils');
+  utils = require('lib/utils');
 
-  BeastFoods = require('models/foods/beast_foods');
+  Foods = require('models/foods/foods');
 
   Handlebars.registerHelper("debug", function(optionalValue) {
     console.log("Current Context");
@@ -351,7 +363,7 @@ window.require.define({"lib/view_helper": function(exports, require, module) {
 
   Handlebars.registerHelper("getCalsDisplayForMacro", function(macro, amt) {
     var cals;
-    cals = new BeastFoods(macro).get('cals');
+    cals = new Foods(window.app.user).getCalories(macro);
     if (cals != null) {
       return " - " + (amt * cals) + " cals";
     } else {
@@ -383,239 +395,6 @@ window.require.define({"lib/view_helper": function(exports, require, module) {
   Handlebars.registerHelper("pluralize", function(word, quantity) {
     return utils.pluralize(word, quantity);
   });
-  
-}});
-
-window.require.define({"models/base_macros_model": function(exports, require, module) {
-  var BaseMacrosModel, BeastFoods, LocalStorageModel, utils,
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-    __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-  utils = require('lib/utils');
-
-  LocalStorageModel = require('./local_storage_model');
-
-  BeastFoods = require('./foods/beast_foods');
-
-  BaseMacrosModel = (function(_super) {
-
-    __extends(BaseMacrosModel, _super);
-
-    function BaseMacrosModel() {
-      this.clear = __bind(this.clear, this);
-
-      this.isExceedingGoal = __bind(this.isExceedingGoal, this);
-
-      this.getGoalForMacro = __bind(this.getGoalForMacro, this);
-
-      this.calculateTotalCals = __bind(this.calculateTotalCals, this);
-
-      this.getTotalCals = __bind(this.getTotalCals, this);
-
-      this.getMacroPercentage = __bind(this.getMacroPercentage, this);
-
-      this.changeByAmount = __bind(this.changeByAmount, this);
-
-      this.decrement = __bind(this.decrement, this);
-
-      this.increment = __bind(this.increment, this);
-
-      this.initialize = __bind(this.initialize, this);
-      return BaseMacrosModel.__super__.constructor.apply(this, arguments);
-    }
-
-    BaseMacrosModel.prototype.totalCals = 0;
-
-    BaseMacrosModel.prototype.initialize = function() {
-      this.fetch();
-      return this.calculateTotalCals();
-    };
-
-    BaseMacrosModel.prototype.increment = function(macro, amt) {
-      if (amt == null) {
-        amt = 0.5;
-      }
-      return this.changeByAmount(macro, amt);
-    };
-
-    BaseMacrosModel.prototype.decrement = function(macro, amt) {
-      if (amt == null) {
-        amt = -0.5;
-      }
-      return this.changeByAmount(macro, amt);
-    };
-
-    BaseMacrosModel.prototype.changeByAmount = function(macro, amt) {
-      var cals, macros, newCount;
-      macros = this.get('macros');
-      newCount = Math.max(macros[macro].count + parseFloat(amt), 0);
-      if (macro !== 'shake') {
-        cals = new BeastFoods(macro).get('cals');
-        this.totalCals += amt * cals;
-      }
-      macros[macro].count = newCount;
-      return this.save('macros', macros);
-    };
-
-    BaseMacrosModel.prototype.getMacroPercentage = function(macro) {
-      var goal, percentage;
-      goal = this.getGoalForMacro(macro);
-      macro = this.get('macros')[macro].count;
-      percentage = (macro / goal) * 100;
-      return Math.min(utils.roundFloat(percentage), 100);
-    };
-
-    BaseMacrosModel.prototype.getTotalCals = function() {
-      return this.totalCals;
-    };
-
-    BaseMacrosModel.prototype.calculateTotalCals = function() {
-      var cals, macro, name, _ref;
-      _ref = this.get('macros');
-      for (name in _ref) {
-        macro = _ref[name];
-        if (!(name !== 'shake')) {
-          continue;
-        }
-        cals = new BeastFoods(name).get('cals');
-        if (cals != null) {
-          this.totalCals += macro.count * cals;
-        }
-      }
-      return this;
-    };
-
-    BaseMacrosModel.prototype.getGoalForMacro = function(macro) {
-      return this.goals[macro];
-    };
-
-    BaseMacrosModel.prototype.isExceedingGoal = function(macro) {
-      var goal;
-      goal = this.getGoalForMacro(macro);
-      macro = this.get('macros')[macro].count;
-      return macro > goal;
-    };
-
-    BaseMacrosModel.prototype.clear = function() {
-      this.save(this.defaults());
-      this.totalCals = 0;
-      return this.trigger('cleared');
-    };
-
-    return BaseMacrosModel;
-
-  })(LocalStorageModel);
-
-  module.exports = BaseMacrosModel;
-  
-}});
-
-window.require.define({"models/beast_macro_counts": function(exports, require, module) {
-  var BaseMacrosModel, BeastMacros,
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-    __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-  BaseMacrosModel = require('./base_macros_model');
-
-  BeastMacros = (function(_super) {
-
-    __extends(BeastMacros, _super);
-
-    function BeastMacros() {
-      this.initialize = __bind(this.initialize, this);
-      return BeastMacros.__super__.constructor.apply(this, arguments);
-    }
-
-    BeastMacros.prototype.initialize = function(stats) {
-      this.id = "bodybeast-" + (stats.getCalories()) + "c";
-      this.goals = stats.getGoals();
-      return BeastMacros.__super__.initialize.apply(this, arguments);
-    };
-
-    BeastMacros.prototype.defaults = function() {
-      return {
-        macros: {
-          starches: {
-            display: 'Starches',
-            count: 0
-          },
-          legumes: {
-            display: 'Legumes',
-            count: 0
-          },
-          veggies: {
-            display: 'Veggies',
-            count: 0
-          },
-          fruits: {
-            display: 'Fruits',
-            count: 0
-          },
-          proteins: {
-            display: 'Proteins',
-            count: 0
-          },
-          fats: {
-            display: 'Fats',
-            count: 0
-          },
-          shake: {
-            display: 'Shake',
-            count: 0
-          }
-        },
-        timestamp: new moment().format('MM-DD-YY')
-      };
-    };
-
-    return BeastMacros;
-
-  })(BaseMacrosModel);
-
-  module.exports = BeastMacros;
-  
-}});
-
-window.require.define({"models/beast_user": function(exports, require, module) {
-  var BeastUserConfig, LocalStorageModel,
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-    __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-  LocalStorageModel = require('./local_storage_model');
-
-  BeastUserConfig = (function(_super) {
-
-    __extends(BeastUserConfig, _super);
-
-    function BeastUserConfig() {
-      this.initialize = __bind(this.initialize, this);
-      return BeastUserConfig.__super__.constructor.apply(this, arguments);
-    }
-
-    BeastUserConfig.prototype.id = 'user';
-
-    BeastUserConfig.prototype.initialize = function() {
-      return this.fetch();
-    };
-
-    BeastUserConfig.prototype.defaults = function() {
-      return {
-        name: null,
-        weight: null,
-        bfp: null,
-        phase: 'build',
-        configured: false
-      };
-    };
-
-    return BeastUserConfig;
-
-  })(LocalStorageModel);
-
-  module.exports = BeastUserConfig;
   
 }});
 
@@ -1163,22 +942,184 @@ window.require.define({"models/calorie_brackets/beast/build/5000c": function(exp
   
 }});
 
-window.require.define({"models/calorie_brackets/beast_brackets": function(exports, require, module) {
-  var BeastCalorieBrackets;
+window.require.define({"models/calorie_brackets/calorie_brackets": function(exports, require, module) {
+  var CalorieBracketsFactory;
 
-  BeastCalorieBrackets = (function() {
+  CalorieBracketsFactory = (function() {
 
-    function BeastCalorieBrackets() {}
+    function CalorieBracketsFactory() {}
 
-    BeastCalorieBrackets.getBracket = function(calories, phase) {
-      return require("./beast/" + phase + "/" + calories + "c");
+    CalorieBracketsFactory.getBracket = function(stats) {
+      return require("./" + stats.program + "/" + stats.calories + "c");
     };
 
-    return BeastCalorieBrackets;
+    return CalorieBracketsFactory;
 
   })();
 
-  module.exports = BeastCalorieBrackets;
+  module.exports = CalorieBracketsFactory;
+  
+}});
+
+window.require.define({"models/calorie_brackets/x2/endurance_maximizer/1800c": function(exports, require, module) {
+  
+  module.exports = {
+    cals: 1800,
+    goals: {
+      proteins: 2,
+      dairy: 1,
+      fruits: 2,
+      veggies: 2,
+      fats: 1,
+      grains: 1,
+      legumes: 1,
+      condiments: 1
+    }
+  };
+  
+}});
+
+window.require.define({"models/calorie_brackets/x2/endurance_maximizer/2400c": function(exports, require, module) {
+  
+  module.exports = {
+    cals: 2400,
+    goals: {
+      proteins: 3,
+      dairy: 1,
+      fruits: 3,
+      veggies: 3,
+      fats: 1,
+      grains: 2,
+      legumes: 2,
+      condiments: 1
+    }
+  };
+  
+}});
+
+window.require.define({"models/calorie_brackets/x2/endurance_maximizer/3000c": function(exports, require, module) {
+  
+  module.exports = {
+    cals: 3000,
+    goals: {
+      proteins: 4,
+      dairy: 1,
+      fruits: 3,
+      veggies: 5,
+      fats: 1,
+      grains: 2.5,
+      legumes: 2.5,
+      condiments: 3
+    }
+  };
+  
+}});
+
+window.require.define({"models/calorie_brackets/x2/energy_booster/1800c": function(exports, require, module) {
+  
+  module.exports = {
+    cals: 1800,
+    goals: {
+      proteins: 4,
+      dairy: 2,
+      fruits: 1,
+      veggies: 4,
+      fats: 1,
+      grains: 0.5,
+      legumes: 0.5,
+      condiments: 1
+    }
+  };
+  
+}});
+
+window.require.define({"models/calorie_brackets/x2/energy_booster/2400c": function(exports, require, module) {
+  
+  module.exports = {
+    cals: 2400,
+    goals: {
+      proteins: 6,
+      dairy: 2,
+      fruits: 1,
+      veggies: 3,
+      fats: 1,
+      grains: 1.5,
+      legumes: 1.5,
+      condiments: 1
+    }
+  };
+  
+}});
+
+window.require.define({"models/calorie_brackets/x2/energy_booster/3000c": function(exports, require, module) {
+  
+  module.exports = {
+    cals: 3000,
+    goals: {
+      proteins: 8,
+      dairy: 2,
+      fruits: 2,
+      veggies: 3,
+      fats: 1,
+      grains: 1.5,
+      legumes: 1.5,
+      condiments: 3
+    }
+  };
+  
+}});
+
+window.require.define({"models/calorie_brackets/x2/fat_shredder/1800c": function(exports, require, module) {
+  
+  module.exports = {
+    cals: 1800,
+    goals: {
+      proteins: 5,
+      dairy: 2,
+      fruits: 1,
+      veggies: 2,
+      fats: 1,
+      grains: 0.5,
+      legumes: 0.5,
+      condiments: 1
+    }
+  };
+  
+}});
+
+window.require.define({"models/calorie_brackets/x2/fat_shredder/2400c": function(exports, require, module) {
+  
+  module.exports = {
+    cals: 2400,
+    goals: {
+      proteins: 7,
+      dairy: 3,
+      fruits: 1,
+      veggies: 4,
+      fats: 1,
+      grains: 0.5,
+      legumes: 0.5,
+      condiments: 2
+    }
+  };
+  
+}});
+
+window.require.define({"models/calorie_brackets/x2/fat_shredder/3000c": function(exports, require, module) {
+  
+  module.exports = {
+    cals: 3000,
+    goals: {
+      proteins: 9,
+      dairy: 4,
+      fruits: 2,
+      veggies: 4,
+      fats: 1,
+      grains: 1,
+      legumes: 1,
+      condiments: 2
+    }
+  };
   
 }});
 
@@ -1559,6 +1500,7 @@ window.require.define({"models/foods/beast/liquid_balanced": function(exports, r
     display: 'Balanced Liquid',
     macroOverride: 'veggies',
     macroOverrideDisplay: 'veggie',
+    cals: 30,
     foods: {
       almond_milk: {
         display: 'Almond Milk',
@@ -1608,6 +1550,7 @@ window.require.define({"models/foods/beast/liquid_carb": function(exports, requi
     display: 'Carb Liquids',
     macroOverride: 'fruits',
     macroOverrideDisplay: 'fruit',
+    cals: 60,
     foods: {
       apple: {
         display: 'Apple Juice',
@@ -1651,6 +1594,7 @@ window.require.define({"models/foods/beast/liquid_protein": function(exports, re
     display: 'Protein Liquids',
     macroOverride: 'legumes',
     macroOverrideDisplay: 'legume',
+    cals: 125,
     foods: {
       milk: {
         display: 'Cow\'s Milk',
@@ -2150,7 +2094,7 @@ window.require.define({"models/foods/beast/veggies": function(exports, require, 
         measurement: 'cup',
         description: 'Cooked, or 1 cup raw'
       },
-      Okra: {
+      okra: {
         display: 'Okra',
         portion: 0.5,
         measurement: 'cup',
@@ -2221,31 +2165,34 @@ window.require.define({"models/foods/beast/veggies": function(exports, require, 
   
 }});
 
-window.require.define({"models/foods/beast_foods": function(exports, require, module) {
-  var ALL_MACROS, BeastFoods,
+window.require.define({"models/foods/foods": function(exports, require, module) {
+  var Foods,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
-  ALL_MACROS = require('./beast/all_macros');
+  Foods = (function() {
 
-  BeastFoods = (function() {
+    Foods.prototype.macros = {};
 
-    BeastFoods.prototype.macros = {};
-
-    function BeastFoods(macro, food) {
-      var display;
+    function Foods(user, macro, food) {
+      var display, _ref;
+      this.user = user;
       this.macro = macro;
       this.food = food;
-      this.get = __bind(this.get, this);
+      this.getCalories = __bind(this.getCalories, this);
 
       this.toJSON = __bind(this.toJSON, this);
 
-      for (macro in ALL_MACROS) {
-        display = ALL_MACROS[macro];
-        this.macros[macro] = require("./beast/" + macro);
+      if (this.user.isConfigured()) {
+        this.ALL_MACROS = require("./" + (this.user.getProgram()) + "/all_macros");
+        _ref = this.ALL_MACROS;
+        for (macro in _ref) {
+          display = _ref[macro];
+          this.macros[macro] = require("./" + (this.user.getProgram()) + "/" + macro);
+        }
       }
     }
 
-    BeastFoods.prototype.toJSON = function() {
+    Foods.prototype.toJSON = function() {
       var food, macro;
       if (this.macro != null) {
         macro = this.macros[this.macro] || {
@@ -2261,21 +2208,805 @@ window.require.define({"models/foods/beast_foods": function(exports, require, mo
           return macro;
         }
       } else {
-        return ALL_MACROS;
+        return this.ALL_MACROS;
       }
     };
 
-    BeastFoods.prototype.get = function(key) {
-      if (this.macro && this.macro !== 'shake') {
-        return this.macros[this.macro][key];
+    Foods.prototype.getCalories = function(macro) {
+      if (macro == null) {
+        macro = this.macro;
       }
+      return this.macros[macro]['cals'];
     };
 
-    return BeastFoods;
+    return Foods;
 
   })();
 
-  module.exports = BeastFoods;
+  module.exports = Foods;
+  
+}});
+
+window.require.define({"models/foods/x2/all_macros": function(exports, require, module) {
+  
+  module.exports = {
+    proteins: 'Proteins',
+    dairy: 'Dairy',
+    fruits: 'Fruits',
+    veggies: 'Veggies',
+    fats: 'Fats',
+    grains: 'Grains',
+    legumes: 'Legumes',
+    condiments: 'Condiments'
+  };
+  
+}});
+
+window.require.define({"models/foods/x2/condiments": function(exports, require, module) {
+  
+  module.exports = {
+    macro: 'condiments',
+    display: 'Condiments',
+    cals: 50,
+    foods: {
+      marinades: {
+        display: 'BBQ / sauces / marinades',
+        portion: 50,
+        measurement: 'calorie',
+        description: ''
+      },
+      mustard: {
+        display: 'Mustard',
+        portion: 50,
+        measurement: 'calorie',
+        description: ''
+      },
+      honey: {
+        display: 'Honey',
+        portion: 50,
+        measurement: 'calorie',
+        description: ''
+      },
+      jam: {
+        display: 'Pure Fruit Jams',
+        portion: 50,
+        measurement: 'calorie',
+        description: ''
+      }
+    }
+  };
+  
+}});
+
+window.require.define({"models/foods/x2/dairy": function(exports, require, module) {
+  
+  module.exports = {
+    macro: 'dairy',
+    display: 'Dairy',
+    cals: 120,
+    foods: {
+      cheese: {
+        display: 'Cheese',
+        portion: 2,
+        measurement: 'oz',
+        description: 'Low-fat'
+      },
+      cottage: {
+        display: 'Cottage Cheese',
+        portion: 0.75,
+        measurement: 'cup',
+        description: '1%'
+      },
+      feta: {
+        display: 'Feta Cheese',
+        portion: 1.5,
+        measurement: 'oz',
+        description: ''
+      },
+      goat: {
+        display: 'Goat Cheese',
+        portion: 1.5,
+        measurement: 'oz',
+        description: 'Semisoft'
+      },
+      mozzarella: {
+        display: 'Mozzarella Cheese',
+        portion: 1.5,
+        measurement: 'oz',
+        description: 'Part skim'
+      },
+      parmesan: {
+        display: 'Parmesan Cheese',
+        portion: 2,
+        measurement: 'tbsp',
+        description: ''
+      },
+      milk: {
+        display: 'Skim Milk',
+        portion: 8,
+        measurement: 'oz',
+        description: ''
+      },
+      soy_cheese: {
+        display: 'Organic Soy Cheese',
+        portion: 1.5,
+        measurement: 'oz',
+        description: ''
+      },
+      soy_milk: {
+        display: 'Organic Soy Milk',
+        portion: 1,
+        measurement: 'cup',
+        description: ''
+      },
+      yogurt: {
+        display: 'Yogurt',
+        portion: 1,
+        measurement: 'cup',
+        description: 'Nonfat plain'
+      }
+    }
+  };
+  
+}});
+
+window.require.define({"models/foods/x2/fats": function(exports, require, module) {
+  
+  module.exports = {
+    macro: 'fats',
+    display: 'Fats',
+    cals: 120,
+    foods: {
+      avocado: {
+        display: 'Avocado',
+        portion: 3,
+        measurement: 'oz',
+        description: ''
+      },
+      olive_oil: {
+        display: 'Olive Oil',
+        portion: 1,
+        measurement: 'tbsp',
+        description: ''
+      },
+      olives: {
+        display: 'Olives',
+        portion: 4,
+        measurement: 'oz',
+        description: ''
+      },
+      nuts: {
+        display: 'Raw Nuts',
+        portion: 1,
+        measurement: 'oz',
+        description: ''
+      },
+      flaxseed: {
+        display: 'Flaxseed (ground)',
+        portion: 3,
+        measurement: 'tbsp',
+        description: ''
+      },
+      flaxseed_oil: {
+        display: 'Flaxseed Oil',
+        portion: 1,
+        measurement: 'tbsp',
+        description: ''
+      },
+      pumpkin_oil: {
+        display: 'Pumpkin Seed Oil',
+        portion: 1,
+        measurement: 'tbsp',
+        description: ''
+      },
+      walnut_oil: {
+        display: 'Walnut Oil',
+        portion: 1,
+        measurement: 'tbsp',
+        description: ''
+      },
+      canola_oil: {
+        display: 'Canola Oil',
+        portion: 1,
+        measurement: 'tbsp',
+        description: ''
+      },
+      chia_oil: {
+        display: 'Chia Oil',
+        portion: 1,
+        measurement: 'tbsp',
+        description: ''
+      }
+    }
+  };
+  
+}});
+
+window.require.define({"models/foods/x2/fruits": function(exports, require, module) {
+  
+  module.exports = {
+    macro: 'fruits',
+    display: 'Fruits',
+    cals: 100,
+    foods: {
+      apple: {
+        display: 'Apple',
+        portion: 1,
+        measurement: 'apple',
+        description: 'Medium'
+      },
+      apricots: {
+        display: 'Apricots',
+        portion: 1,
+        measurement: 'cup',
+        description: ''
+      },
+      banana: {
+        display: 'Banana',
+        portion: 1,
+        measurement: 'banana',
+        description: 'Medium'
+      },
+      cherries: {
+        display: 'Cherries',
+        portion: 1,
+        measurement: 'cup',
+        description: ''
+      },
+      dried_fruits: {
+        display: 'Dried Fruits',
+        portion: 1,
+        measurement: 'oz',
+        description: ''
+      },
+      figs: {
+        display: 'Figs',
+        portion: 2,
+        measurement: 'fig',
+        description: 'Large'
+      },
+      grapefruit: {
+        display: 'Grapefruit',
+        portion: 1,
+        measurement: 'grapefruit',
+        description: 'Medium'
+      },
+      grapes: {
+        display: 'Grapes',
+        portion: 1,
+        measurement: 'cup',
+        description: ''
+      },
+      kiwi: {
+        display: 'Kiwi',
+        portion: 2,
+        measurement: 'kiwi',
+        description: ''
+      },
+      mango: {
+        display: 'Mango',
+        portion: 0.5,
+        measurement: 'mango',
+        description: 'Medium'
+      },
+      melon: {
+        display: 'Melon',
+        portion: 1,
+        measurement: 'cup',
+        description: ''
+      },
+      nectarine: {
+        display: 'Nectarine',
+        portion: 1,
+        measurement: 'nectarine',
+        description: 'Medium'
+      },
+      orange: {
+        display: 'Orange',
+        portion: 1,
+        measurement: 'orange',
+        description: 'Large'
+      },
+      papaya: {
+        display: 'Papaya',
+        portion: 0.5,
+        measurement: 'papaya',
+        description: 'Medium'
+      },
+      peach: {
+        display: 'Peach',
+        portion: 1,
+        measurement: 'peach',
+        description: 'Large'
+      },
+      pear: {
+        display: 'Pear',
+        portion: 1,
+        measurement: 'pear',
+        description: 'medium'
+      },
+      pineapple: {
+        display: 'Pineapple',
+        portion: 1,
+        measurement: 'cup',
+        description: ''
+      },
+      raspberries: {
+        display: 'Rasp-, Black-, Blueberries',
+        portion: 1,
+        measurement: 'cup',
+        description: ''
+      },
+      strawberries: {
+        display: 'Strawberries',
+        portion: 2,
+        measurement: 'cup',
+        description: 'Sliced'
+      },
+      tangerines: {
+        display: 'Tangerines',
+        portion: 1,
+        measurement: 'tangerine',
+        description: 'Medium'
+      }
+    }
+  };
+  
+}});
+
+window.require.define({"models/foods/x2/grains": function(exports, require, module) {
+  
+  module.exports = {
+    macro: 'grains',
+    display: 'Grains',
+    cals: 200,
+    foods: {
+      amaranth: {
+        display: 'Amaranth',
+        portion: 1,
+        measurement: 'cup',
+        description: ''
+      },
+      bagel: {
+        display: 'Whole-grain Bagel',
+        portion: 1,
+        measurement: 'bagel',
+        description: 'Medium'
+      },
+      bread: {
+        display: 'Whole-grain Bread',
+        portion: 2,
+        measurement: 'slice',
+        description: ''
+      },
+      cereal: {
+        display: 'Whole-grain Cereal',
+        portion: 1,
+        measurement: 'cup',
+        description: ''
+      },
+      couscous: {
+        display: 'Whole-grain Couscous',
+        portion: 1,
+        measurement: 'cup',
+        description: ''
+      },
+      crackers: {
+        display: 'Whole-grain Crackers',
+        portion: 12,
+        measurement: 'cracker',
+        description: ''
+      },
+      english_muffin: {
+        display: 'Whole-grain English Muffin',
+        portion: 2,
+        measurement: 'half',
+        description: ''
+      },
+      oatmeal: {
+        display: 'Oatmeal',
+        portion: 1,
+        measurement: 'cup',
+        description: ''
+      },
+      pancakes: {
+        display: 'Whole-grain Pancakes',
+        portion: 3,
+        measurement: 'pancake',
+        description: '3.6oz each'
+      },
+      pasta: {
+        display: 'Whole-grain Pasta',
+        portion: 1,
+        measurement: 'cup',
+        description: ''
+      },
+      rice: {
+        display: 'Rice (brown or wild)',
+        portion: 1,
+        measurement: 'cup',
+        description: ''
+      },
+      tortilla: {
+        display: 'Whole-grain Tortilla',
+        portion: 1,
+        measurement: 'tortilla',
+        description: 'Large (10")'
+      },
+      waffles: {
+        display: 'Whole-grain Waffles',
+        portion: 2,
+        measurement: 'waffle',
+        description: ''
+      },
+      wheat_berries: {
+        display: 'Wheat Berries',
+        portion: 1,
+        measurement: 'cup',
+        description: ''
+      }
+    }
+  };
+  
+}});
+
+window.require.define({"models/foods/x2/legumes": function(exports, require, module) {
+  
+  module.exports = {
+    macro: 'legumes',
+    display: 'Legumes',
+    cals: 200,
+    foods: {
+      baked_beans: {
+        display: 'Baked Beans',
+        portion: 1,
+        measurement: 'cup',
+        description: ''
+      },
+      beans: {
+        display: 'Beans (kidney, black, etc)',
+        portion: 1,
+        measurement: 'cup',
+        description: ''
+      },
+      edamame: {
+        display: 'Edamame',
+        portion: 1,
+        measurement: 'cup',
+        description: 'Shelled'
+      },
+      hummus: {
+        display: 'Hummus',
+        portion: 0.5,
+        measurement: 'oz',
+        description: ''
+      },
+      lentils: {
+        display: 'Lentils',
+        portion: 1,
+        measurement: 'cup',
+        description: ''
+      },
+      peanuts: {
+        display: 'Peanuts (raw or home roasted)',
+        portion: 1,
+        measurement: 'oz',
+        description: ''
+      },
+      peas: {
+        display: 'Peas',
+        portion: 0.5,
+        measurement: 'cup',
+        description: ''
+      },
+      potato: {
+        display: 'Potato',
+        portion: 1,
+        measurement: 'potato',
+        description: 'medium'
+      },
+      quinoa: {
+        display: 'Quinoa',
+        portion: 1,
+        measurement: 'cup',
+        description: ''
+      },
+      refried_beans: {
+        display: 'Refried Beans (nonfat)',
+        portion: 1,
+        measurement: 'cup',
+        description: ''
+      },
+      sweet_potato: {
+        display: 'Sweet Potato',
+        portion: 1,
+        measurement: 'potato',
+        description: 'Large'
+      },
+      yam: {
+        display: 'Yam',
+        portion: 1,
+        measurement: 'potato',
+        description: 'Medium'
+      }
+    }
+  };
+  
+}});
+
+window.require.define({"models/foods/x2/proteins": function(exports, require, module) {
+  
+  module.exports = {
+    macro: 'proteins',
+    display: 'Proteins',
+    cals: 100,
+    foods: {
+      chicken: {
+        display: 'Chicken / Turkey',
+        portion: 3,
+        measurement: 'oz',
+        description: 'Boneless, skinless'
+      },
+      egg_whites: {
+        display: 'Egg Whites',
+        portion: 6,
+        measurement: 'white',
+        description: ''
+      },
+      fish: {
+        display: 'Fish / Shellfish',
+        portion: 3,
+        measurement: 'oz',
+        description: ''
+      },
+      ham: {
+        display: 'Ham',
+        portion: 3,
+        measurement: 'oz',
+        description: 'Low sodium, fat free'
+      },
+      hemp_powder: {
+        display: 'Hemp Protein Powder',
+        portion: 100,
+        measurement: 'calorie',
+        description: 'Depending on brand'
+      },
+      pork: {
+        display: 'Pork Tenderloin',
+        portion: 3,
+        measurement: 'oz',
+        description: ''
+      },
+      red_meat: {
+        display: 'Red Meat',
+        portion: 3,
+        measurement: 'oz',
+        description: 'Lean'
+      },
+      rice_powder: {
+        display: 'Rice Protein Powder',
+        portion: 100,
+        measurement: 'calorie',
+        description: 'Depending on brand'
+      },
+      seitan: {
+        display: 'Seitan',
+        portion: 3,
+        measurement: 'oz',
+        description: ''
+      },
+      tempeh: {
+        display: 'Tempeh',
+        portion: 2,
+        measurement: 'oz',
+        description: ''
+      },
+      tofu: {
+        display: 'Tofu',
+        portion: 3,
+        measurement: 'oz',
+        description: ''
+      },
+      tuna: {
+        display: 'Tuna',
+        portion: 3,
+        measurement: 'oz',
+        description: ''
+      },
+      turkey_bacon: {
+        display: 'Turkey Bacon',
+        portion: 2,
+        measurement: 'slice',
+        description: ''
+      },
+      veggie_burger: {
+        display: 'Veggie Burger',
+        portion: 1,
+        measurement: 'burger',
+        description: ''
+      },
+      whey: {
+        display: 'Whey Protein Powder',
+        portion: 100,
+        measurement: 'calorie',
+        description: 'Depending on brand'
+      }
+    }
+  };
+  
+}});
+
+window.require.define({"models/foods/x2/veggies": function(exports, require, module) {
+  
+  module.exports = {
+    macro: 'veggies',
+    display: 'Veggies',
+    cals: 50,
+    foods: {
+      cooked: {
+        display: 'Cooked Veggies',
+        portion: 1,
+        measurement: 'cup',
+        description: ''
+      },
+      leafy: {
+        display: 'Leafy Greens',
+        portion: 2,
+        measurement: 'cup',
+        description: 'Lightly packed'
+      },
+      asparagus: {
+        display: 'Asparagus',
+        portion: 1,
+        measurement: 'cup',
+        description: 'Cooked, or 2 cups raw'
+      },
+      beets: {
+        display: 'Beets',
+        portion: 0.75,
+        measurement: 'cup',
+        description: 'Cooked'
+      },
+      bok_choy: {
+        display: 'Bok Choy',
+        portion: 0.5,
+        measurement: 'cup',
+        description: 'Cooked, or 2 cups raw'
+      },
+      broccoli: {
+        display: 'Broccoli',
+        portion: 1,
+        measurement: 'cup',
+        description: 'Cooked, or 2 cups raw'
+      },
+      brussels_sprouts: {
+        display: 'Brussels Sprouts',
+        portion: 1,
+        measurement: 'cup',
+        description: 'Cooked'
+      },
+      cabbage: {
+        display: 'Cabbage',
+        portion: 1.5,
+        measurement: 'cup',
+        description: 'Cooked, or 2 cups raw'
+      },
+      carrots: {
+        display: 'Carrots',
+        portion: 1,
+        measurement: 'cup',
+        description: 'Cooked or raw'
+      },
+      cauliflower: {
+        display: 'Cauliflower',
+        portion: 1.5,
+        measurement: 'cup',
+        description: 'Cooked, or 2 cups raw'
+      },
+      celery: {
+        display: 'Celery',
+        portion: 2,
+        measurement: 'cup',
+        description: 'Cooked, 2.5 cups raw'
+      },
+      collard_greens: {
+        display: 'Collard Greens',
+        portion: 1,
+        measurement: 'cup',
+        description: 'Cooked, 4 cups raw'
+      },
+      cucumber: {
+        display: 'Cucumber',
+        portion: 3,
+        measurement: 'cup',
+        description: 'Raw'
+      },
+      eggplant: {
+        display: 'Eggplant',
+        portion: 2,
+        measurement: 'cup',
+        description: 'Cooked'
+      },
+      kale: {
+        display: 'Kale',
+        portion: 1.5,
+        measurement: 'cup',
+        description: 'Cooked, or 2 cups raw'
+      },
+      lettuce: {
+        display: 'Lettuce',
+        portion: 6,
+        measurement: 'cup',
+        description: 'Raw (NOT iceberg)'
+      },
+      marinara: {
+        display: 'Marinara Sauce',
+        portion: 0.75,
+        measurement: 'cup',
+        description: ''
+      },
+      mushrooms: {
+        display: 'Mushrooms',
+        portion: 1,
+        measurement: 'cup',
+        description: 'Cooked, or 2.5 cups raw'
+      },
+      peppers: {
+        display: 'Peppers',
+        portion: 1.5,
+        measurement: 'cup',
+        description: 'Cooked, or 2 cups raw'
+      },
+      radishes: {
+        display: 'Radishes',
+        portion: 2,
+        measurement: 'cup',
+        description: 'Raw'
+      },
+      salsa: {
+        display: 'Salsa',
+        portion: 0.5,
+        measurement: 'cup',
+        description: ''
+      },
+      soup: {
+        display: 'Veggie Soup',
+        portion: 1,
+        measurement: 'cup',
+        description: ''
+      },
+      spinach: {
+        display: 'Spinach',
+        portion: 1,
+        measurement: 'cup',
+        description: 'Cooked, or 6 cups raw'
+      },
+      sprouts: {
+        display: 'Sprouts',
+        portion: 5,
+        measurement: 'cup',
+        description: 'Raw'
+      },
+      squash: {
+        display: 'Squash (Summer / Winter)',
+        portion: 1,
+        measurement: 'cup',
+        description: 'Cooked, or 2 cups raw'
+      },
+      string_beans: {
+        display: 'String Beans',
+        portion: 1,
+        measurement: 'cup',
+        description: 'Cooked, or 1.5 cups raw'
+      },
+      tomato: {
+        display: 'Tomato',
+        portion: 1,
+        measurement: 'cup',
+        description: 'Cooked, or 2 cup raw'
+      }
+    }
+  };
   
 }});
 
@@ -2302,31 +3033,340 @@ window.require.define({"models/local_storage_model": function(exports, require, 
   
 }});
 
-window.require.define({"models/stats": function(exports, require, module) {
-  var BeastBrackets, Stats, utils,
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
-
-  BeastBrackets = require('./calorie_brackets/beast_brackets');
+window.require.define({"models/macro_counts/base_macros_model": function(exports, require, module) {
+  var BaseMacrosModel, Foods, LocalStorageModel, utils,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   utils = require('lib/utils');
 
-  Stats = (function() {
+  LocalStorageModel = require('models/local_storage_model');
 
-    function Stats(user) {
-      this.getMacroBreakdown = __bind(this.getMacroBreakdown, this);
+  Foods = require('models/foods/foods');
+
+  BaseMacrosModel = (function(_super) {
+
+    __extends(BaseMacrosModel, _super);
+
+    function BaseMacrosModel() {
+      this.clear = __bind(this.clear, this);
+
+      this.isExceedingGoal = __bind(this.isExceedingGoal, this);
+
+      this.getGoalForMacro = __bind(this.getGoalForMacro, this);
+
+      this.calculateTotalCals = __bind(this.calculateTotalCals, this);
+
+      this.getTotalCals = __bind(this.getTotalCals, this);
+
+      this.getMacroPercentage = __bind(this.getMacroPercentage, this);
+
+      this.changeByAmount = __bind(this.changeByAmount, this);
+
+      this.decrement = __bind(this.decrement, this);
+
+      this.increment = __bind(this.increment, this);
+
+      this.initialize = __bind(this.initialize, this);
+      return BaseMacrosModel.__super__.constructor.apply(this, arguments);
+    }
+
+    BaseMacrosModel.prototype.id = 'macro-counts';
+
+    BaseMacrosModel.prototype.totalCals = 0;
+
+    BaseMacrosModel.prototype.initialize = function(stats) {
+      this.fetch();
+      this.goals = stats.getGoals();
+      this.foods = new Foods(app.user);
+      return this.calculateTotalCals();
+    };
+
+    BaseMacrosModel.prototype.increment = function(macro, amt) {
+      if (amt == null) {
+        amt = 0.5;
+      }
+      return this.changeByAmount(macro, amt);
+    };
+
+    BaseMacrosModel.prototype.decrement = function(macro, amt) {
+      if (amt == null) {
+        amt = -0.5;
+      }
+      return this.changeByAmount(macro, amt);
+    };
+
+    BaseMacrosModel.prototype.changeByAmount = function(macro, amt) {
+      var cals, macros, newCount;
+      macros = this.get('macros');
+      newCount = Math.max(macros[macro].count + parseFloat(amt), 0);
+      cals = this.foods.getCalories(macro);
+      this.totalCals = Math.max(this.totalCals + (amt * cals), 0);
+      macros[macro].count = newCount;
+      return this.save('macros', macros);
+    };
+
+    BaseMacrosModel.prototype.getMacroPercentage = function(macro) {
+      var goal, percentage;
+      goal = this.getGoalForMacro(macro);
+      macro = this.get('macros')[macro].count;
+      percentage = (macro / goal) * 100;
+      return Math.min(utils.roundFloat(percentage), 100);
+    };
+
+    BaseMacrosModel.prototype.getTotalCals = function() {
+      return this.totalCals;
+    };
+
+    BaseMacrosModel.prototype.calculateTotalCals = function() {
+      var cals, macro, name, _ref;
+      _ref = this.get('macros');
+      for (name in _ref) {
+        macro = _ref[name];
+        cals = this.foods.getCalories(name);
+        if (cals != null) {
+          this.totalCals += macro.count * cals;
+        }
+      }
+      return this;
+    };
+
+    BaseMacrosModel.prototype.getGoalForMacro = function(macro) {
+      return this.goals[macro];
+    };
+
+    BaseMacrosModel.prototype.isExceedingGoal = function(macro) {
+      var goal;
+      goal = this.getGoalForMacro(macro);
+      macro = this.get('macros')[macro].count;
+      return macro > goal;
+    };
+
+    BaseMacrosModel.prototype.clear = function() {
+      this.save(this.defaults());
+      this.totalCals = 0;
+      return this.trigger('cleared');
+    };
+
+    return BaseMacrosModel;
+
+  })(LocalStorageModel);
+
+  module.exports = BaseMacrosModel;
+  
+}});
+
+window.require.define({"models/macro_counts/beast_macro_counts": function(exports, require, module) {
+  var BaseMacrosModel, BeastMacros,
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  BaseMacrosModel = require('./base_macros_model');
+
+  BeastMacros = (function(_super) {
+
+    __extends(BeastMacros, _super);
+
+    function BeastMacros() {
+      return BeastMacros.__super__.constructor.apply(this, arguments);
+    }
+
+    BeastMacros.prototype.defaults = function() {
+      return {
+        macros: {
+          starches: {
+            display: 'Starches',
+            count: 0
+          },
+          legumes: {
+            display: 'Legumes',
+            count: 0
+          },
+          veggies: {
+            display: 'Veggies',
+            count: 0
+          },
+          fruits: {
+            display: 'Fruits',
+            count: 0
+          },
+          proteins: {
+            display: 'Proteins',
+            count: 0
+          },
+          fats: {
+            display: 'Fats',
+            count: 0
+          }
+        },
+        timestamp: new moment().format('MM-DD-YY')
+      };
+    };
+
+    return BeastMacros;
+
+  })(BaseMacrosModel);
+
+  module.exports = BeastMacros;
+  
+}});
+
+window.require.define({"models/macro_counts/macro_counts_factory": function(exports, require, module) {
+  var MACRO_COUNTS, MacroCountsFactory;
+
+  MACRO_COUNTS = {
+    beast: require('./beast_macro_counts'),
+    x2: require('./x2_macro_counts')
+  };
+
+  MacroCountsFactory = (function() {
+
+    function MacroCountsFactory() {}
+
+    MacroCountsFactory.getMacroCounts = function(user, stats) {
+      return new MACRO_COUNTS[user.getProgram()](stats);
+    };
+
+    return MacroCountsFactory;
+
+  })();
+
+  module.exports = MacroCountsFactory;
+  
+}});
+
+window.require.define({"models/macro_counts/x2_macro_counts": function(exports, require, module) {
+  var BaseMacrosModel, X2Macros,
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  BaseMacrosModel = require('./base_macros_model');
+
+  X2Macros = (function(_super) {
+
+    __extends(X2Macros, _super);
+
+    function X2Macros() {
+      return X2Macros.__super__.constructor.apply(this, arguments);
+    }
+
+    X2Macros.prototype.defaults = function() {
+      return {
+        macros: {
+          proteins: {
+            display: 'Proteins',
+            count: 0
+          },
+          dairy: {
+            display: 'Dairy',
+            count: 0
+          },
+          fruits: {
+            display: 'Fruits',
+            count: 0
+          },
+          veggies: {
+            display: 'Veggies',
+            count: 0
+          },
+          fats: {
+            display: 'Fats',
+            count: 0
+          },
+          grains: {
+            display: 'Grains',
+            count: 0
+          },
+          legumes: {
+            display: 'Legumes',
+            count: 0
+          },
+          condiments: {
+            display: 'Condiments',
+            count: 0
+          }
+        },
+        timestamp: new moment().format('MM-DD-YY')
+      };
+    };
+
+    return X2Macros;
+
+  })(BaseMacrosModel);
+
+  module.exports = X2Macros;
+  
+}});
+
+window.require.define({"models/stats/base_stats": function(exports, require, module) {
+  var BaseStats, CalorieBrackets,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+
+  CalorieBrackets = require('models/calorie_brackets/calorie_brackets');
+
+  BaseStats = (function() {
+
+    function BaseStats() {
+      this.getCalories = __bind(this.getCalories, this);
 
       this.getGoals = __bind(this.getGoals, this);
 
-      this.getCalories = __bind(this.getCalories, this);
+    }
+
+    BaseStats.prototype.getGoals = function() {
+      var goals;
+      goals = CalorieBrackets.getBracket(this);
+      return goals.goals;
+    };
+
+    BaseStats.prototype.getCalories = function() {
+      return this.calorieBracket.cals;
+    };
+
+    BaseStats.prototype.toJSON = function() {
+      return {
+        stats: this.getDisplayStats()
+      };
+    };
+
+    return BaseStats;
+
+  })();
+
+  module.exports = BaseStats;
+  
+}});
+
+window.require.define({"models/stats/beast_stats": function(exports, require, module) {
+  var BaseStats, BeastStats, utils,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  BaseStats = require('./base_stats');
+
+  utils = require('lib/utils');
+
+  BeastStats = (function(_super) {
+
+    __extends(BeastStats, _super);
+
+    function BeastStats(user) {
+      this.getDisplayStats = __bind(this.getDisplayStats, this);
+
+      this.getMacroBreakdown = __bind(this.getMacroBreakdown, this);
 
       this.getCalorieBracket = __bind(this.getCalorieBracket, this);
       this.weight = user.get('weight');
       this.bfp = user.get('bfp');
-      this.phase = user.get('phase');
+      this.phase = user.getPhase();
+      this.program = user.get('program');
       this.calorieBracket = this.getCalorieBracket();
+      this.calories = this.getCalories();
     }
 
-    Stats.prototype.getCalorieBracket = function() {
+    BeastStats.prototype.getCalorieBracket = function() {
       var cals, cim, cmr, lbm, rawCals, rmr, rmr2;
       lbm = utils.roundFloat(this.lbm(this.weight, this.bfp), 1);
       rmr = utils.roundFloat(this.rmr(lbm), 1);
@@ -2350,17 +3390,7 @@ window.require.define({"models/stats": function(exports, require, module) {
       };
     };
 
-    Stats.prototype.getCalories = function() {
-      return this.calorieBracket.cals;
-    };
-
-    Stats.prototype.getGoals = function() {
-      var goals;
-      goals = BeastBrackets.getBracket(this.getCalories(), this.phase);
-      return goals.goals;
-    };
-
-    Stats.prototype.getMacroBreakdown = function() {
+    BeastStats.prototype.getMacroBreakdown = function() {
       if (this.phase === 'build') {
         return '25/50/25';
       } else {
@@ -2368,62 +3398,60 @@ window.require.define({"models/stats": function(exports, require, module) {
       }
     };
 
-    Stats.prototype.toJSON = function() {
-      return {
-        stats: [
-          {
-            display: 'Phase',
-            val: this.phase.capitalize()
-          }, {
-            display: 'Macro Breakdown',
-            val: this.getMacroBreakdown()
-          }, {
-            display: 'Lean Body Mass',
-            val: this.calorieBracket.lbm
-          }, {
-            display: 'Resting Metabolic Rate',
-            val: this.calorieBracket.rmr
-          }, {
-            display: 'Caloric Modification for Recovery',
-            val: this.calorieBracket.cmr
-          }, {
-            display: 'RMR Modified for Recovery',
-            val: this.calorieBracket.rmr2
-          }, {
-            display: 'Calorie Intake to Maintain Weight',
-            val: this.calorieBracket.cim
-          }, {
-            display: "Calories needed to " + this.phase,
-            val: this.calorieBracket.rawCals
-          }, {
-            display: 'Calorie Bracket',
-            val: this.calorieBracket.cals
-          }
-        ]
-      };
+    BeastStats.prototype.getDisplayStats = function() {
+      return [
+        {
+          display: 'Phase',
+          val: this.phase.capitalize()
+        }, {
+          display: 'Macro Breakdown (P/C/F)',
+          val: this.getMacroBreakdown()
+        }, {
+          display: 'Lean Body Mass',
+          val: this.calorieBracket.lbm
+        }, {
+          display: 'Resting Metabolic Rate',
+          val: this.calorieBracket.rmr
+        }, {
+          display: 'Caloric Modification for Recovery',
+          val: this.calorieBracket.cmr
+        }, {
+          display: 'RMR Modified for Recovery',
+          val: this.calorieBracket.rmr2
+        }, {
+          display: 'Calorie Intake to Maintain Weight',
+          val: this.calorieBracket.cim
+        }, {
+          display: "Calories needed to " + this.phase,
+          val: this.calorieBracket.rawCals
+        }, {
+          display: 'Calorie Bracket',
+          val: this.calorieBracket.cals
+        }
+      ];
     };
 
-    Stats.prototype.lbm = function(weight, bfp) {
+    BeastStats.prototype.lbm = function(weight, bfp) {
       return (100 - bfp) / 100 * weight;
     };
 
-    Stats.prototype.rmr = function(lbm) {
+    BeastStats.prototype.rmr = function(lbm) {
       return lbm * 10;
     };
 
-    Stats.prototype.cmr = function(rmr) {
+    BeastStats.prototype.cmr = function(rmr) {
       return rmr * 0.3;
     };
 
-    Stats.prototype.rmr2 = function(rmr, cmr) {
+    BeastStats.prototype.rmr2 = function(rmr, cmr) {
       return rmr + cmr;
     };
 
-    Stats.prototype.cim = function(rmr2) {
+    BeastStats.prototype.cim = function(rmr2) {
       return rmr2 + 600;
     };
 
-    Stats.prototype.build = function(bfp, cim) {
+    BeastStats.prototype.build = function(bfp, cim) {
       if (bfp > 20) {
         return cim + (cim * 0.1);
       } else if (bfp > 10) {
@@ -2433,7 +3461,7 @@ window.require.define({"models/stats": function(exports, require, module) {
       }
     };
 
-    Stats.prototype.beast = function(bfp, cim) {
+    BeastStats.prototype.beast = function(bfp, cim) {
       if (bfp > 20) {
         return cim - (cim * 0.2);
       } else if (bfp > 10) {
@@ -2443,7 +3471,7 @@ window.require.define({"models/stats": function(exports, require, module) {
       }
     };
 
-    Stats.prototype.roundCalsToBracket = function(rawCals, phase) {
+    BeastStats.prototype.roundCalsToBracket = function(rawCals, phase) {
       var cals;
       if (phase === 'build') {
         cals = Math.ceil(rawCals / 200) * 200;
@@ -2454,7 +3482,7 @@ window.require.define({"models/stats": function(exports, require, module) {
       }
     };
 
-    Stats.prototype.getCalsBetweenValues = function(cals, lowerBound, upperBound) {
+    BeastStats.prototype.getCalsBetweenValues = function(cals, lowerBound, upperBound) {
       if (cals < lowerBound) {
         return lowerBound;
       } else if (cals > upperBound) {
@@ -2464,11 +3492,229 @@ window.require.define({"models/stats": function(exports, require, module) {
       }
     };
 
-    return Stats;
+    return BeastStats;
+
+  })(BaseStats);
+
+  module.exports = BeastStats;
+  
+}});
+
+window.require.define({"models/stats/stats_factory": function(exports, require, module) {
+  var STATS, StatsFactory;
+
+  STATS = {
+    beast: require('./beast_stats'),
+    x2: require('./x2_stats')
+  };
+
+  StatsFactory = (function() {
+
+    function StatsFactory() {}
+
+    StatsFactory.getStats = function(user) {
+      if (user.isConfigured()) {
+        return new STATS[user.getProgram()](user);
+      }
+    };
+
+    return StatsFactory;
 
   })();
 
-  module.exports = Stats;
+  module.exports = StatsFactory;
+  
+}});
+
+window.require.define({"models/stats/x2_stats": function(exports, require, module) {
+  var BaseStats, X2Stats, utils,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  BaseStats = require('./base_stats');
+
+  utils = require('lib/utils');
+
+  X2Stats = (function(_super) {
+
+    __extends(X2Stats, _super);
+
+    function X2Stats(user) {
+      this.getDisplayStats = __bind(this.getDisplayStats, this);
+
+      this.getMacroBreakdown = __bind(this.getMacroBreakdown, this);
+
+      this.getCalorieBracket = __bind(this.getCalorieBracket, this);
+      this.weight = user.get('weight');
+      this.phase = user.getPhase();
+      this.program = user.get('program');
+      this.dab = user.get('dab');
+      this.de = user.get('de');
+      this.sway = user.get('sway');
+      this.calorieBracket = this.getCalorieBracket();
+      this.calories = this.getCalories();
+    }
+
+    X2Stats.prototype.getCalorieBracket = function() {
+      var cals, dab, rawCals, rmr;
+      rmr = utils.roundFloat(this.calcRMR(this.weight), 1);
+      dab = utils.roundFloat(this.calcDAB(rmr, this.dab), 1);
+      rawCals = utils.roundFloat(this.calcRawCals(rmr, dab, this.de, this.sway), 1);
+      cals = this.roundCalsToBracket(rawCals);
+      return {
+        rmr: rmr,
+        dab: dab,
+        de: this.de,
+        sway: this.sway,
+        rawCals: rawCals,
+        cals: cals
+      };
+    };
+
+    X2Stats.prototype.getMacroBreakdown = function() {
+      if (this.phase === 'energy_booster') {
+        return '30/40/30';
+      } else if (this.phase === 'endurance_maximizer') {
+        return '25/50/25';
+      } else {
+        return '50/25/25';
+      }
+    };
+
+    X2Stats.prototype.getDisplayStats = function() {
+      return [
+        {
+          display: 'Phase',
+          val: this.phase.toDisplay()
+        }, {
+          display: 'Macro Breakdown (P/C/F)',
+          val: this.getMacroBreakdown()
+        }, {
+          display: 'Resting Metabolic Rate',
+          val: this.calorieBracket.rmr
+        }, {
+          display: 'Daily Activity Burn',
+          val: this.calorieBracket.dab
+        }, {
+          display: 'Daily Exercise',
+          val: this.calorieBracket.de
+        }, {
+          display: 'Caloric Surplus / Deficit',
+          val: this.calorieBracket.sway
+        }, {
+          display: 'Calories needed',
+          val: this.calorieBracket.rawCals
+        }, {
+          display: 'Calorie Bracket',
+          val: this.calorieBracket.cals
+        }
+      ];
+    };
+
+    X2Stats.prototype.calcRMR = function(lbm) {
+      return lbm * 10;
+    };
+
+    X2Stats.prototype.calcDAB = function(rmr, dab) {
+      return rmr * dab;
+    };
+
+    X2Stats.prototype.calcRawCals = function(rmr, dab, de, sway) {
+      return rmr + dab + de + sway;
+    };
+
+    X2Stats.prototype.roundCalsToBracket = function(rawCals) {
+      if (rawCals < 2400) {
+        return 1800;
+      } else if (rawCals < 3000) {
+        return 2400;
+      } else {
+        return 3000;
+      }
+    };
+
+    return X2Stats;
+
+  })(BaseStats);
+
+  module.exports = X2Stats;
+  
+}});
+
+window.require.define({"models/users/user": function(exports, require, module) {
+  var LocalStorageModel, User,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  LocalStorageModel = require('models/local_storage_model');
+
+  User = (function(_super) {
+
+    __extends(User, _super);
+
+    function User() {
+      this.initialize = __bind(this.initialize, this);
+      return User.__super__.constructor.apply(this, arguments);
+    }
+
+    User.prototype.id = 'user';
+
+    User.prototype.initialize = function() {
+      return this.fetch();
+    };
+
+    User.prototype.defaults = function() {
+      return {
+        name: null,
+        weight: null,
+        bfp: null,
+        program: null,
+        configured: false
+      };
+    };
+
+    User.prototype.getPhase = function() {
+      var program, slash;
+      program = this.get('program');
+      if (!(program != null)) {
+        return null;
+      }
+      slash = program.indexOf('/');
+      if (slash === -1) {
+        return null;
+      }
+      return program.substring(slash + 1, program.length);
+    };
+
+    User.prototype.getProgram = function() {
+      var program;
+      program = this.get('program');
+      return User.parseProgram(program);
+    };
+
+    User.prototype.isConfigured = function() {
+      return this.get('configured') && (this.get('program') != null) && this.get('program').length;
+    };
+
+    User.parseProgram = function(program) {
+      if (!(program != null) || program.length === 0) {
+        return null;
+      } else if (program.indexOf('beast') === 0) {
+        return 'beast';
+      } else if (program.indexOf('x2') === 0) {
+        return 'x2';
+      } else {
+        return program;
+      }
+    };
+
+    return User;
+
+  })(LocalStorageModel);
+
+  module.exports = User;
   
 }});
 
@@ -2501,22 +3747,88 @@ window.require.define({"views/about": function(exports, require, module) {
   
 }});
 
-window.require.define({"views/configure": function(exports, require, module) {
-  var ConfigureView, View, app,
+window.require.define({"views/configuration/beast_config": function(exports, require, module) {
+  var BeastConfigureView, View,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  View = require('views/view');
+
+  BeastConfigureView = (function(_super) {
+
+    __extends(BeastConfigureView, _super);
+
+    function BeastConfigureView() {
+      this.isValid = __bind(this.isValid, this);
+
+      this.getInputData = __bind(this.getInputData, this);
+
+      this.getRenderData = __bind(this.getRenderData, this);
+      return BeastConfigureView.__super__.constructor.apply(this, arguments);
+    }
+
+    BeastConfigureView.prototype.tagName = 'div';
+
+    BeastConfigureView.prototype.className = 'extra-config';
+
+    BeastConfigureView.prototype.template = require('views/templates/configure_beast');
+
+    BeastConfigureView.prototype.getRenderData = function() {
+      return this.model.toJSON();
+    };
+
+    BeastConfigureView.prototype.getInputData = function() {
+      return {
+        bfp: parseInt(this.$('#bfp').val() || 0)
+      };
+    };
+
+    BeastConfigureView.prototype.isValid = function() {
+      var bfp;
+      bfp = this.$('#bfp').val();
+      return bfp.length !== 0 && parseInt(bfp) !== NaN;
+    };
+
+    return BeastConfigureView;
+
+  })(View);
+
+  module.exports = BeastConfigureView;
+  
+}});
+
+window.require.define({"views/configuration/configure": function(exports, require, module) {
+  var ConfigureView, PROGRAM_CONFIG, User, View, app,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   app = require('application');
 
-  View = require('./view');
+  View = require('views/view');
+
+  User = require('models/users/user');
+
+  PROGRAM_CONFIG = {
+    beast: require('./beast_config'),
+    x2: require('./x2_config')
+  };
 
   ConfigureView = (function(_super) {
 
     __extends(ConfigureView, _super);
 
     function ConfigureView() {
+      this.onClose = __bind(this.onClose, this);
+
+      this.onError = __bind(this.onError, this);
+
       this.configure = __bind(this.configure, this);
+
+      this.isValid = __bind(this.isValid, this);
+
+      this.renderProgramConfig = __bind(this.renderProgramConfig, this);
 
       this.afterRender = __bind(this.afterRender, this);
 
@@ -2528,10 +3840,11 @@ window.require.define({"views/configure": function(exports, require, module) {
 
     ConfigureView.prototype.className = 'content';
 
-    ConfigureView.prototype.template = require('./templates/configure');
+    ConfigureView.prototype.template = require('views/templates/configure');
 
     ConfigureView.prototype.events = {
-      'click #configure': 'configure'
+      'click #configure': 'configure',
+      'change #program': 'renderProgramConfig'
     };
 
     ConfigureView.prototype.getRenderData = function() {
@@ -2539,25 +3852,62 @@ window.require.define({"views/configure": function(exports, require, module) {
     };
 
     ConfigureView.prototype.afterRender = function() {
-      return this.$("#phase option[value=" + (this.model.get('phase')) + "]").attr('selected', 'selected');
+      var program;
+      program = this.model.get('program');
+      if (program != null) {
+        this.$("#program option[value='" + program + "']").attr('selected', 'selected');
+        return this.renderProgramConfig();
+      }
+    };
+
+    ConfigureView.prototype.renderProgramConfig = function() {
+      var program, _ref;
+      program = User.parseProgram(this.$('#program').val());
+      if (!(program != null)) {
+        if ((_ref = this.views.program) != null) {
+          _ref.remove();
+        }
+        return;
+      }
+      this.views.program = new PROGRAM_CONFIG[program]({
+        model: this.model
+      });
+      return this.$('#program_config').html(this.views.program.render().el);
+    };
+
+    ConfigureView.prototype.isValid = function() {
+      var name, program, weight;
+      name = this.$('#name').val();
+      weight = this.$('#weight').val();
+      program = this.$('#program').val();
+      return name.length && program.length && weight.length && parseInt(weight) !== NaN;
     };
 
     ConfigureView.prototype.configure = function() {
-      var bfp, name, phase, weight;
-      name = this.$('#name').val() || null;
-      weight = this.$('#weight').val() || 0;
-      bfp = this.$('#bfp').val() || 0;
-      phase = this.$('#phase').val();
-      this.model.save({
-        name: name,
-        weight: parseInt(weight),
-        bfp: parseInt(bfp),
-        phase: phase,
+      var config, programConfig, _ref;
+      if (!(this.isValid() && ((_ref = this.views.program) != null ? _ref.isValid() : void 0))) {
+        return this.onError();
+      }
+      config = {
+        name: this.$('#name').val() || null,
+        weight: parseInt(this.$('#weight').val() || 0),
+        program: this.$('#program').val()
+      };
+      programConfig = this.views.program.getInputData();
+      this.model.save($.extend({
         configured: true
-      });
+      }, config, programConfig));
       app.onConfigure();
-      app.afterConfiguration();
       return app.router.navigate('', true);
+    };
+
+    ConfigureView.prototype.onError = function() {
+      return this.$('#error_msg').show();
+    };
+
+    ConfigureView.prototype.onClose = function() {
+      this.views.program.remove();
+      return delete this.views.program;
     };
 
     return ConfigureView;
@@ -2568,17 +3918,80 @@ window.require.define({"views/configure": function(exports, require, module) {
   
 }});
 
-window.require.define({"views/food": function(exports, require, module) {
-  var BeastFoods, FoodMacroView, View, app,
+window.require.define({"views/configuration/x2_config": function(exports, require, module) {
+  var View, X2ConfigureView,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  View = require('views/view');
+
+  X2ConfigureView = (function(_super) {
+
+    __extends(X2ConfigureView, _super);
+
+    function X2ConfigureView() {
+      this.isValid = __bind(this.isValid, this);
+
+      this.getInputData = __bind(this.getInputData, this);
+
+      this.afterRender = __bind(this.afterRender, this);
+
+      this.getRenderData = __bind(this.getRenderData, this);
+      return X2ConfigureView.__super__.constructor.apply(this, arguments);
+    }
+
+    X2ConfigureView.prototype.tagName = 'div';
+
+    X2ConfigureView.prototype.className = 'extra-config';
+
+    X2ConfigureView.prototype.template = require('views/templates/configure_x2');
+
+    X2ConfigureView.prototype.getRenderData = function() {
+      return this.model.toJSON();
+    };
+
+    X2ConfigureView.prototype.afterRender = function() {
+      var dab;
+      dab = this.model.get('dab');
+      if (dab != null) {
+        return this.$("#dab option[value='" + dab + "']").attr('selected', 'selected');
+      }
+    };
+
+    X2ConfigureView.prototype.getInputData = function() {
+      return {
+        dab: parseFloat(this.$('#dab').val()),
+        de: parseFloat(this.$('#de').val()),
+        sway: parseFloat(this.$('#sway').val())
+      };
+    };
+
+    X2ConfigureView.prototype.isValid = function() {
+      var dab, de, sway;
+      dab = this.$('#dab').val();
+      de = this.$('#de').val();
+      sway = this.$('#sway').val();
+      return dab.length && parseFloat(dab) !== NaN && de.length && parseFloat(de) !== NaN && sway.length && parseFloat(sway) !== NaN;
+    };
+
+    return X2ConfigureView;
+
+  })(View);
+
+  module.exports = X2ConfigureView;
+  
+}});
+
+window.require.define({"views/food_list/food": function(exports, require, module) {
+  var FoodMacroView, View, app,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   app = require('application');
 
-  View = require('./view');
-
-  BeastFoods = require('models/foods/beast_foods');
+  View = require('views/view');
 
   FoodMacroView = (function(_super) {
 
@@ -2592,8 +4005,6 @@ window.require.define({"views/food": function(exports, require, module) {
       this.increment = __bind(this.increment, this);
 
       this.getRenderData = __bind(this.getRenderData, this);
-
-      this.initialize = __bind(this.initialize, this);
       return FoodMacroView.__super__.constructor.apply(this, arguments);
     }
 
@@ -2601,16 +4012,12 @@ window.require.define({"views/food": function(exports, require, module) {
 
     FoodMacroView.prototype.className = 'content';
 
-    FoodMacroView.prototype.template = require('./templates/food');
+    FoodMacroView.prototype.template = require('views/templates/food');
 
     FoodMacroView.prototype.events = {
       'click a': 'routeEvent',
       'click #submit_and_route': 'submitAndRoute',
       'click #submit_and_go_home': 'submitAndGoHome'
-    };
-
-    FoodMacroView.prototype.initialize = function() {
-      return this.model = new BeastFoods(this.options.macro, this.options.food);
     };
 
     FoodMacroView.prototype.getRenderData = function() {
@@ -2643,15 +4050,13 @@ window.require.define({"views/food": function(exports, require, module) {
   
 }});
 
-window.require.define({"views/food_all_macros": function(exports, require, module) {
-  var BeastFoods, FoodAllMacrosView, View,
+window.require.define({"views/food_list/food_all_macros": function(exports, require, module) {
+  var FoodAllMacrosView, View,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  View = require('./view');
-
-  BeastFoods = require('models/foods/beast_foods');
+  View = require('views/view');
 
   FoodAllMacrosView = (function(_super) {
 
@@ -2659,8 +4064,6 @@ window.require.define({"views/food_all_macros": function(exports, require, modul
 
     function FoodAllMacrosView() {
       this.getRenderData = __bind(this.getRenderData, this);
-
-      this.initialize = __bind(this.initialize, this);
       return FoodAllMacrosView.__super__.constructor.apply(this, arguments);
     }
 
@@ -2668,14 +4071,10 @@ window.require.define({"views/food_all_macros": function(exports, require, modul
 
     FoodAllMacrosView.prototype.className = 'content';
 
-    FoodAllMacrosView.prototype.template = require('./templates/food_all_macros');
+    FoodAllMacrosView.prototype.template = require('views/templates/food_all_macros');
 
     FoodAllMacrosView.prototype.events = {
       'click a': 'routeEvent'
-    };
-
-    FoodAllMacrosView.prototype.initialize = function() {
-      return this.model = new BeastFoods();
     };
 
     FoodAllMacrosView.prototype.getRenderData = function() {
@@ -2690,15 +4089,13 @@ window.require.define({"views/food_all_macros": function(exports, require, modul
   
 }});
 
-window.require.define({"views/food_macro": function(exports, require, module) {
-  var BeastFoods, FoodMacroView, View,
+window.require.define({"views/food_list/food_macro": function(exports, require, module) {
+  var FoodMacroView, View,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  View = require('./view');
-
-  BeastFoods = require('models/foods/beast_foods');
+  View = require('views/view');
 
   FoodMacroView = (function(_super) {
 
@@ -2706,8 +4103,6 @@ window.require.define({"views/food_macro": function(exports, require, module) {
 
     function FoodMacroView() {
       this.getRenderData = __bind(this.getRenderData, this);
-
-      this.initialize = __bind(this.initialize, this);
       return FoodMacroView.__super__.constructor.apply(this, arguments);
     }
 
@@ -2715,14 +4110,10 @@ window.require.define({"views/food_macro": function(exports, require, module) {
 
     FoodMacroView.prototype.className = 'content';
 
-    FoodMacroView.prototype.template = require('./templates/food_macro');
+    FoodMacroView.prototype.template = require('views/templates/food_macro');
 
     FoodMacroView.prototype.events = {
       'click a': 'routeEvent'
-    };
-
-    FoodMacroView.prototype.initialize = function() {
-      return this.model = new BeastFoods(this.options.macro);
     };
 
     FoodMacroView.prototype.getRenderData = function() {
@@ -2767,27 +4158,23 @@ window.require.define({"views/help": function(exports, require, module) {
 }});
 
 window.require.define({"views/index": function(exports, require, module) {
-  var BeastFoods, IndexView, View,
+  var IndexView, MacroBarFactory, View,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   View = require('./view');
 
-  BeastFoods = require('models/foods/beast_foods');
+  MacroBarFactory = require('views/macro_bars/macro_bar_factory');
 
   IndexView = (function(_super) {
 
     __extends(IndexView, _super);
 
     function IndexView() {
-      this.onClose = __bind(this.onClose, this);
+      this.updateTotalCalories = __bind(this.updateTotalCalories, this);
 
-      this.changePercentBar = __bind(this.changePercentBar, this);
-
-      this.resetMacro = __bind(this.resetMacro, this);
-
-      this.increment = __bind(this.increment, this);
+      this.afterRender = __bind(this.afterRender, this);
 
       this.getRenderData = __bind(this.getRenderData, this);
 
@@ -2801,66 +4188,39 @@ window.require.define({"views/index": function(exports, require, module) {
 
     IndexView.prototype.template = require('./templates/index');
 
-    IndexView.prototype.events = {
-      'click .percentage-bar': 'increment',
-      'click .btn-decrement': 'resetMacro'
-    };
-
     IndexView.prototype.initialize = function() {
-      return this.model.on('cleared', this.render);
+      var claxx, macro, view, _results;
+      this.views = {};
+      _results = [];
+      for (macro in this.model.get('macros')) {
+        claxx = new MacroBarFactory.get(macro);
+        view = new claxx({
+          model: this.model,
+          macro: macro
+        });
+        view.on('update', this.updateTotalCalories);
+        _results.push(this.views[macro] = view);
+      }
+      return _results;
     };
 
     IndexView.prototype.getRenderData = function() {
       return this.model.toJSON();
     };
 
-    IndexView.prototype.increment = function(event) {
-      var $macro, macro;
-      event.stopPropagation();
-      $macro = $(event.currentTarget).parents('.macro');
-      macro = $macro.attr('data-key');
-      this.model.increment(macro);
-      return this.changePercentBar($macro, macro);
-    };
-
-    IndexView.prototype.resetMacro = function(event) {
-      var $macro, macro;
-      event.stopPropagation();
-      $macro = $(event.currentTarget).parents('.macro');
-      macro = $macro.attr('data-key');
-      this.model.decrement(macro);
-      return this.changePercentBar($macro, macro);
-    };
-
-    IndexView.prototype.changePercentBar = function($macro, macro) {
-      var $completionBar, $currentCals, $currentCount, $currentTotalCals, $percentageText, $totalBar, cals, count, macroPercentage, pixelPercentage;
-      $totalBar = $macro.find('.percentage-bar');
-      $currentCount = $macro.find('.text_count');
-      $currentCals = $macro.find('.text_cals');
-      $currentTotalCals = this.$('#text_total_cals');
-      $percentageText = $macro.find('.percentage-text');
-      $completionBar = $macro.find('.percentage-complete');
-      macroPercentage = this.model.getMacroPercentage(macro);
-      pixelPercentage = macroPercentage / 100 * $totalBar.width();
-      count = this.model.get('macros')[macro].count;
-      $currentCount.text(count);
-      if (macro !== 'shake') {
-        cals = new BeastFoods(macro).get('cals');
-        $currentCals.text(" - " + (count * cals) + " cals");
-        $currentTotalCals.text(this.model.getTotalCals());
+    IndexView.prototype.afterRender = function() {
+      var macro, view, _ref, _results;
+      _ref = this.views;
+      _results = [];
+      for (macro in _ref) {
+        view = _ref[macro];
+        _results.push(this.$('.list.macros').append(view.render().el));
       }
-      $completionBar.css({
-        width: "" + pixelPercentage + "px"
-      });
-      if (this.model.isExceedingGoal(macro)) {
-        return $percentageText.addClass('exceeding');
-      } else {
-        return $percentageText.removeClass('exceeding');
-      }
+      return _results;
     };
 
-    IndexView.prototype.onClose = function() {
-      return this.model.off('cleared', this.render);
+    IndexView.prototype.updateTotalCalories = function() {
+      return this.$('#text_total_cals').text(this.model.getTotalCals());
     };
 
     return IndexView;
@@ -2868,6 +4228,160 @@ window.require.define({"views/index": function(exports, require, module) {
   })(View);
 
   module.exports = IndexView;
+  
+}});
+
+window.require.define({"views/macro_bars/base_macro_bar": function(exports, require, module) {
+  var BaseMacroView, Foods, View, app,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  app = require('application');
+
+  View = require('views/view');
+
+  Foods = require('models/foods/foods');
+
+  BaseMacroView = (function(_super) {
+
+    __extends(BaseMacroView, _super);
+
+    function BaseMacroView() {
+      this.clear = __bind(this.clear, this);
+
+      this.changeCurrentCals = __bind(this.changeCurrentCals, this);
+
+      this.changePercentText = __bind(this.changePercentText, this);
+
+      this.changePercentBar = __bind(this.changePercentBar, this);
+
+      this.animateRender = __bind(this.animateRender, this);
+
+      this.decrement = __bind(this.decrement, this);
+
+      this.increment = __bind(this.increment, this);
+
+      this.getRenderData = __bind(this.getRenderData, this);
+
+      this.onClose = __bind(this.onClose, this);
+
+      this.initialize = __bind(this.initialize, this);
+      return BaseMacroView.__super__.constructor.apply(this, arguments);
+    }
+
+    BaseMacroView.prototype.tagName = 'div';
+
+    BaseMacroView.prototype.className = 'list-item macro';
+
+    BaseMacroView.prototype.template = require('views/templates/macro_bar');
+
+    BaseMacroView.prototype.events = {
+      'click .percentage-bar': 'increment',
+      'click .btn-decrement': 'decrement'
+    };
+
+    BaseMacroView.prototype.initialize = function() {
+      this.model.on('cleared', this.clear);
+      return this.foods = new Foods(app.user, this.options.macro);
+    };
+
+    BaseMacroView.prototype.onClose = function() {
+      return this.model.off('cleared', this.clear);
+    };
+
+    BaseMacroView.prototype.getRenderData = function() {
+      var data;
+      data = this.model.get('macros')[this.options.macro];
+      return {
+        macro: this.options.macro,
+        count: data.count,
+        display: data.display
+      };
+    };
+
+    BaseMacroView.prototype.increment = function(event) {
+      event.stopPropagation();
+      this.model.increment(this.options.macro);
+      this.animateRender();
+      return this.trigger('update');
+    };
+
+    BaseMacroView.prototype.decrement = function(event) {
+      event.stopPropagation();
+      this.model.decrement(this.options.macro);
+      this.animateRender();
+      return this.trigger('update');
+    };
+
+    BaseMacroView.prototype.animateRender = function() {
+      this.changePercentBar();
+      this.changePercentText();
+      return this.changeCurrentCals();
+    };
+
+    BaseMacroView.prototype.changePercentBar = function() {
+      var macroPercentage, pixelPercentage;
+      macroPercentage = this.model.getMacroPercentage(this.options.macro);
+      pixelPercentage = macroPercentage / 100 * this.$('.percentage-bar').width();
+      return this.$('.percentage-complete').css({
+        width: "" + pixelPercentage + "px"
+      });
+    };
+
+    BaseMacroView.prototype.changePercentText = function() {
+      var count;
+      count = this.model.get('macros')[this.options.macro].count;
+      this.$('.text_count').text(count);
+      if (this.model.isExceedingGoal(this.options.macro)) {
+        return this.$('.percentage-text').addClass('exceeding');
+      } else {
+        return this.$('.percentage-text').removeClass('exceeding');
+      }
+    };
+
+    BaseMacroView.prototype.changeCurrentCals = function() {
+      var cals, count;
+      count = this.model.get('macros')[this.options.macro].count;
+      cals = this.foods.getCalories(this.options.macro);
+      return this.$('.text_cals').text(" - " + (count * cals) + " cals");
+    };
+
+    BaseMacroView.prototype.clear = function() {
+      this.render();
+      return this.trigger('update');
+    };
+
+    return BaseMacroView;
+
+  })(View);
+
+  module.exports = BaseMacroView;
+  
+}});
+
+window.require.define({"views/macro_bars/macro_bar_factory": function(exports, require, module) {
+  var BaseBar, MacroBarFactory, OVERRIDES;
+
+  BaseBar = require('./base_macro_bar');
+
+  OVERRIDES = {
+    shake: BaseBar
+  };
+
+  MacroBarFactory = (function() {
+
+    function MacroBarFactory() {}
+
+    MacroBarFactory.get = function(macro) {
+      return OVERRIDES[macro] || BaseBar;
+    };
+
+    return MacroBarFactory;
+
+  })();
+
+  module.exports = MacroBarFactory;
   
 }});
 
@@ -2928,7 +4442,7 @@ window.require.define({"views/nav": function(exports, require, module) {
 }});
 
 window.require.define({"views/stats": function(exports, require, module) {
-  var Stats, StatsView, View, app,
+  var StatsView, View, app,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -2936,8 +4450,6 @@ window.require.define({"views/stats": function(exports, require, module) {
   app = require('application');
 
   View = require('./view');
-
-  Stats = require('models/stats');
 
   StatsView = (function(_super) {
 
@@ -2953,8 +4465,6 @@ window.require.define({"views/stats": function(exports, require, module) {
     StatsView.prototype.className = 'content';
 
     StatsView.prototype.template = require('./templates/stats');
-
-    StatsView.prototype.events = {};
 
     StatsView.prototype.getRenderData = function() {
       return {
@@ -2977,7 +4487,7 @@ window.require.define({"views/templates/about": function(exports, require, modul
     var foundHelper, self=this;
 
 
-    return "<header>\n    <h4>About</h4>\n</header>\n\n<div class=\"about\">\n    <h5>Who is Bash?</h5>\n    <p>Bash is a developer who is obsessed with health and fitness. He lives in Boston and writes software for a startup called <a href=\"http://www.hubspot.com/\" target=\"_blank\">HubSpot</a>.</p>\n    <p>When he's not lifting or getting his nutrition needs, he's tinkering with gadgets and hopefully developing the next big thing.</p>\n</div>\n\n<div class=\"about\">\n    <h5>Credits</h5>\n    <p><b>All</b> credit regarding the macronutrient levels and nutrition data found in this app belongs to <a href=\"http://www.beachbody.com/\" target=\"_blank\">Beachbody</a> from their new at-home workout program <a href=\"http://www.beachbody.com/product/fitness_programs/body-beast-workout.do\" target=\"_blank\">Body Beast</a>. If you dig the information in here, go support them and buy the program - they're a great company with a great mission.</p>\n</div>\n\n<div class=\"about\">\n    <h5>Contributing</h5>\n    <p>If you'd like to contribute, feel free to head over to <a href=\"https://github.com/b-ash/nutrition\" target=\"_blank\">github</a> and take a look. Pull requests are appreciated.</p>\n</div>\n";});
+    return "<header>\n    <h4>About</h4>\n</header>\n\n<div class=\"about\">\n    <h5>Who is Bash?</h5>\n    <p>Bash is a developer who is obsessed with health and fitness. He lives in Boston and writes software for a startup called <a href=\"http://www.hubspot.com/\" target=\"_blank\">HubSpot</a>.</p>\n    <p>When he's not lifting or getting his nutrition needs, he's tinkering with gadgets and hopefully developing the next big thing.</p>\n</div>\n\n<div class=\"about\">\n    <h5>Credits</h5>\n    <p><b>All</b> credit regarding the macronutrient levels and nutrition data found in this app belongs to <a href=\"http://www.beachbody.com/\" target=\"_blank\">Beachbody</a> from their at-home workout programs <a href=\"http://www.beachbody.com/product/fitness_programs/body-beast-workout.do\" target=\"_blank\">Body Beast</a> and <a href=\"http://www.beachbody.com/product/fitness_programs/p90x2-workout-the-next-p90x.do\" target=\"_blank\">P90X2</a>. If you dig the information in here, go support them and buy the programs - they're a great company with a great mission.</p>\n</div>\n\n<div class=\"about\">\n    <h5>Contributing</h5>\n    <p>If you'd like to contribute, feel free to head over to <a href=\"https://github.com/b-ash/nutrition\" target=\"_blank\">github</a> and take a look. Pull requests are appreciated.</p>\n</div>\n";});
 }});
 
 window.require.define({"views/templates/configure": function(exports, require, module) {
@@ -3017,17 +4527,6 @@ window.require.define({"views/templates/configure": function(exports, require, m
     buffer += escapeExpression(stack1) + "\"";
     return buffer;}
 
-  function program9(depth0,data) {
-    
-    var buffer = "", stack1;
-    buffer += " value=\"";
-    foundHelper = helpers.bfp;
-    stack1 = foundHelper || depth0.bfp;
-    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
-    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "bfp", { hash: {} }); }
-    buffer += escapeExpression(stack1) + "\"";
-    return buffer;}
-
     buffer += "<header>\n    ";
     foundHelper = helpers.configured;
     stack1 = foundHelper || depth0.configured;
@@ -3048,7 +4547,7 @@ window.require.define({"views/templates/configure": function(exports, require, m
     if(foundHelper && typeof stack1 === functionType) { stack1 = stack1.call(depth0, tmp1); }
     else { stack1 = blockHelperMissing.call(depth0, stack1, tmp1); }
     if(stack1 || stack1 === 0) { buffer += stack1; }
-    buffer += "\n</header>\n\n<div>\n    <input id=\"name\" type=\"text\" placeholder=\"My name is...\" ";
+    buffer += "\n</header>\n\n<div id=\"error_msg\" class=\"alert error\" style=\"display: none;\">Whoa there cowpoke, fill in the blanks.</div>\n\n<div>\n    <span class=\"aside\">Your name</span>\n    <input id=\"name\" type=\"text\" placeholder=\"My name is...\" ";
     foundHelper = helpers.name;
     stack1 = foundHelper || depth0.name;
     stack2 = helpers['if'];
@@ -3058,7 +4557,7 @@ window.require.define({"views/templates/configure": function(exports, require, m
     tmp1.inverse = self.noop;
     stack1 = stack2.call(depth0, stack1, tmp1);
     if(stack1 || stack1 === 0) { buffer += stack1; }
-    buffer += " />\n</div>\n\n<div>\n    <input id=\"weight\" type=\"number\" placeholder=\"Weight\" ";
+    buffer += " />\n\n    <span class=\"aside\">Current weight</span>\n    <input id=\"weight\" type=\"number\" placeholder=\"My weight is...\" ";
     foundHelper = helpers.weight;
     stack1 = foundHelper || depth0.weight;
     stack2 = helpers['if'];
@@ -3068,17 +4567,88 @@ window.require.define({"views/templates/configure": function(exports, require, m
     tmp1.inverse = self.noop;
     stack1 = stack2.call(depth0, stack1, tmp1);
     if(stack1 || stack1 === 0) { buffer += stack1; }
-    buffer += " />\n    <input id=\"bfp\" type=\"number\" placeholder=\"Body Fat Percentage\" ";
+    buffer += " />\n</div>\n\n<div>\n    <span class=\"aside\">Beachbody Diet Program</span>\n    <select id=\"program\">\n        <option value=\"\"></option>\n        <optgroup label=\"Body Beast\">\n            <option value=\"beast/build\">Build / Bulk (phases 1 &amp; 2)</option>\n            <option value=\"beast/beast\">Beast (phase 3)</option>\n        </optgroup>\n        <optgroup label=\"P90X2\">\n            <option value=\"x2/energy_booster\">Energy Booster (balanced)</option>\n            <option value=\"x2/fat_shredder\">Fat Shredder</option>\n            <option value=\"x2/endurance_maximizer\">Endurance Maximizer</option>\n        </optgroup>\n    </select>\n</div>\n\n<div id=\"program_config\"></div>\n\n<div class=\"configure-actions\">\n    <a id=\"configure\" class=\"btn btn-primary dont-route\">Configure</a>\n</div>\n";
+    return buffer;});
+}});
+
+window.require.define({"views/templates/configure_beast": function(exports, require, module) {
+  module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
+    helpers = helpers || Handlebars.helpers;
+    var buffer = "", stack1, stack2, foundHelper, tmp1, self=this, functionType="function", helperMissing=helpers.helperMissing, undef=void 0, escapeExpression=this.escapeExpression;
+
+  function program1(depth0,data) {
+    
+    var buffer = "", stack1;
+    buffer += " value=\"";
+    foundHelper = helpers.bfp;
+    stack1 = foundHelper || depth0.bfp;
+    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
+    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "bfp", { hash: {} }); }
+    buffer += escapeExpression(stack1) + "\"";
+    return buffer;}
+
+    buffer += "<span class=\"aside\">Body fat percentage</span>\n<input id=\"bfp\" type=\"number\" placeholder=\"Example: 15\" ";
     foundHelper = helpers.bfp;
     stack1 = foundHelper || depth0.bfp;
     stack2 = helpers['if'];
-    tmp1 = self.program(9, program9, data);
+    tmp1 = self.program(1, program1, data);
     tmp1.hash = {};
     tmp1.fn = tmp1;
     tmp1.inverse = self.noop;
     stack1 = stack2.call(depth0, stack1, tmp1);
     if(stack1 || stack1 === 0) { buffer += stack1; }
-    buffer += " />\n</div>\n\n<div>\n    <select id=\"phase\">\n        <option value=\"build\">Build / Bulk (phases 1 &amp; 2)</option>\n        <option value=\"beast\">Beast (phase 3)</option>\n    </select>\n</div>\n\n<div class=\"configure-actions\">\n    <a id=\"configure\" class=\"btn btn-primary dont-route\">Configure</a>\n</div>\n";
+    buffer += " />\n";
+    return buffer;});
+}});
+
+window.require.define({"views/templates/configure_x2": function(exports, require, module) {
+  module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
+    helpers = helpers || Handlebars.helpers;
+    var buffer = "", stack1, stack2, foundHelper, tmp1, self=this, functionType="function", helperMissing=helpers.helperMissing, undef=void 0, escapeExpression=this.escapeExpression;
+
+  function program1(depth0,data) {
+    
+    var buffer = "", stack1;
+    buffer += " value=\"";
+    foundHelper = helpers.de;
+    stack1 = foundHelper || depth0.de;
+    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
+    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "de", { hash: {} }); }
+    buffer += escapeExpression(stack1) + "\"";
+    return buffer;}
+
+  function program3(depth0,data) {
+    
+    var buffer = "", stack1;
+    buffer += " value=\"";
+    foundHelper = helpers.sway;
+    stack1 = foundHelper || depth0.sway;
+    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
+    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "sway", { hash: {} }); }
+    buffer += escapeExpression(stack1) + "\"";
+    return buffer;}
+
+    buffer += "<span class=\"aside\">Activity levels outside X2.</span>\n<select id=\"dab\">\n    <option value=\"\"></option>\n    <option value=\"0.1\">Sedetary</option>\n    <option value=\"0.2\">Moderatley Active</option>\n    <option value=\"0.3\">Very Active</option>\n</select>\n\n<span class=\"aside italic\">Daily exercise calories. Varies, but 650 is the X2 average.</span>\n<input id=\"de\" type=\"number\" placeholder=\"Example: 650\" ";
+    foundHelper = helpers.de;
+    stack1 = foundHelper || depth0.de;
+    stack2 = helpers['if'];
+    tmp1 = self.program(1, program1, data);
+    tmp1.hash = {};
+    tmp1.fn = tmp1;
+    tmp1.inverse = self.noop;
+    stack1 = stack2.call(depth0, stack1, tmp1);
+    if(stack1 || stack1 === 0) { buffer += stack1; }
+    buffer += " />\n\n<span class=\"aside italic\">Calories to add (negative to subtract). 500 ~ 1lb/week.</span>\n<input id=\"sway\" type=\"number\" placeholder=\"Example: -500\" ";
+    foundHelper = helpers.sway;
+    stack1 = foundHelper || depth0.sway;
+    stack2 = helpers['if'];
+    tmp1 = self.program(3, program3, data);
+    tmp1.hash = {};
+    tmp1.fn = tmp1;
+    tmp1.inverse = self.noop;
+    stack1 = stack2.call(depth0, stack1, tmp1);
+    if(stack1 || stack1 === 0) { buffer += stack1; }
+    buffer += " />";
     return buffer;});
 }});
 
@@ -3341,99 +4911,16 @@ window.require.define({"views/templates/help": function(exports, require, module
     var foundHelper, self=this;
 
 
-    return "<header>\n    <h4>Help</h4>\n</header>\n\n<div class=\"help\">\n    <h5>Purpose</h5>\n    <p>The point of this is to create a quick way to track the basic macronutrients outlined in the Body Beast nutrition guide.</p>\n    <p>Forget about hassling with printout sheets or guesstimation. Your phone is with you all day; now your accountability is, too.</p>\n</div>\n\n<div class=\"help\">\n    <h5>How</h5>\n    <p>Click on the bars on the main page to increase your daily macro intake. If you're unsure of the nutrient value for a given food, use the \"Food\" tab to find the appropriate value.</p>\n    <p>If you make a mistake, there's a minus button at the end of the bars that allows you to decrease your counts for that macro.</p>\n    <p>If it's not in the \"Food\" section, it's not on the diet guide ;)</p>\n</div>\n\n<div class=\"help\">\n    <h5>Caloric Values</h5>\n    <p>There is a listing of the caloric value for each macro on the main page and on each food listing. However, this won't be consistent across all foods within a given macro type; it's simply an estimated average caloric value.</p>\n    <p>While the total calories listed probably won't add up to your total calorie bracket, it can help to understand where the majority of your calories come from, which can differ from the number of servings consumed.</p>\n</div>\n\n<div class=\"help\">\n    <h5>Thoughts</h5>\n    <p>There is a ton of data in this diet guide. That being said, use your judgement. This is far from a \"one size fits all\" situation. Use the guide as just that:  a guide. Are you eating too much / little? Now you can figure that out. Plan out your goals and pick the plan that works best for you.</p>\n</div>\n\n<div class=\"help\">\n    <h5>Shakes</h5>\n    <p>In the diet guide, there is a section for mass-gain shakes that are made by combining different macros. However, the shake in this app is mainly a placeholder for \"take your supplements\".</p>\n    <p>The daily shake described is 2 scoops of the Beachbody fuel shot (5g whey protein, 200 cals) and 1 scoop of the Beachbody base shake (18g whey protein, 130 cals). Figure out your own personal shake requirements and get those calories in.</p>\n    <p>Don't forget your post-workout shake.</p>\n</div>\n\n<div class=\"help\">\n    <h5>Free condiments</h5>\n    <ul>\n        <li>Lemon and lime juice</li>\n        <li>Black pepper</li>\n        <li>Vinegar (any variety)</li>\n        <li>Mustard (any variety)</li>\n        <li>Herbs</li>\n        <li>Spices</li>\n        <li>Garlic and ginger</li>\n        <li>Hot sauce</li>\n        <li>Flavored extracts: vanilla, peppermint, almond, etc.</li>\n    </ul>\n</div>\n";});
+    return "<header>\n    <h4>Help</h4>\n</header>\n\n<div class=\"help\">\n    <h5>Purpose</h5>\n    <p>The point of this is to create a quick way to track the basic macronutrients outlined in the nutrition guides for Beachbody's programs Body Beast and P90X2.</p>\n    <p>Forget about hassling with printout sheets or guesstimation. Your phone is with you all day; now your accountability is, too.</p>\n</div>\n\n<div class=\"help\">\n    <h5>How</h5>\n    <p>Click on the bars on the main page to increase your daily macro intake. If you're unsure of the nutrient value for a given food, use the \"Food\" tab to find the appropriate value.</p>\n    <p>If you make a mistake, there's a minus button at the end of the bars that allows you to decrease your counts for that macro.</p>\n    <p>If it's not in the \"Food\" section, it's not on the diet guide ;)</p>\n</div>\n\n<div class=\"help\">\n    <h5>Caloric Values</h5>\n    <p>There is a listing of the caloric value for each macro on the main page and on each food listing. However, this won't be consistent across all foods within a given macro type; it's simply an estimated average caloric value.</p>\n    <p>While the total calories listed probably won't add up to your total calorie bracket, it can help to understand where the majority of your calories come from, which can differ from the number of servings consumed.</p>\n</div>\n\n<div class=\"help\">\n    <h5>Thoughts</h5>\n    <p>There is a ton of data in this diet guide. That being said, use your judgement. This is far from a \"one size fits all\" situation. Use the guide as just that:  a guide. Are you eating too much / little? Now you can figure that out. Plan out your goals and pick the plan that works best for you.</p>\n</div>\n\n<div class=\"help\">\n    <h5>Shakes</h5>\n    <p>In the diet guide, there is a section for mass-gain shakes that are made by combining different macros. However, the shake in this app is mainly a placeholder for \"take your supplements\".</p>\n    <p>The daily shake described is 2 scoops of the Beachbody fuel shot (5g whey protein, 200 cals) and 1 scoop of the Beachbody base shake (18g whey protein, 130 cals). Figure out your own personal shake requirements and get those calories in.</p>\n    <p>Don't forget your post-workout shake.</p>\n</div>\n\n<div class=\"help\">\n    <h5>Free condiments</h5>\n    <ul>\n        <li>Lemon and lime juice</li>\n        <li>Black pepper</li>\n        <li>Vinegar (any variety)</li>\n        <li>Mustard (any variety)</li>\n        <li>Herbs</li>\n        <li>Spices</li>\n        <li>Garlic and ginger</li>\n        <li>Hot sauce</li>\n        <li>Flavored extracts: vanilla, peppermint, almond, etc.</li>\n    </ul>\n</div>\n\n<div class=\"help\">\n    <h5>Single Snacks</h5>\n    <ul>\n        <li>Cottage cheese - 1 cup</li>\n        <li>Dried fruit - 1 oz</li>\n        <li>Frozen fruit bar - 1</li>\n        <li>Fruit - 1 medium piece</li>\n        <li>Rice cake - 2</li>\n        <li>Peanut Butter (with celery) - 1 tbsp</li>\n        <li>Popcorn (air popped) - 3 cups</li>\n        <li>Seaweed - 10 oz</li>\n        <li>Shakeology - 2/3 serving</li>\n        <li>Yogurt (nonfat, plain) - 1 cup</li>\n    </ul>\n\n    <h5>Double Snacks</h5>\n    <ul>\n        <li>Bean dip - 4 tbsp</li>\n        <li>^^^ with corn chips - 1 oz</li>\n        <li>Hummus with carrots - 1 oz</li>\n        <li>Pumpkin seeds - 2 oz</li>\n        <li>Raw Nuts - 1 oz</li>\n    </ul>\n</div>\n";});
 }});
 
 window.require.define({"views/templates/index": function(exports, require, module) {
   module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
     helpers = helpers || Handlebars.helpers;
-    var buffer = "", stack1, stack2, stack3, foundHelper, tmp1, self=this, functionType="function", helperMissing=helpers.helperMissing, undef=void 0, escapeExpression=this.escapeExpression, blockHelperMissing=helpers.blockHelperMissing;
+    var buffer = "", stack1, stack2, foundHelper, self=this, functionType="function", helperMissing=helpers.helperMissing, undef=void 0, escapeExpression=this.escapeExpression;
 
-  function program1(depth0,data) {
-    
-    var buffer = "", stack1, stack2, stack3;
-    buffer += "\n        <div class=\"list-item macro\" data-key=\"";
-    foundHelper = helpers.key;
-    stack1 = foundHelper || depth0.key;
-    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
-    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "key", { hash: {} }); }
-    buffer += escapeExpression(stack1) + "\">\n            <div class=\"percentage-bar relative\">\n                <div class=\"btn-decrement absolute\">\n                    <span class=\"ui-icon ui-icon-minusthick\"></span>\n                </div>\n                <div class=\"percentage-complete absolute ";
-    foundHelper = helpers.key;
-    stack1 = foundHelper || depth0.key;
-    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
-    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "key", { hash: {} }); }
-    buffer += escapeExpression(stack1) + "\" style=\"width: ";
-    foundHelper = helpers.key;
-    stack1 = foundHelper || depth0.key;
-    foundHelper = helpers.getPercentageWidth;
-    stack2 = foundHelper || depth0.getPercentageWidth;
-    if(typeof stack2 === functionType) { stack1 = stack2.call(depth0, stack1, { hash: {} }); }
-    else if(stack2=== undef) { stack1 = helperMissing.call(depth0, "getPercentageWidth", stack1, { hash: {} }); }
-    else { stack1 = stack2; }
-    buffer += escapeExpression(stack1) + "%;\">\n                    <div class=\"percentage-text absolute ";
-    foundHelper = helpers.key;
-    stack1 = foundHelper || depth0.key;
-    foundHelper = helpers.ifIsExceedingGoal;
-    stack2 = foundHelper || depth0.ifIsExceedingGoal;
-    tmp1 = self.program(2, program2, data);
-    tmp1.hash = {};
-    tmp1.fn = tmp1;
-    tmp1.inverse = self.noop;
-    if(foundHelper && typeof stack2 === functionType) { stack1 = stack2.call(depth0, stack1, tmp1); }
-    else { stack1 = blockHelperMissing.call(depth0, stack2, stack1, tmp1); }
-    if(stack1 || stack1 === 0) { buffer += stack1; }
-    buffer += "\">\n                        <span class=\"text_display with-default-cursor\">";
-    foundHelper = helpers.val;
-    stack1 = foundHelper || depth0.val;
-    stack1 = (stack1 === null || stack1 === undefined || stack1 === false ? stack1 : stack1.display);
-    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
-    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "val.display", { hash: {} }); }
-    buffer += escapeExpression(stack1) + ": </span>\n                        <span class=\"text_count with-default-cursor\">";
-    foundHelper = helpers.val;
-    stack1 = foundHelper || depth0.val;
-    stack1 = (stack1 === null || stack1 === undefined || stack1 === false ? stack1 : stack1.count);
-    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
-    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "val.count", { hash: {} }); }
-    buffer += escapeExpression(stack1) + "</span>\n                        <span class=\"text_total with-default-cursor\"> / ";
-    foundHelper = helpers.key;
-    stack1 = foundHelper || depth0.key;
-    foundHelper = helpers.getGoalForMacro;
-    stack2 = foundHelper || depth0.getGoalForMacro;
-    if(typeof stack2 === functionType) { stack1 = stack2.call(depth0, stack1, { hash: {} }); }
-    else if(stack2=== undef) { stack1 = helperMissing.call(depth0, "getGoalForMacro", stack1, { hash: {} }); }
-    else { stack1 = stack2; }
-    buffer += escapeExpression(stack1) + "</span>\n                        <span class=\"text_cals with-default-cursor\">";
-    foundHelper = helpers.val;
-    stack1 = foundHelper || depth0.val;
-    stack1 = (stack1 === null || stack1 === undefined || stack1 === false ? stack1 : stack1.count);
-    foundHelper = helpers.key;
-    stack2 = foundHelper || depth0.key;
-    foundHelper = helpers.getCalsDisplayForMacro;
-    stack3 = foundHelper || depth0.getCalsDisplayForMacro;
-    if(typeof stack3 === functionType) { stack1 = stack3.call(depth0, stack2, stack1, { hash: {} }); }
-    else if(stack3=== undef) { stack1 = helperMissing.call(depth0, "getCalsDisplayForMacro", stack2, stack1, { hash: {} }); }
-    else { stack1 = stack3; }
-    buffer += escapeExpression(stack1) + "</span>\n                    </div>\n                </div>\n            </div>\n        </div>\n    ";
-    return buffer;}
-  function program2(depth0,data) {
-    
-    
-    return "exceeding";}
 
-    buffer += "<header>\n    <h4>Current Macros</h4>\n</header>\n\n<div class=\"list macros\">\n    ";
-    stack1 = depth0;
-    foundHelper = helpers.macros;
-    stack2 = foundHelper || depth0.macros;
-    foundHelper = helpers.keys;
-    stack3 = foundHelper || depth0.keys;
-    tmp1 = self.program(1, program1, data);
-    tmp1.hash = {};
-    tmp1.fn = tmp1;
-    tmp1.inverse = self.noop;
-    if(foundHelper && typeof stack3 === functionType) { stack1 = stack3.call(depth0, stack2, stack1, tmp1); }
-    else { stack1 = blockHelperMissing.call(depth0, stack3, stack2, stack1, tmp1); }
-    if(stack1 || stack1 === 0) { buffer += stack1; }
-    buffer += "\n</div>\n\n<div class=\"total\">\n    <span>Approx. total calories: </span>\n    <span id=\"text_total_cals\">";
+    buffer += "<header>\n    <h4>Current Macros</h4>\n</header>\n\n<div class=\"list macros\"></div>\n<div class=\"total\">\n    <span>Approx. total calories: </span>\n    <span id=\"text_total_cals\">";
     foundHelper = helpers.macros;
     stack1 = foundHelper || depth0.macros;
     foundHelper = helpers.getTotalCals;
@@ -3442,6 +4929,73 @@ window.require.define({"views/templates/index": function(exports, require, modul
     else if(stack2=== undef) { stack1 = helperMissing.call(depth0, "getTotalCals", stack1, { hash: {} }); }
     else { stack1 = stack2; }
     buffer += escapeExpression(stack1) + "</span>\n</div>\n";
+    return buffer;});
+}});
+
+window.require.define({"views/templates/macro_bar": function(exports, require, module) {
+  module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
+    helpers = helpers || Handlebars.helpers;
+    var buffer = "", stack1, stack2, stack3, foundHelper, tmp1, self=this, functionType="function", helperMissing=helpers.helperMissing, undef=void 0, escapeExpression=this.escapeExpression, blockHelperMissing=helpers.blockHelperMissing;
+
+  function program1(depth0,data) {
+    
+    
+    return "exceeding";}
+
+    buffer += "<div class=\"percentage-bar relative\">\n    <div class=\"btn-decrement absolute\">\n        <span class=\"ui-icon ui-icon-minusthick\"></span>\n    </div>\n    <div class=\"percentage-complete absolute ";
+    foundHelper = helpers.macro;
+    stack1 = foundHelper || depth0.macro;
+    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
+    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "macro", { hash: {} }); }
+    buffer += escapeExpression(stack1) + "\" style=\"width: ";
+    foundHelper = helpers.macro;
+    stack1 = foundHelper || depth0.macro;
+    foundHelper = helpers.getPercentageWidth;
+    stack2 = foundHelper || depth0.getPercentageWidth;
+    if(typeof stack2 === functionType) { stack1 = stack2.call(depth0, stack1, { hash: {} }); }
+    else if(stack2=== undef) { stack1 = helperMissing.call(depth0, "getPercentageWidth", stack1, { hash: {} }); }
+    else { stack1 = stack2; }
+    buffer += escapeExpression(stack1) + "%;\">\n        <div class=\"percentage-text absolute ";
+    foundHelper = helpers.macro;
+    stack1 = foundHelper || depth0.macro;
+    foundHelper = helpers.ifIsExceedingGoal;
+    stack2 = foundHelper || depth0.ifIsExceedingGoal;
+    tmp1 = self.program(1, program1, data);
+    tmp1.hash = {};
+    tmp1.fn = tmp1;
+    tmp1.inverse = self.noop;
+    if(foundHelper && typeof stack2 === functionType) { stack1 = stack2.call(depth0, stack1, tmp1); }
+    else { stack1 = blockHelperMissing.call(depth0, stack2, stack1, tmp1); }
+    if(stack1 || stack1 === 0) { buffer += stack1; }
+    buffer += "\">\n            <span class=\"text_display with-default-cursor\">";
+    foundHelper = helpers.display;
+    stack1 = foundHelper || depth0.display;
+    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
+    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "display", { hash: {} }); }
+    buffer += escapeExpression(stack1) + ": </span>\n            <span class=\"text_count with-default-cursor\">";
+    foundHelper = helpers.count;
+    stack1 = foundHelper || depth0.count;
+    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
+    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "count", { hash: {} }); }
+    buffer += escapeExpression(stack1) + "</span>\n            <span class=\"text_total with-default-cursor\"> / ";
+    foundHelper = helpers.macro;
+    stack1 = foundHelper || depth0.macro;
+    foundHelper = helpers.getGoalForMacro;
+    stack2 = foundHelper || depth0.getGoalForMacro;
+    if(typeof stack2 === functionType) { stack1 = stack2.call(depth0, stack1, { hash: {} }); }
+    else if(stack2=== undef) { stack1 = helperMissing.call(depth0, "getGoalForMacro", stack1, { hash: {} }); }
+    else { stack1 = stack2; }
+    buffer += escapeExpression(stack1) + "</span>\n            <span class=\"text_cals with-default-cursor\">";
+    foundHelper = helpers.count;
+    stack1 = foundHelper || depth0.count;
+    foundHelper = helpers.macro;
+    stack2 = foundHelper || depth0.macro;
+    foundHelper = helpers.getCalsDisplayForMacro;
+    stack3 = foundHelper || depth0.getCalsDisplayForMacro;
+    if(typeof stack3 === functionType) { stack1 = stack3.call(depth0, stack2, stack1, { hash: {} }); }
+    else if(stack3=== undef) { stack1 = helperMissing.call(depth0, "getCalsDisplayForMacro", stack2, stack1, { hash: {} }); }
+    else { stack1 = stack3; }
+    buffer += escapeExpression(stack1) + "</span>\n        </div>\n    </div>\n</div>";
     return buffer;});
 }});
 

@@ -1,16 +1,18 @@
 app = require 'application'
 utils = require 'lib/utils'
 
+Foods = require('models/foods/foods')
+
 NavView = require('views/nav')
 views =
     index: require('views/index')
     stats: require('views/stats')
     help: require('views/help')
     about: require('views/about')
-    configure: require('views/configure')
-    foodAll:  require('views/food_all_macros')
-    foodMacro: require('views/food_macro')
-    food: require ('views/food')
+    configure: require('views/configuration/configure')
+    foodAll:  require('views/food_list/food_all_macros')
+    foodMacro: require('views/food_list/food_macro')
+    food: require ('views/food_list/food')
 
 
 module.exports = class Router extends Backbone.Router
@@ -45,15 +47,18 @@ module.exports = class Router extends Backbone.Router
         @setupView('settings', 'configure', {model: app.user})
 
     foodAllMacros: =>
-        @setupView('food', 'foodAll')
+        @setupView('food', 'foodAll', {model: new Foods(app.user)})
 
     foodMacro: (macro) =>
-        @setupView('food', 'foodMacro', {macro})
+        @setupView('food', 'foodMacro', {model: new Foods(app.user, macro)})
 
     food: (macro, food) =>
-        @setupView('food', 'food', {macro, food})
+        @setupView('food', 'food', {model: new Foods(app.user, macro, food)})
 
     setupView: (navItem, claxx, params={}) =>
+        if not app.user.isConfigured() and claxx isnt 'configure'
+            return
+
         @navSetup(navItem)
         view = app.views[claxx]
         if view isnt @currentView
@@ -72,4 +77,4 @@ module.exports = class Router extends Backbone.Router
 
     setCurrentView: (view) =>
         @currentView = view
-        $('#main_page').append view.render().$el
+        $('#main_page').html view.render().$el

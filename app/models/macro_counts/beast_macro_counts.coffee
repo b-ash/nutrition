@@ -4,12 +4,6 @@ BaseMacrosModel = require('./base_macros_model')
 # Body Beast nutrition macro requirements
 class BeastMacros extends BaseMacrosModel
 
-    initialize: (stats) =>
-        @id = "bodybeast-#{stats.getCalories()}c"
-        @goals = stats.getGoals()
-
-        super
-
     defaults: ->
         macros:
             starches:
@@ -24,8 +18,6 @@ class BeastMacros extends BaseMacrosModel
                 display: 'Proteins', count: 0
             fats:
                 display: 'Fats', count: 0
-            shake:
-                display: 'Shake', count: 0
         timestamp: new moment().format('MM-DD-YY')
 
 
