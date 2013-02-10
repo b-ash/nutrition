@@ -161,6 +161,7 @@ window.require.define({"lib/router": function(exports, require, module) {
     stats: require('views/stats'),
     help: require('views/help'),
     about: require('views/about'),
+    clear: require('views/clear'),
     configure: require('views/configuration/configure'),
     foodAll: require('views/food_list/food_all_macros'),
     foodMacro: require('views/food_list/food_macro'),
@@ -198,6 +199,8 @@ window.require.define({"lib/router": function(exports, require, module) {
 
       this.configure = __bind(this.configure, this);
 
+      this.clear = __bind(this.clear, this);
+
       this.about = __bind(this.about, this);
 
       this.help = __bind(this.help, this);
@@ -224,6 +227,7 @@ window.require.define({"lib/router": function(exports, require, module) {
       'help': 'help',
       'about': 'about',
       'configure': 'configure',
+      'clear': 'clear',
       '*query': 'redirectDefault'
     };
 
@@ -251,6 +255,10 @@ window.require.define({"lib/router": function(exports, require, module) {
 
     Router.prototype.about = function() {
       return this.setupView('settings', 'about');
+    };
+
+    Router.prototype.clear = function() {
+      return this.setupView('settings', 'clear');
     };
 
     Router.prototype.configure = function() {
@@ -3888,6 +3896,46 @@ window.require.define({"views/about": function(exports, require, module) {
   
 }});
 
+window.require.define({"views/clear": function(exports, require, module) {
+  var ClearView, View,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  View = require('./view');
+
+  ClearView = (function(_super) {
+
+    __extends(ClearView, _super);
+
+    function ClearView() {
+      this.clearApp = __bind(this.clearApp, this);
+      return ClearView.__super__.constructor.apply(this, arguments);
+    }
+
+    ClearView.prototype.tagName = 'div';
+
+    ClearView.prototype.className = 'content';
+
+    ClearView.prototype.template = require('./templates/clear');
+
+    ClearView.prototype.events = {
+      'click #clear_app': 'clearApp'
+    };
+
+    ClearView.prototype.clearApp = function() {
+      localStorage.clear();
+      return window.location.reload(true);
+    };
+
+    return ClearView;
+
+  })(View);
+
+  module.exports = ClearView;
+  
+}});
+
 window.require.define({"views/configuration/beast_config": function(exports, require, module) {
   var BeastConfigureView, View,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
@@ -4832,6 +4880,15 @@ window.require.define({"views/templates/about": function(exports, require, modul
 
 
     return "<header>\n    <h4>About</h4>\n</header>\n\n<div class=\"about\">\n    <h5>Who is Bash?</h5>\n    <p>Bash is a developer who is obsessed with health and fitness. He lives in Boston and writes software for a startup called <a href=\"http://www.hubspot.com/\" target=\"_blank\">HubSpot</a>.</p>\n    <p>When he's not lifting or getting his nutrition needs, he's tinkering with gadgets and hopefully developing the next big thing.</p>\n</div>\n\n<div class=\"about\">\n    <h5>Credits</h5>\n    <p><b>All</b> credit regarding the macronutrient levels and nutrition data found in this app belongs to <a href=\"http://www.beachbody.com/\" target=\"_blank\">Beachbody</a> from their at-home workout programs <a href=\"http://www.beachbody.com/product/fitness_programs/body-beast-workout.do\" target=\"_blank\">Body Beast</a> and <a href=\"http://www.beachbody.com/product/fitness_programs/p90x2-workout-the-next-p90x.do\" target=\"_blank\">P90X2</a>. If you dig the information in here, go support them and buy the programs - they're a great company with a great mission.</p>\n</div>\n\n<div class=\"about\">\n    <h5>Contributing</h5>\n    <p>If you'd like to contribute, feel free to head over to <a href=\"https://github.com/b-ash/nutrition\" target=\"_blank\">github</a> and take a look. Pull requests are appreciated.</p>\n</div>\n";});
+}});
+
+window.require.define({"views/templates/clear": function(exports, require, module) {
+  module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
+    helpers = helpers || Handlebars.helpers;
+    var foundHelper, self=this;
+
+
+    return "<header>\n    <h4>Clear App Data</h4>\n</header>\n\n<div class=\"about\">\n    <h5>Are you sure?</h5>\n    <p>This will clear all of your current macros, saved meals, and configured user data. Aka: <b>this can't be undone</b>.</p>\n</div>\n\n<div>\n    <a id=\"clear_app\" class=\"btn btn-large btn-danger btn-block dont-route\">Yes, I'm sure</a>\n</div>\n";});
 }});
 
 window.require.define({"views/templates/configure": function(exports, require, module) {

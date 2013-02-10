@@ -10,6 +10,7 @@ views =
     stats: require('views/stats')
     help: require('views/help')
     about: require('views/about')
+    clear: require('views/clear')
     configure: require('views/configuration/configure')
     foodAll:  require('views/food_list/food_all_macros')
     foodMacro: require('views/food_list/food_macro')
@@ -32,6 +33,7 @@ module.exports = class Router extends Backbone.Router
         'help': 'help'
         'about': 'about'
         'configure': 'configure'
+        'clear': 'clear'
         '*query': 'redirectDefault'
 
     redirectDefault: (actions) =>
@@ -48,6 +50,9 @@ module.exports = class Router extends Backbone.Router
 
     about: =>
         @setupView('settings', 'about')
+
+    clear: =>
+        @setupView('settings', 'clear')
 
     configure: =>
         @setupView('settings', 'configure', {model: app.user})
