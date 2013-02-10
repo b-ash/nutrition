@@ -23,7 +23,10 @@ class Foods
             return @ALL_MACROS
 
     getCalories: (macro=@macro) =>
-        @macros[macro]['cals']
+        @macros[macro].cals
+
+    getMacro: (macro) =>
+        @macros[macro].macroOverride or macro
 
 
 module.exports = Foods

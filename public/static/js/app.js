@@ -75,9 +75,11 @@
 })();
 
 window.require.define({"application": function(exports, require, module) {
-  var Application, MacroCountsFactory, StatsFactory, User;
+  var Application, MacroCountsFactory, Meals, StatsFactory, User;
 
   User = require('models/users/user');
+
+  Meals = require('models/foods/meals');
 
   MacroCountsFactory = require('models/macro_counts/macro_counts_factory');
 
@@ -101,17 +103,22 @@ window.require.define({"application": function(exports, require, module) {
       }
     },
     onConfigure: function() {
-      var _ref;
+      var _ref, _ref1;
       if ((_ref = this.macros) != null) {
         _ref.destroy();
       }
+      if ((_ref1 = this.meals) != null) {
+        _ref1.destroy();
+      }
       this.stats = StatsFactory.getStats(this.user);
-      return this.macros = MacroCountsFactory.getMacroCounts(this.user, this.stats);
+      this.macros = MacroCountsFactory.getMacroCounts(this.user, this.stats);
+      return this.meals = new Meals();
     },
     afterConfiguration: function() {
       if (this.user.isConfigured()) {
         this.stats = StatsFactory.getStats(this.user);
-        return this.macros = MacroCountsFactory.getMacroCounts(this.user, this.stats);
+        this.macros = MacroCountsFactory.getMacroCounts(this.user, this.stats);
+        return this.meals = new Meals();
       }
     }
   };
@@ -134,7 +141,7 @@ window.require.define({"initialize": function(exports, require, module) {
 }});
 
 window.require.define({"lib/router": function(exports, require, module) {
-  var Foods, NavView, Router, app, utils, views,
+  var Foods, Meal, NavView, Router, app, utils, views,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -144,6 +151,8 @@ window.require.define({"lib/router": function(exports, require, module) {
   utils = require('lib/utils');
 
   Foods = require('models/foods/foods');
+
+  Meal = require('models/foods/meal');
 
   NavView = require('views/nav');
 
@@ -155,7 +164,9 @@ window.require.define({"lib/router": function(exports, require, module) {
     configure: require('views/configuration/configure'),
     foodAll: require('views/food_list/food_all_macros'),
     foodMacro: require('views/food_list/food_macro'),
-    food: require('views/food_list/food')
+    food: require('views/food_list/food'),
+    meals: require('views/food_list/meals'),
+    meal: require('views/food_list/meal')
   };
 
   module.exports = Router = (function(_super) {
@@ -170,6 +181,14 @@ window.require.define({"lib/router": function(exports, require, module) {
       this.navSetup = __bind(this.navSetup, this);
 
       this.setupView = __bind(this.setupView, this);
+
+      this.getFoods = __bind(this.getFoods, this);
+
+      this.mealEdit = __bind(this.mealEdit, this);
+
+      this.mealDefine = __bind(this.mealDefine, this);
+
+      this.meals = __bind(this.meals, this);
 
       this.food = __bind(this.food, this);
 
@@ -198,6 +217,9 @@ window.require.define({"lib/router": function(exports, require, module) {
       'food': 'foodAllMacros',
       'food/:macro': 'foodMacro',
       'food/:macro/:food': 'food',
+      'meals': 'meals',
+      'meals/define': 'mealDefine',
+      'meals/:id': 'mealEdit',
       'stats': 'stats',
       'help': 'help',
       'about': 'about',
@@ -239,20 +261,61 @@ window.require.define({"lib/router": function(exports, require, module) {
 
     Router.prototype.foodAllMacros = function() {
       return this.setupView('food', 'foodAll', {
-        model: new Foods(app.user)
+        model: this.getFoods()
       });
     };
 
     Router.prototype.foodMacro = function(macro) {
       return this.setupView('food', 'foodMacro', {
-        model: new Foods(app.user, macro)
+        model: this.getFoods(macro)
       });
     };
 
     Router.prototype.food = function(macro, food) {
       return this.setupView('food', 'food', {
-        model: new Foods(app.user, macro, food)
+        model: this.getFoods(macro, food)
       });
+    };
+
+    Router.prototype.meals = function() {
+      return this.setupView('food', 'meals', {
+        collection: app.meals,
+        macros: this.getFoods()
+      });
+    };
+
+    Router.prototype.mealDefine = function() {
+      return this.setupView('food', 'meal', {
+        model: new Meal(),
+        collection: app.meals,
+        macros: this.getFoods()
+      });
+    };
+
+    Router.prototype.mealEdit = function(id) {
+      var meal;
+      meal = app.meals.get(id);
+      if (meal != null) {
+        return this.setupView('food', 'meal', {
+          model: meal,
+          collection: app.meals,
+          macros: this.getFoods()
+        });
+      } else {
+        return this.navigate('', {
+          trigger: true
+        });
+      }
+    };
+
+    Router.prototype.getFoods = function(macro, food) {
+      if ((macro != null) && (food != null)) {
+        return new Foods(app.user, macro, food);
+      } else if (macro != null) {
+        return new Foods(app.user, macro);
+      } else {
+        return new Foods(app.user);
+      }
     };
 
     Router.prototype.setupView = function(navItem, claxx, params) {
@@ -393,6 +456,10 @@ window.require.define({"lib/view_helper": function(exports, require, module) {
     totalServingSize = utils.roundFloat(portion * serving);
     measurement = utils.pluralize(ctx.measurement, totalServingSize);
     return "" + totalServingSize + " " + measurement;
+  });
+
+  Handlebars.registerHelper("getMacroVal", function(ctx, macro) {
+    return ctx[macro] || 0;
   });
 
   Handlebars.registerHelper("pluralize", function(word, quantity) {
@@ -2181,6 +2248,8 @@ window.require.define({"models/foods/foods": function(exports, require, module) 
       this.user = user;
       this.macro = macro;
       this.food = food;
+      this.getMacro = __bind(this.getMacro, this);
+
       this.getCalories = __bind(this.getCalories, this);
 
       this.toJSON = __bind(this.toJSON, this);
@@ -2219,7 +2288,11 @@ window.require.define({"models/foods/foods": function(exports, require, module) 
       if (macro == null) {
         macro = this.macro;
       }
-      return this.macros[macro]['cals'];
+      return this.macros[macro].cals;
+    };
+
+    Foods.prototype.getMacro = function(macro) {
+      return this.macros[macro].macroOverride || macro;
     };
 
     return Foods;
@@ -2227,6 +2300,71 @@ window.require.define({"models/foods/foods": function(exports, require, module) 
   })();
 
   module.exports = Foods;
+  
+}});
+
+window.require.define({"models/foods/meal": function(exports, require, module) {
+  var Meal,
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  Meal = (function(_super) {
+
+    __extends(Meal, _super);
+
+    function Meal() {
+      return Meal.__super__.constructor.apply(this, arguments);
+    }
+
+    Meal.prototype.localStorage = new Backbone.LocalStorage('meals');
+
+    return Meal;
+
+  })(Backbone.Model);
+
+  module.exports = Meal;
+  
+}});
+
+window.require.define({"models/foods/meals": function(exports, require, module) {
+  var Meal, Meals,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  Meal = require('models/foods/meal');
+
+  Meals = (function(_super) {
+
+    __extends(Meals, _super);
+
+    function Meals() {
+      this.destroy = __bind(this.destroy, this);
+
+      this.initialize = __bind(this.initialize, this);
+      return Meals.__super__.constructor.apply(this, arguments);
+    }
+
+    Meals.prototype.model = Meal;
+
+    Meals.prototype.localStorage = new Backbone.LocalStorage('meals');
+
+    Meals.prototype.initialize = function() {
+      return this.fetch();
+    };
+
+    Meals.prototype.destroy = function() {
+      while (this.length > 0) {
+        this.first().destroy();
+      }
+      return this;
+    };
+
+    return Meals;
+
+  })(Backbone.Collection);
+
+  module.exports = Meals;
   
 }});
 
@@ -4131,6 +4269,209 @@ window.require.define({"views/food_list/food_macro": function(exports, require, 
   
 }});
 
+window.require.define({"views/food_list/meal": function(exports, require, module) {
+  var MealView, View,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  View = require('views/view');
+
+  MealView = (function(_super) {
+
+    __extends(MealView, _super);
+
+    function MealView() {
+      this.onError = __bind(this.onError, this);
+
+      this.isValid = __bind(this.isValid, this);
+
+      this.save = __bind(this.save, this);
+
+      this.submitAndGoHome = __bind(this.submitAndGoHome, this);
+
+      this.submitAndRoute = __bind(this.submitAndRoute, this);
+
+      this.afterRender = __bind(this.afterRender, this);
+
+      this.getRenderData = __bind(this.getRenderData, this);
+      return MealView.__super__.constructor.apply(this, arguments);
+    }
+
+    MealView.prototype.tagName = 'div';
+
+    MealView.prototype.className = 'content';
+
+    MealView.prototype.template = require('views/templates/meal');
+
+    MealView.prototype.events = {
+      'click a': 'routeEvent',
+      'click #submit_and_route': 'submitAndRoute',
+      'click #submit_and_go_home': 'submitAndGoHome'
+    };
+
+    MealView.prototype.getRenderData = function() {
+      return {
+        meal: this.model.toJSON(),
+        macros: this.options.macros.toJSON()
+      };
+    };
+
+    MealView.prototype.afterRender = function() {
+      var display, macro, _ref;
+      if (!this.model.get('name')) {
+        return;
+      }
+      this.$('option').removeAttr('selected');
+      _ref = this.options.macros.toJSON();
+      for (macro in _ref) {
+        display = _ref[macro];
+        this.$("#" + macro + ".serving option[value='" + (this.model.get(macro) || 0) + "']").attr('selected', 'selected');
+      }
+      return this;
+    };
+
+    MealView.prototype.submitAndRoute = function() {
+      if (this.save()) {
+        return app.router.navigate("/meals", true);
+      }
+    };
+
+    MealView.prototype.submitAndGoHome = function() {
+      if (this.save()) {
+        return app.router.navigate('', true);
+      }
+    };
+
+    MealView.prototype.save = function() {
+      var display, macro, _ref;
+      if (!this.isValid()) {
+        return this.onError();
+      }
+      this.model.set({
+        name: this.$('#name').val(),
+        description: this.$('#description').val()
+      });
+      _ref = this.options.macros.toJSON();
+      for (macro in _ref) {
+        display = _ref[macro];
+        this.model.set(macro, parseFloat(this.$("#" + macro + ".serving").val()));
+      }
+      if (this.model.get('id') != null) {
+        this.model.save();
+      } else {
+        this.collection.create(this.model);
+      }
+      return true;
+    };
+
+    MealView.prototype.isValid = function() {
+      return this.$('#name').val().length;
+    };
+
+    MealView.prototype.onError = function() {
+      this.$('#error_msg').show();
+      $('body').scrollTop(0);
+      return false;
+    };
+
+    return MealView;
+
+  })(View);
+
+  module.exports = MealView;
+  
+}});
+
+window.require.define({"views/food_list/meals": function(exports, require, module) {
+  var MealsView, View,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  View = require('views/view');
+
+  MealsView = (function(_super) {
+
+    __extends(MealsView, _super);
+
+    function MealsView() {
+      this.increment = __bind(this.increment, this);
+
+      this.eatMeal = __bind(this.eatMeal, this);
+
+      this.deleteMeal = __bind(this.deleteMeal, this);
+
+      this.getRenderData = __bind(this.getRenderData, this);
+
+      this.unbind = __bind(this.unbind, this);
+
+      this.initialize = __bind(this.initialize, this);
+      return MealsView.__super__.constructor.apply(this, arguments);
+    }
+
+    MealsView.prototype.tagName = 'div';
+
+    MealsView.prototype.className = 'content';
+
+    MealsView.prototype.template = require('views/templates/meals');
+
+    MealsView.prototype.events = {
+      'click a': 'routeEvent',
+      'click .delete': 'deleteMeal',
+      'click .eat': 'eatMeal'
+    };
+
+    MealsView.prototype.initialize = function() {
+      return this.collection.on('remove', this.render);
+    };
+
+    MealsView.prototype.unbind = function() {
+      return this.collection.off('remove', this.render);
+    };
+
+    MealsView.prototype.getRenderData = function() {
+      return this.collection.toJSON();
+    };
+
+    MealsView.prototype.deleteMeal = function(event) {
+      var id, meal;
+      id = $(event.currentTarget).parents('.list-item').data('id');
+      meal = this.collection.get(id);
+      if (meal != null) {
+        return meal.destroy();
+      }
+    };
+
+    MealsView.prototype.eatMeal = function(event) {
+      var id, meal;
+      id = $(event.currentTarget).parents('.list-item').data('id');
+      meal = this.collection.get(id);
+      if (meal != null) {
+        this.increment(meal);
+      }
+      return app.router.navigate('', {
+        trigger: true
+      });
+    };
+
+    MealsView.prototype.increment = function(meal) {
+      var macro, serving;
+      for (macro in this.options.macros.toJSON()) {
+        serving = meal.get(macro);
+        app.macros.increment(this.options.macros.getMacro(macro), serving);
+      }
+      return this;
+    };
+
+    return MealsView;
+
+  })(View);
+
+  module.exports = MealsView;
+  
+}});
+
 window.require.define({"views/help": function(exports, require, module) {
   var HelpView, View,
     __hasProp = {}.hasOwnProperty,
@@ -4999,6 +5340,231 @@ window.require.define({"views/templates/macro_bar": function(exports, require, m
     else if(stack3=== undef) { stack1 = helperMissing.call(depth0, "getCalsDisplayForMacro", stack2, stack1, { hash: {} }); }
     else { stack1 = stack3; }
     buffer += escapeExpression(stack1) + "</span>\n        </div>\n    </div>\n</div>";
+    return buffer;});
+}});
+
+window.require.define({"views/templates/meal": function(exports, require, module) {
+  module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
+    helpers = helpers || Handlebars.helpers;
+    var buffer = "", stack1, stack2, stack3, foundHelper, tmp1, self=this, functionType="function", helperMissing=helpers.helperMissing, undef=void 0, escapeExpression=this.escapeExpression, blockHelperMissing=helpers.blockHelperMissing;
+
+  function program1(depth0,data) {
+    
+    var buffer = "", stack1;
+    buffer += "\n        <h4 class=\"left without-top-margin\">Edit ";
+    foundHelper = helpers.meal;
+    stack1 = foundHelper || depth0.meal;
+    stack1 = (stack1 === null || stack1 === undefined || stack1 === false ? stack1 : stack1.name);
+    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
+    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "meal.name", { hash: {} }); }
+    buffer += escapeExpression(stack1) + "</h4>\n        ";
+    return buffer;}
+
+  function program3(depth0,data) {
+    
+    
+    return "\n        <h4 class=\"left without-top-margin\">Create a meal</h4>\n        ";}
+
+  function program5(depth0,data) {
+    
+    var buffer = "", stack1;
+    buffer += "value=\"";
+    foundHelper = helpers.meal;
+    stack1 = foundHelper || depth0.meal;
+    stack1 = (stack1 === null || stack1 === undefined || stack1 === false ? stack1 : stack1.name);
+    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
+    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "meal.name", { hash: {} }); }
+    buffer += escapeExpression(stack1) + "\"";
+    return buffer;}
+
+  function program7(depth0,data) {
+    
+    var buffer = "", stack1;
+    buffer += "\n        <span class=\"aside\">";
+    foundHelper = helpers.val;
+    stack1 = foundHelper || depth0.val;
+    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
+    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "val", { hash: {} }); }
+    buffer += escapeExpression(stack1) + " Value</span>\n        <select id=\"";
+    foundHelper = helpers.key;
+    stack1 = foundHelper || depth0.key;
+    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
+    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "key", { hash: {} }); }
+    buffer += escapeExpression(stack1) + "\" class=\"serving\">\n            <option value=\"0\" selected=\"selected\">0 servings</option>\n            <option value=\"0.5\">1/2 serving</option>\n            <option value=\"1\">1 serving</option>\n            <option value=\"1.5\">1.5 servings</option>\n            <option value=\"2\">2 servings</option>\n            <option value=\"2.5\">2.5 servings</option>\n            <option value=\"3\">3 servings</option>\n            <option value=\"3.5\">3.5 servings</option>\n            <option value=\"4\">4 servings</option>\n            <option value=\"4.5\">4.5 servings</option>\n            <option value=\"5\">5 servings</option>\n        </select>\n    ";
+    return buffer;}
+
+  function program9(depth0,data) {
+    
+    
+    return "Save";}
+
+  function program11(depth0,data) {
+    
+    
+    return "Create";}
+
+  function program13(depth0,data) {
+    
+    
+    return "Save";}
+
+  function program15(depth0,data) {
+    
+    
+    return "Create";}
+
+    buffer += "<header>\n    <div class=\"clearfix\">\n        ";
+    foundHelper = helpers.meal;
+    stack1 = foundHelper || depth0.meal;
+    stack1 = (stack1 === null || stack1 === undefined || stack1 === false ? stack1 : stack1.id);
+    stack2 = helpers['if'];
+    tmp1 = self.program(1, program1, data);
+    tmp1.hash = {};
+    tmp1.fn = tmp1;
+    tmp1.inverse = self.program(3, program3, data);
+    stack1 = stack2.call(depth0, stack1, tmp1);
+    if(stack1 || stack1 === 0) { buffer += stack1; }
+    buffer += "\n        <a href=\"/meals\" class=\"right\">Go back</a>\n    </div>\n</header>\n\n<div id=\"error_msg\" class=\"alert error\" style=\"display: none;\">Whoa there cowpoke, fill in the blanks.</div>\n\n<div>\n    <span class=\"aside\">Meal Name</span>\n    <input id=\"name\" type=\"text\" placeholder=\"Porkchop Sammich\" ";
+    foundHelper = helpers.meal;
+    stack1 = foundHelper || depth0.meal;
+    stack1 = (stack1 === null || stack1 === undefined || stack1 === false ? stack1 : stack1.name);
+    stack2 = helpers['if'];
+    tmp1 = self.program(5, program5, data);
+    tmp1.hash = {};
+    tmp1.fn = tmp1;
+    tmp1.inverse = self.noop;
+    stack1 = stack2.call(depth0, stack1, tmp1);
+    if(stack1 || stack1 === 0) { buffer += stack1; }
+    buffer += " />\n\n    <span class=\"aside\">Description</span>\n    <textarea id=\"description\" rows=\"3\">";
+    foundHelper = helpers.meal;
+    stack1 = foundHelper || depth0.meal;
+    stack1 = (stack1 === null || stack1 === undefined || stack1 === false ? stack1 : stack1.description);
+    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
+    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "meal.description", { hash: {} }); }
+    buffer += escapeExpression(stack1) + "</textarea>\n\n    ";
+    foundHelper = helpers.meal;
+    stack1 = foundHelper || depth0.meal;
+    foundHelper = helpers.macros;
+    stack2 = foundHelper || depth0.macros;
+    foundHelper = helpers.keys;
+    stack3 = foundHelper || depth0.keys;
+    tmp1 = self.program(7, program7, data);
+    tmp1.hash = {};
+    tmp1.fn = tmp1;
+    tmp1.inverse = self.noop;
+    if(foundHelper && typeof stack3 === functionType) { stack1 = stack3.call(depth0, stack2, stack1, tmp1); }
+    else { stack1 = blockHelperMissing.call(depth0, stack3, stack2, stack1, tmp1); }
+    if(stack1 || stack1 === 0) { buffer += stack1; }
+    buffer += "\n</div>\n\n<div class=\"create-controls\">\n    <div class=\"controls\">\n        <a id=\"submit_and_route\" class=\"dont-route btn btn-primary\">";
+    foundHelper = helpers.meal;
+    stack1 = foundHelper || depth0.meal;
+    stack1 = (stack1 === null || stack1 === undefined || stack1 === false ? stack1 : stack1.id);
+    stack2 = helpers['if'];
+    tmp1 = self.program(9, program9, data);
+    tmp1.hash = {};
+    tmp1.fn = tmp1;
+    tmp1.inverse = self.program(11, program11, data);
+    stack1 = stack2.call(depth0, stack1, tmp1);
+    if(stack1 || stack1 === 0) { buffer += stack1; }
+    buffer += "</a>\n        <a id=\"submit_and_go_home\" class=\"dont-route btn btn-primary\">";
+    foundHelper = helpers.meal;
+    stack1 = foundHelper || depth0.meal;
+    stack1 = (stack1 === null || stack1 === undefined || stack1 === false ? stack1 : stack1.id);
+    stack2 = helpers['if'];
+    tmp1 = self.program(13, program13, data);
+    tmp1.hash = {};
+    tmp1.fn = tmp1;
+    tmp1.inverse = self.program(15, program15, data);
+    stack1 = stack2.call(depth0, stack1, tmp1);
+    if(stack1 || stack1 === 0) { buffer += stack1; }
+    buffer += " and return home</a>\n    </div>\n</div>\n";
+    return buffer;});
+}});
+
+window.require.define({"views/templates/meals": function(exports, require, module) {
+  module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
+    helpers = helpers || Handlebars.helpers;
+    var buffer = "", stack1, stack2, foundHelper, tmp1, self=this, functionType="function", helperMissing=helpers.helperMissing, undef=void 0, escapeExpression=this.escapeExpression;
+
+  function program1(depth0,data) {
+    
+    
+    return "\n            <a href=\"/meals/define\" class=\"right\">Create New</a>\n        ";}
+
+  function program3(depth0,data) {
+    
+    var buffer = "", stack1, stack2;
+    buffer += "\n        <div class=\"list-item meal\" data-id=\"";
+    foundHelper = helpers.id;
+    stack1 = foundHelper || depth0.id;
+    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
+    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "id", { hash: {} }); }
+    buffer += escapeExpression(stack1) + "\">\n            <label>";
+    foundHelper = helpers.name;
+    stack1 = foundHelper || depth0.name;
+    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
+    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "name", { hash: {} }); }
+    buffer += escapeExpression(stack1) + "</label>\n            ";
+    foundHelper = helpers.description;
+    stack1 = foundHelper || depth0.description;
+    stack2 = helpers['if'];
+    tmp1 = self.program(4, program4, data);
+    tmp1.hash = {};
+    tmp1.fn = tmp1;
+    tmp1.inverse = self.noop;
+    stack1 = stack2.call(depth0, stack1, tmp1);
+    if(stack1 || stack1 === 0) { buffer += stack1; }
+    buffer += "\n\n            <div class=\"controls clearfix\">\n                <a class=\"left btn btn-large btn-primary btn-third dont-route eat\">Eat</a>\n                <a class=\"right btn btn-large btn-secondary btn-third dont-route delete\">Delete</a>\n                <a class=\"right btn btn-large btn-secondary btn-third with-right-margin\" href=\"/meals/";
+    foundHelper = helpers.id;
+    stack1 = foundHelper || depth0.id;
+    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
+    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "id", { hash: {} }); }
+    buffer += escapeExpression(stack1) + "\">Edit</a>\n            </div>\n        </div>\n    ";
+    return buffer;}
+  function program4(depth0,data) {
+    
+    var buffer = "", stack1;
+    buffer += "\n            <span class=\"aside\">";
+    foundHelper = helpers.description;
+    stack1 = foundHelper || depth0.description;
+    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
+    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "description", { hash: {} }); }
+    buffer += escapeExpression(stack1) + "</span>\n            ";
+    return buffer;}
+
+  function program6(depth0,data) {
+    
+    
+    return "\n        <div class=\"empty-msg\">No meals found. <a href=\"/meals/define\">Go define one</a>.</div>\n    ";}
+
+    buffer += "<header>\n    <div class=\"clearfix\">\n        <h4 class=\"left without-top-margin\">Select a meal</h4>\n        ";
+    stack1 = depth0;
+    stack2 = helpers['if'];
+    tmp1 = self.program(1, program1, data);
+    tmp1.hash = {};
+    tmp1.fn = tmp1;
+    tmp1.inverse = self.noop;
+    stack1 = stack2.call(depth0, stack1, tmp1);
+    if(stack1 || stack1 === 0) { buffer += stack1; }
+    buffer += "\n    </div>\n</header>\n\n<div class=\"list meals\">\n    ";
+    stack1 = depth0;
+    stack2 = helpers.each;
+    tmp1 = self.program(3, program3, data);
+    tmp1.hash = {};
+    tmp1.fn = tmp1;
+    tmp1.inverse = self.noop;
+    stack1 = stack2.call(depth0, stack1, tmp1);
+    if(stack1 || stack1 === 0) { buffer += stack1; }
+    buffer += "\n\n    ";
+    stack1 = depth0;
+    stack2 = helpers.unless;
+    tmp1 = self.program(6, program6, data);
+    tmp1.hash = {};
+    tmp1.fn = tmp1;
+    tmp1.inverse = self.noop;
+    stack1 = stack2.call(depth0, stack1, tmp1);
+    if(stack1 || stack1 === 0) { buffer += stack1; }
+    buffer += "\n</div>\n";
     return buffer;});
 }});
 

@@ -26,8 +26,23 @@
           <div class="container">
             <a class="brand" href="/">Nutrition</a>
             <ul class="nav">
-                <li id="food_nav">
-                    <a href="/food">Food</a>
+                <li id="food_nav" class="dropdown">
+                    <a class="dropdown-toggle dont-route" data-toggle="dropdown">
+                        <span id="nav_form_types">Food</span>
+                        <b class="caret"></b>
+                    </a>
+                    <ul class="dropdown-menu pull-right">
+                        <li>
+                            <a href="/food">Diet Guide</a>
+                        </li>
+                        <li>
+                            <a href="/meals">User Meals</a>
+                        </li>
+                        <li class="divider"></li>
+                        <li>
+                            <a href="/meals/define">Create Meal</a>
+                        </li>
+                    </ul>
                 </li>
                 <li id="stats_nav">
                     <a href="/stats">Stats</a>

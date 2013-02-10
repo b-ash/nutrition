@@ -51,5 +51,8 @@ Handlebars.registerHelper "getExactPortion", (ctx, serving) ->
 
     return "#{totalServingSize} #{measurement}"
 
+Handlebars.registerHelper "getMacroVal", (ctx, macro) ->
+    return ctx[macro] or 0
+
 Handlebars.registerHelper "pluralize", (word, quantity) ->
     utils.pluralize(word, quantity)

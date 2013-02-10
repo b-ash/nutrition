@@ -6822,6 +6822,9 @@ a:hover {
 div {
   -webkit-tap-highlight-color: rgba(0,0,0,0);
 }
+textarea {
+  resize: none;
+}
 .alert {
   clear: both;
 }
@@ -6919,6 +6922,13 @@ html {
 }
 .list .list-item .btn:visited {
   color: #000;
+}
+.list .list-item .btn.btn-third {
+  display: inline-block;
+  width: 30%;
+}
+.list .list-item .btn.btn-third.with-right-margin {
+  margin-right: 4%;
 }
 .list .list-item .percentage-bar {
   -webkit-border-radius: 4px;
@@ -7032,14 +7042,17 @@ html {
   font-size: 10px;
   color: #aaa;
 }
-.portion-controls {
+.portion-controls,
+.create-controls {
   margin-top: 20px;
   margin-bottom: 50px;
 }
-.portion-controls label {
+.portion-controls label,
+.create-controls label {
   font-style: italic;
 }
-.portion-controls .controls {
+.portion-controls .controls,
+.create-controls .controls {
   margin-top: 20px;
 }
 .help {

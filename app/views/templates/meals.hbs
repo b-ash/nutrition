@@ -1,0 +1,29 @@
+<header>
+    <div class="clearfix">
+        <h4 class="left without-top-margin">Select a meal</h4>
+        {{#if this}}
+            <a href="/meals/define" class="right">Create New</a>
+        {{/if}}
+    </div>
+</header>
+
+<div class="list meals">
+    {{#each this}}
+        <div class="list-item meal" data-id="{{id}}">
+            <label>{{name}}</label>
+            {{#if description}}
+            <span class="aside">{{description}}</span>
+            {{/if}}
+
+            <div class="controls clearfix">
+                <a class="left btn btn-large btn-primary btn-third dont-route eat">Eat</a>
+                <a class="right btn btn-large btn-secondary btn-third dont-route delete">Delete</a>
+                <a class="right btn btn-large btn-secondary btn-third with-right-margin" href="/meals/{{id}}">Edit</a>
+            </div>
+        </div>
+    {{/each}}
+
+    {{#unless this}}
+        <div class="empty-msg">No meals found. <a href="/meals/define">Go define one</a>.</div>
+    {{/unless}}
+</div>

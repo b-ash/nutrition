@@ -1,0 +1,44 @@
+<header>
+    <div class="clearfix">
+        {{#if meal.id}}
+        <h4 class="left without-top-margin">Edit {{meal.name}}</h4>
+        {{else}}
+        <h4 class="left without-top-margin">Create a meal</h4>
+        {{/if}}
+        <a href="/meals" class="right">Go back</a>
+    </div>
+</header>
+
+<div id="error_msg" class="alert error" style="display: none;">Whoa there cowpoke, fill in the blanks.</div>
+
+<div>
+    <span class="aside">Meal Name</span>
+    <input id="name" type="text" placeholder="Porkchop Sammich" {{#if meal.name}}value="{{meal.name}}"{{/if}} />
+
+    <span class="aside">Description</span>
+    <textarea id="description" rows="3">{{meal.description}}</textarea>
+
+    {{#keys macros meal}}
+        <span class="aside">{{val}} Value</span>
+        <select id="{{key}}" class="serving">
+            <option value="0" selected="selected">0 servings</option>
+            <option value="0.5">1/2 serving</option>
+            <option value="1">1 serving</option>
+            <option value="1.5">1.5 servings</option>
+            <option value="2">2 servings</option>
+            <option value="2.5">2.5 servings</option>
+            <option value="3">3 servings</option>
+            <option value="3.5">3.5 servings</option>
+            <option value="4">4 servings</option>
+            <option value="4.5">4.5 servings</option>
+            <option value="5">5 servings</option>
+        </select>
+    {{/keys}}
+</div>
+
+<div class="create-controls">
+    <div class="controls">
+        <a id="submit_and_route" class="dont-route btn btn-primary">{{#if meal.id}}Save{{else}}Create{{/if}}</a>
+        <a id="submit_and_go_home" class="dont-route btn btn-primary">{{#if meal.id}}Save{{else}}Create{{/if}} and return home</a>
+    </div>
+</div>
