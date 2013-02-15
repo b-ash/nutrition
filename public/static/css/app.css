@@ -6882,6 +6882,9 @@ html {
 .navbar .nav {
   left: -9px;
 }
+.navbar .nav li a {
+  padding: 10px;
+}
 .navbar .container {
   max-width: 420px;
   margin-left: auto;
