@@ -2,6 +2,7 @@ User = require 'models/users/user'
 Meals = require 'models/foods/meals'
 MacroCountsFactory = require 'models/macro_counts/macro_counts_factory'
 StatsFactory = require 'models/stats/stats_factory'
+Utils = require 'lib/utils'
 
 
 Application =
@@ -25,12 +26,15 @@ Application =
     onConfigure: ->
         @macros?.destroy()
         @meals?.destroy()
+
+        Utils.formatTheme @user
         @stats = StatsFactory.getStats @user
         @macros = MacroCountsFactory.getMacroCounts @user, @stats
         @meals = new Meals()
 
     afterConfiguration: ->
         if @user.isConfigured()
+            Utils.formatTheme @user
             @stats = StatsFactory.getStats @user
             @macros = MacroCountsFactory.getMacroCounts @user, @stats
             @meals = new Meals()

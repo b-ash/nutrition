@@ -24,6 +24,10 @@ class ConfigureView extends View
             @$("#program option[value='#{program}']").attr('selected', 'selected')
             @renderProgramConfig()
 
+        theme = @model.get('theme')
+        if theme
+            @$("#theme option[value='#{theme}']").attr('selected', 'selected')
+
     renderProgramConfig: =>
         program = User.parseProgram @$('#program').val()
         if not program?
@@ -50,6 +54,7 @@ class ConfigureView extends View
             name: @$('#name').val() or null
             weight: parseInt(@$('#weight').val() or 0)
             program: @$('#program').val()
+            theme: @$('#theme').val()
 
         programConfig = @views.program.getInputData()
 

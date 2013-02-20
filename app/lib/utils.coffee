@@ -14,3 +14,11 @@ module.exports =
             return "#{word}s"
         else
             return word
+
+    formatTheme: (user) ->
+        if user.get('theme') is 'dark'
+            classMethod = 'add'
+        else
+            classMethod = 'remove'
+
+        $('html')["#{classMethod}Class"]('dark')

@@ -7061,3 +7061,42 @@ html {
 .help {
   margin-bottom: 20px;
 }
+html.dark {
+  min-height: 100%;
+  background: url("/static/images/mesh.jpg") no-repeat center center fixed;
+  background-color: #333;
+  -webkit-background-size: cover;
+  background-size: cover;
+}
+html.dark body {
+  background: transparent;
+}
+html.dark body header a,
+html.dark body .empty-msg a,
+html.dark body p a,
+html.dark body header a:visited,
+html.dark body .empty-msg a:visited,
+html.dark body p a:visited {
+  color: #7c7cac;
+}
+html.dark body header a:hover,
+html.dark body .empty-msg a:hover,
+html.dark body p a:hover {
+  color: #ff7e20;
+}
+html.dark body h4,
+html.dark body h5,
+html.dark body span,
+html.dark body label,
+html.dark body p,
+html.dark body .help ul li,
+html.dark body .footer {
+  color: #aaa;
+}
+html.dark body .percentage-text span {
+  color: #fff;
+}
+html.dark body .macros .percentage-bar {
+  background-color: #999;
+  border-color: #333;
+}

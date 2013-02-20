@@ -75,7 +75,7 @@
 })();
 
 window.require.define({"application": function(exports, require, module) {
-  var Application, MacroCountsFactory, Meals, StatsFactory, User;
+  var Application, MacroCountsFactory, Meals, StatsFactory, User, Utils;
 
   User = require('models/users/user');
 
@@ -84,6 +84,8 @@ window.require.define({"application": function(exports, require, module) {
   MacroCountsFactory = require('models/macro_counts/macro_counts_factory');
 
   StatsFactory = require('models/stats/stats_factory');
+
+  Utils = require('lib/utils');
 
   Application = {
     initialize: function(onSuccess) {
@@ -110,12 +112,14 @@ window.require.define({"application": function(exports, require, module) {
       if ((_ref1 = this.meals) != null) {
         _ref1.destroy();
       }
+      Utils.formatTheme(this.user);
       this.stats = StatsFactory.getStats(this.user);
       this.macros = MacroCountsFactory.getMacroCounts(this.user, this.stats);
       return this.meals = new Meals();
     },
     afterConfiguration: function() {
       if (this.user.isConfigured()) {
+        Utils.formatTheme(this.user);
         this.stats = StatsFactory.getStats(this.user);
         this.macros = MacroCountsFactory.getMacroCounts(this.user, this.stats);
         return this.meals = new Meals();
@@ -390,6 +394,15 @@ window.require.define({"lib/utils": function(exports, require, module) {
       } else {
         return word;
       }
+    },
+    formatTheme: function(user) {
+      var classMethod;
+      if (user.get('theme') === 'dark') {
+        classMethod = 'add';
+      } else {
+        classMethod = 'remove';
+      }
+      return $('html')["" + classMethod + "Class"]('dark');
     }
   };
   
@@ -3820,6 +3833,7 @@ window.require.define({"models/users/user": function(exports, require, module) {
         weight: null,
         bfp: null,
         program: null,
+        theme: 'light',
         configured: false
       };
     };
@@ -4041,11 +4055,15 @@ window.require.define({"views/configuration/configure": function(exports, requir
     };
 
     ConfigureView.prototype.afterRender = function() {
-      var program;
+      var program, theme;
       program = this.model.get('program');
       if (program != null) {
         this.$("#program option[value='" + program + "']").attr('selected', 'selected');
-        return this.renderProgramConfig();
+        this.renderProgramConfig();
+      }
+      theme = this.model.get('theme');
+      if (theme) {
+        return this.$("#theme option[value='" + theme + "']").attr('selected', 'selected');
       }
     };
 
@@ -4080,7 +4098,8 @@ window.require.define({"views/configuration/configure": function(exports, requir
       config = {
         name: this.$('#name').val() || null,
         weight: parseInt(this.$('#weight').val() || 0),
-        program: this.$('#program').val()
+        program: this.$('#program').val(),
+        theme: this.$('#theme').val()
       };
       programConfig = this.views.program.getInputData();
       this.model.save($.extend({
@@ -4810,8 +4829,15 @@ window.require.define({"views/nav": function(exports, require, module) {
     };
 
     NavView.prototype.afterRender = function() {
+      var classMethod;
       this.$('.nav li').removeClass('active');
-      return this.$("#" + this.activeView + "_nav").addClass('active');
+      this.$("#" + this.activeView + "_nav").addClass('active');
+      if ($('html').hasClass('dark')) {
+        classMethod = 'add';
+      } else {
+        classMethod = 'remove';
+      }
+      return this.$el["" + classMethod + "Class"]('navbar-inverse');
     };
 
     NavView.prototype.clearMacros = function() {
@@ -4968,7 +4994,7 @@ window.require.define({"views/templates/configure": function(exports, require, m
     tmp1.inverse = self.noop;
     stack1 = stack2.call(depth0, stack1, tmp1);
     if(stack1 || stack1 === 0) { buffer += stack1; }
-    buffer += " />\n</div>\n\n<div>\n    <span class=\"aside\">Beachbody Diet Program</span>\n    <select id=\"program\">\n        <option value=\"\"></option>\n        <optgroup label=\"Body Beast\">\n            <option value=\"beast/build\">Build / Bulk (phases 1 &amp; 2)</option>\n            <option value=\"beast/beast\">Beast (phase 3)</option>\n        </optgroup>\n        <optgroup label=\"P90X2\">\n            <option value=\"x2/energy_booster\">Energy Booster (balanced)</option>\n            <option value=\"x2/fat_shredder\">Fat Shredder</option>\n            <option value=\"x2/endurance_maximizer\">Endurance Maximizer</option>\n        </optgroup>\n    </select>\n</div>\n\n<div id=\"program_config\"></div>\n\n<div class=\"configure-actions\">\n    <a id=\"configure\" class=\"btn btn-primary dont-route\">Configure</a>\n</div>\n";
+    buffer += " />\n</div>\n\n<div>\n    <span class=\"aside\">Beachbody Diet Program</span>\n    <select id=\"program\">\n        <option value=\"\"></option>\n        <optgroup label=\"Body Beast\">\n            <option value=\"beast/build\">Build / Bulk (phases 1 &amp; 2)</option>\n            <option value=\"beast/beast\">Beast (phase 3)</option>\n        </optgroup>\n        <optgroup label=\"P90X2\">\n            <option value=\"x2/energy_booster\">Energy Booster (balanced)</option>\n            <option value=\"x2/fat_shredder\">Fat Shredder</option>\n            <option value=\"x2/endurance_maximizer\">Endurance Maximizer</option>\n        </optgroup>\n    </select>\n</div>\n\n<div id=\"program_config\"></div>\n\n<div>\n    <span class=\"aside\">App Theme</span>\n    <select id=\"theme\">\n        <option value=\"light\">Light (default)</option>\n        <option value=\"dark\">Dark</option>\n    </select>\n</div>\n\n<div class=\"configure-actions\">\n    <a id=\"configure\" class=\"btn btn-primary dont-route\">Configure</a>\n</div>\n";
     return buffer;});
 }});
 

@@ -1,0 +1,28 @@
+@import nib
+
+// Theme overrides
+html.dark
+    min-height: 100%
+    background: url('/static/images/mesh.jpg') no-repeat center center fixed
+    background-color: #333
+    background-size(cover)
+
+    body
+        background: transparent
+
+        header, .empty-msg, p
+            a, a:visited
+                color: #7C7CAC
+            a:hover
+                color: #FF7E20
+
+        h4, h5, span, label, p, .help ul li, .footer
+            color: #AAA
+
+        .percentage-text span
+            color: #FFF
+
+        .macros
+            .percentage-bar
+                background-color: #999
+                border-color: #333

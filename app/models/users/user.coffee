@@ -12,6 +12,7 @@ class User extends LocalStorageModel
         weight: null
         bfp: null
         program: null
+        theme: 'light'
         configured: false
 
     getPhase: ->
