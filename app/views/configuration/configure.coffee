@@ -1,6 +1,7 @@
 app = require 'application'
 View = require 'views/view'
 User = require 'models/users/user'
+Utils = require 'lib/utils'
 
 PROGRAM_CONFIG =
     beast: require('./beast_config')
@@ -14,6 +15,7 @@ class ConfigureView extends View
     events:
         'click #configure': 'configure'
         'change #program': 'renderProgramConfig'
+        'change #theme': 'changeTheme'
 
     getRenderData: =>
         @model.toJSON()
@@ -36,6 +38,10 @@ class ConfigureView extends View
 
         @views.program = new PROGRAM_CONFIG[program] {model: @model}
         @$('#program_config').html @views.program.render().el
+
+    changeTheme: =>
+        @model.set 'theme', @$('#theme').val()
+        Utils.formatTheme @model
 
     isValid: =>
         name =  @$('#name').val()

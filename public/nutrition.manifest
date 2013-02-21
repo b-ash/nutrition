@@ -1,0 +1,17 @@
+CACHE MANIFEST
+
+###
+# Cache manifest version 0.7.0
+###
+
+/static/css/app.css
+
+/static/js/vendor.js
+/static/js/app.js
+
+/static/images/mesh.jpg
+/static/images/ui-icons_222222_256x240.png
+
+NETWORK:
+
+*

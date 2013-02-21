@@ -407,7 +407,8 @@ window.require.define({"lib/utils": function(exports, require, module) {
       } else {
         classMethod = 'remove';
       }
-      return $('html')["" + classMethod + "Class"]('dark');
+      $('html')["" + classMethod + "Class"]('dark');
+      return $('#nav')["" + classMethod + "Class"]('navbar-inverse');
     }
   };
   
@@ -4011,7 +4012,7 @@ window.require.define({"views/configuration/beast_config": function(exports, req
 }});
 
 window.require.define({"views/configuration/configure": function(exports, require, module) {
-  var ConfigureView, PROGRAM_CONFIG, User, View, app,
+  var ConfigureView, PROGRAM_CONFIG, User, Utils, View, app,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -4021,6 +4022,8 @@ window.require.define({"views/configuration/configure": function(exports, requir
   View = require('views/view');
 
   User = require('models/users/user');
+
+  Utils = require('lib/utils');
 
   PROGRAM_CONFIG = {
     beast: require('./beast_config'),
@@ -4040,6 +4043,8 @@ window.require.define({"views/configuration/configure": function(exports, requir
 
       this.isValid = __bind(this.isValid, this);
 
+      this.changeTheme = __bind(this.changeTheme, this);
+
       this.renderProgramConfig = __bind(this.renderProgramConfig, this);
 
       this.afterRender = __bind(this.afterRender, this);
@@ -4056,7 +4061,8 @@ window.require.define({"views/configuration/configure": function(exports, requir
 
     ConfigureView.prototype.events = {
       'click #configure': 'configure',
-      'change #program': 'renderProgramConfig'
+      'change #program': 'renderProgramConfig',
+      'change #theme': 'changeTheme'
     };
 
     ConfigureView.prototype.getRenderData = function() {
@@ -4089,6 +4095,11 @@ window.require.define({"views/configuration/configure": function(exports, requir
         model: this.model
       });
       return this.$('#program_config').html(this.views.program.render().el);
+    };
+
+    ConfigureView.prototype.changeTheme = function() {
+      this.model.set('theme', this.$('#theme').val());
+      return Utils.formatTheme(this.model);
     };
 
     ConfigureView.prototype.isValid = function() {
@@ -4839,15 +4850,8 @@ window.require.define({"views/nav": function(exports, require, module) {
     };
 
     NavView.prototype.afterRender = function() {
-      var classMethod;
       this.$('.nav li').removeClass('active');
-      this.$("#" + this.activeView + "_nav").addClass('active');
-      if ($('html').hasClass('dark')) {
-        classMethod = 'add';
-      } else {
-        classMethod = 'remove';
-      }
-      return this.$el["" + classMethod + "Class"]('navbar-inverse');
+      return this.$("#" + this.activeView + "_nav").addClass('active');
     };
 
     NavView.prototype.clearMacros = function() {

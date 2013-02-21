@@ -13,13 +13,6 @@ class NavView extends View
         @$('.nav li').removeClass('active')
         @$("##{@activeView}_nav").addClass('active')
 
-        if $('html').hasClass('dark')
-            classMethod = 'add'
-        else
-            classMethod = 'remove'
-
-        @$el["#{classMethod}Class"]('navbar-inverse')
-
     clearMacros: =>
         app.macros.clear()
 

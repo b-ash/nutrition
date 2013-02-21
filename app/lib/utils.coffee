@@ -22,3 +22,4 @@ module.exports =
             classMethod = 'remove'
 
         $('html')["#{classMethod}Class"]('dark')
+        $('#nav')["#{classMethod}Class"]('navbar-inverse')
