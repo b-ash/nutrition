@@ -30,6 +30,9 @@ class User extends LocalStorageModel
         program = @get('program')
         User.parseProgram(program)
 
+    hasProgramChanged: (program) ->
+        User.parseProgram(program) isnt @getProgram()
+
     isConfigured: ->
         @get('configured') and @get('program')? and @get('program').length
 

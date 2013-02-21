@@ -104,13 +104,18 @@ window.require.define({"application": function(exports, require, module) {
         return onSuccess();
       }
     },
-    onConfigure: function() {
+    onConfigure: function(programChanged) {
       var _ref, _ref1;
-      if ((_ref = this.macros) != null) {
-        _ref.destroy();
+      if (programChanged == null) {
+        programChanged = false;
       }
-      if ((_ref1 = this.meals) != null) {
-        _ref1.destroy();
+      if (programChanged) {
+        if ((_ref = this.macros) != null) {
+          _ref.destroy();
+        }
+        if ((_ref1 = this.meals) != null) {
+          _ref1.destroy();
+        }
       }
       Utils.formatTheme(this.user);
       this.stats = StatsFactory.getStats(this.user);
@@ -3857,6 +3862,10 @@ window.require.define({"models/users/user": function(exports, require, module) {
       return User.parseProgram(program);
     };
 
+    User.prototype.hasProgramChanged = function(program) {
+      return User.parseProgram(program) !== this.getProgram();
+    };
+
     User.prototype.isConfigured = function() {
       return this.get('configured') && (this.get('program') != null) && this.get('program').length;
     };
@@ -4091,7 +4100,7 @@ window.require.define({"views/configuration/configure": function(exports, requir
     };
 
     ConfigureView.prototype.configure = function() {
-      var config, programConfig, _ref;
+      var config, hasProgramChanged, programConfig, _ref;
       if (!(this.isValid() && ((_ref = this.views.program) != null ? _ref.isValid() : void 0))) {
         return this.onError();
       }
@@ -4102,10 +4111,11 @@ window.require.define({"views/configuration/configure": function(exports, requir
         theme: this.$('#theme').val()
       };
       programConfig = this.views.program.getInputData();
+      hasProgramChanged = this.model.hasProgramChanged(config.program);
       this.model.save($.extend({
         configured: true
       }, config, programConfig));
-      app.onConfigure();
+      app.onConfigure(hasProgramChanged);
       return app.router.navigate('', true);
     };
 
@@ -4994,7 +5004,7 @@ window.require.define({"views/templates/configure": function(exports, require, m
     tmp1.inverse = self.noop;
     stack1 = stack2.call(depth0, stack1, tmp1);
     if(stack1 || stack1 === 0) { buffer += stack1; }
-    buffer += " />\n</div>\n\n<div>\n    <span class=\"aside\">Beachbody Diet Program</span>\n    <select id=\"program\">\n        <option value=\"\"></option>\n        <optgroup label=\"Body Beast\">\n            <option value=\"beast/build\">Build / Bulk (phases 1 &amp; 2)</option>\n            <option value=\"beast/beast\">Beast (phase 3)</option>\n        </optgroup>\n        <optgroup label=\"P90X2\">\n            <option value=\"x2/energy_booster\">Energy Booster (balanced)</option>\n            <option value=\"x2/fat_shredder\">Fat Shredder</option>\n            <option value=\"x2/endurance_maximizer\">Endurance Maximizer</option>\n        </optgroup>\n    </select>\n</div>\n\n<div id=\"program_config\"></div>\n\n<div>\n    <span class=\"aside\">App Theme</span>\n    <select id=\"theme\">\n        <option value=\"light\">Light (default)</option>\n        <option value=\"dark\">Dark</option>\n    </select>\n</div>\n\n<div class=\"configure-actions\">\n    <a id=\"configure\" class=\"btn btn-primary dont-route\">Configure</a>\n</div>\n";
+    buffer += " />\n</div>\n\n<div>\n    <span class=\"aside\">Beachbody Diet Program</span>\n    <select id=\"program\">\n        <option value=\"\"></option>\n        <optgroup label=\"Body Beast\">\n            <option value=\"beast/build\">Build / Bulk (phases 1 &amp; 2)</option>\n            <option value=\"beast/beast\">Beast (phase 3)</option>\n        </optgroup>\n        <optgroup label=\"P90X2\">\n            <option value=\"x2/energy_booster\">Energy Booster (balanced)</option>\n            <option value=\"x2/fat_shredder\">Fat Shredder</option>\n            <option value=\"x2/endurance_maximizer\">Endurance Maximizer</option>\n        </optgroup>\n    </select>\n</div>\n\n<div id=\"program_config\"></div>\n\n<div>\n    <span class=\"aside\">App Theme</span>\n    <select id=\"theme\">\n        <option value=\"light\">Light (default)</option>\n        <option value=\"dark\">Dark</option>\n    </select>\n</div>\n\n<div class=\"with-top-margin\">\n    <span class=\"aside\">NOTE: This will reset your macro counts and your defined meals if the base program has changed.</span>\n</div>\n\n<div class=\"configure-controls\">\n    <a id=\"configure\" class=\"btn btn-primary dont-route\">Configure</a>\n</div>\n";
     return buffer;});
 }});
 

@@ -23,9 +23,10 @@ Application =
 
             onSuccess()
 
-    onConfigure: ->
-        @macros?.destroy()
-        @meals?.destroy()
+    onConfigure: (programChanged=false) ->
+        if programChanged
+            @macros?.destroy()
+            @meals?.destroy()
 
         Utils.formatTheme @user
         @stats = StatsFactory.getStats @user

@@ -57,9 +57,10 @@ class ConfigureView extends View
             theme: @$('#theme').val()
 
         programConfig = @views.program.getInputData()
+        hasProgramChanged = @model.hasProgramChanged(config.program)
 
         @model.save $.extend({configured: true}, config, programConfig)
-        app.onConfigure()
+        app.onConfigure(hasProgramChanged)
         app.router.navigate '', true
 
     onError: =>

@@ -7045,6 +7045,12 @@ html {
   font-size: 10px;
   color: #aaa;
 }
+.with-top-margin {
+  margin-top: 15px;
+}
+.configure-controls {
+  margin: 10px 0;
+}
 .portion-controls,
 .create-controls {
   margin-top: 20px;
@@ -7063,10 +7069,8 @@ html {
 }
 html.dark {
   min-height: 100%;
-  background: url("/static/images/mesh.jpg") no-repeat center center fixed;
+  background: url("/static/images/mesh.jpg") repeat fixed;
   background-color: #333;
-  -webkit-background-size: cover;
-  background-size: cover;
 }
 html.dark body {
   background: transparent;
