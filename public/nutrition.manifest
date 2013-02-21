@@ -1,9 +1,9 @@
 CACHE MANIFEST
 
 ###
-# Cache manifest version 0.7.0
+# Cache manifest version 0.7.1
 ###
-
+ 
 /static/css/app.css
 
 /static/js/vendor.js

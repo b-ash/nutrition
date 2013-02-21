@@ -7100,6 +7100,9 @@ html.dark body .footer {
 html.dark body .percentage-text span {
   color: #fff;
 }
+html.dark body .percentage-text.exceeding span {
+  color: #c00;
+}
 html.dark body .macros .percentage-bar {
   background-color: #999;
   border-color: #333;
