@@ -26,5 +26,3 @@ The default settings bind it to localhost:3333
 
 * Searching for an item
 * User-defined supplements
-* User-defined "meals" (collection of macros to add at once)
-    - List approximate caloric value of a meal or shake
