@@ -2,11 +2,11 @@ fs = require 'fs'
 express = require 'express'
 sysPath = require 'path'
 
-fullPath = sysPath.resolve 'config'
-{config} = require fullPath
+#fullPath = sysPath.resolve './config'
+{config} = require './config'
 
 exports.startServer = (port, path, callback) ->
-    app = express.createServer express.logger()
+    app = express express.logger()
     port = parseInt(process.env.PORT or port, 10)
 
     # Express init
