@@ -1,8 +1,4 @@
-fs = require 'fs'
 express = require 'express'
-sysPath = require 'path'
-
-#fullPath = sysPath.resolve './config'
 {config} = require './config'
 
 exports.startServer = (port, path, callback) ->

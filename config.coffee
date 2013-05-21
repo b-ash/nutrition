@@ -36,6 +36,6 @@ exports.config =
     minify: no
 
     server:
-        path: 'server.coffee'
+        path: 'app.coffee'
         port: 3000
         base: ''
